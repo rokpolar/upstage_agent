@@ -1,0 +1,442 @@
+{
+  "_comment": "지출결의서 양식 사전. 품의서 사전(form_roles.json)과 같은 방식으로 칸을 찾아 채운다(tools/fill_form.py). source: result=결의 결과(품의와 같은 키: 지급처·품목·금액), case=결의 정보(담당자 입력 + 검토에서 정한 지급금액·지급처), form=아래 templates.",
+  "form_title": {
+    "_comment": "한 파일에 품의서와 결의서가 같이 있으면 결의서 묶음만 채운다. include_first: 제목에 '품의'가 같이 적힌 결의서('지출품의 및 결의서')도 결의서로 본다.",
+    "include_first": true,
+    "include": [
+      "결\\s*의\\s*(\\([^)]*\\))?\\s*서",
+      "결\\s*의\\s*내\\s*역"
+    ],
+    "exclude": [
+      "품\\s*의",
+      "검\\s*수",
+      "견\\s*적\\s*서",
+      "구\\s*매\\s*요\\s*청"
+    ],
+    "head_chars": 40,
+    "_head_comment": "표 첫 줄 앞 40자만 본다(결의서 안내문에 '품의서 작성일' 같은 말이 들어 있어도 헷갈리지 않게)."
+  },
+  "skip_line_prefixes": [
+    "*",
+    "※",
+    "＊"
+  ],
+  "_skip_comment": "이 글자로 시작하는 줄은 양식의 작성 안내문이라 건드리지 않는다. 같은 칸에서 그 줄 뒤에 오는 줄도 안내문으로 본다.",
+  "line_number_prefix": "^\\s*(\\d+\\s*[.)]|[①-⑳]|[가-하]\\s*[.)]|[-·•]\\s)\\s*",
+  "_line_number_comment": "'1. 시행일자 :'처럼 줄 앞 번호는 라벨 비교에서 뺀다.",
+  "fields": {
+    "doc_no": {
+      "labels": [
+        "문서번호",
+        "결의번호",
+        "지출결의번호",
+        "지급명령번호",
+        "관리번호"
+      ],
+      "source": "case.doc_no",
+      "optional": true
+    },
+    "resolution_date": {
+      "labels": [
+        "결의일",
+        "결의일자",
+        "작성일",
+        "작성일자",
+        "지출일",
+        "지출일자",
+        "지출부기재",
+        "기안일",
+        "일자"
+      ],
+      "source": "case.resolution_date",
+      "format": "date"
+    },
+    "request_date": {
+      "labels": [
+        "발의및원인행위일",
+        "발의및원인행위일지출품의서작성일",
+        "발의및원인행위",
+        "원인행위일",
+        "발의일",
+        "품의일"
+      ],
+      "source": "case.request_date",
+      "format": "date",
+      "optional": true
+    },
+    "request_number": {
+      "labels": [
+        "품의번호",
+        "관련품의",
+        "관련품의번호"
+      ],
+      "source": "case.request_number",
+      "optional": true
+    },
+    "drafter": {
+      "labels": [
+        "기안자",
+        "작성자",
+        "결의자",
+        "신청자"
+      ],
+      "source": "case.drafter"
+    },
+    "department": {
+      "labels": [
+        "부서",
+        "소속",
+        "담당부서",
+        "주관부서"
+      ],
+      "source": "case.department",
+      "optional": true
+    },
+    "description": {
+      "labels": [
+        "적요",
+        "건명",
+        "제목",
+        "지출건명"
+      ],
+      "source": "case.description",
+      "fallback": "form.title",
+      "optional": true
+    },
+    "amount": {
+      "labels": [
+        "지급금액",
+        "지출금액",
+        "결의금액",
+        "청구금액",
+        "합계금액",
+        "총금액",
+        "총액"
+      ],
+      "source": "case.amount",
+      "format": "amount_korean"
+    },
+    "account": {
+      "labels": [
+        "계정과목",
+        "예산과목",
+        "지출항비목",
+        "지출항목",
+        "세목",
+        "비목"
+      ],
+      "source": "case.account"
+    },
+    "payee": {
+      "labels": [
+        "지급처",
+        "거래처",
+        "지급대상",
+        "업체명",
+        "상호",
+        "채주지급처"
+      ],
+      "source": "result.vendor_name"
+    },
+    "representative": {
+      "labels": [
+        "성명",
+        "대표자",
+        "성명대표"
+      ],
+      "source": "case.representative",
+      "optional": true
+    },
+    "payment_method": {
+      "labels": [
+        "지급방법",
+        "지출방법",
+        "결제방법",
+        "결제수단"
+      ],
+      "source": "case.payment_method"
+    },
+    "bank_account": {
+      "labels": [
+        "입금계좌",
+        "계좌번호",
+        "지급계좌"
+      ],
+      "source": "case.bank_account",
+      "optional": true
+    },
+    "funding": {
+      "labels": [
+        "재원구분",
+        "재원"
+      ],
+      "source": "case.funding_source",
+      "format": "checkbox",
+      "optional": true
+    },
+    "attachments": {
+      "labels": [
+        "증빙첨부",
+        "증빙서류",
+        "증빙자료",
+        "증빙자료해당되는것만쓰세요",
+        "첨부서류",
+        "첨부",
+        "붙임"
+      ],
+      "source": "case.attachments",
+      "fallback": "form.attachments"
+    }
+  },
+  "item_table": {
+    "_comment": "결의서 품목(지출내역) 표 머리글. 품의서 표 이름에 결의서 열(상호·성명·지급방법)을 더했다.",
+    "columns": {
+      "no": [
+        "연번",
+        "번호",
+        "순번",
+        "no",
+        "NO",
+        "지출결의번호",
+        "결의번호"
+      ],
+      "category": [
+        "비목",
+        "구분",
+        "항목",
+        "계정과목"
+      ],
+      "description": [
+        "적요",
+        "품명",
+        "품목",
+        "내역",
+        "내용",
+        "품명및규격",
+        "물품명"
+      ],
+      "spec": [
+        "규격",
+        "사양"
+      ],
+      "unit": [
+        "단위"
+      ],
+      "quantity": [
+        "수량"
+      ],
+      "unit_price": [
+        "단가",
+        "단가원"
+      ],
+      "amount": [
+        "금액",
+        "금액원",
+        "추정금액",
+        "공급가액",
+        "소요금액",
+        "지급금액",
+        "금액원"
+      ],
+      "basis": [
+        "산출근거",
+        "산출내역",
+        "산출기초"
+      ],
+      "note": [
+        "비고"
+      ],
+      "payee": [
+        "상호소속",
+        "상호",
+        "채주",
+        "지급처"
+      ],
+      "representative": [
+        "성명대표",
+        "성명",
+        "대표자"
+      ],
+      "payment_method": [
+        "지급방법",
+        "결제방법"
+      ]
+    },
+    "total_row": [
+      "합계",
+      "계",
+      "총계",
+      "합",
+      "소계"
+    ],
+    "stop_row": [
+      "관련계획서",
+      "채주",
+      "첨부",
+      "참고사항",
+      "영수",
+      "상기",
+      "위와같이",
+      "증빙자료",
+      "증빙첨부",
+      "위금액을"
+    ],
+    "vat_row": {
+      "_comment": "증빙의 부가세를 품목 표에 한 줄로 넣어 합계(지급금액)와 맞춘다.",
+      "enabled": true,
+      "category": "부가세",
+      "description": "부가가치세 ({rate}%)"
+    },
+    "item_name": {
+      "_comment": "적요(품명) 칸에 쓸 글. 추출 결과의 설명에서 아래 정규식에 맞는 부분을 지운다(예: '문구 도매 구매를 위한 A4 파일 구매' → 'A4 파일'). 양식은 고정이고 칸에는 품명과 규격만 쓴다.",
+      "strip": [
+        "^.*?(?:을|를)\\s*위한\\s+",
+        "\\s*(?:구매|구입)$"
+      ]
+    },
+    "row_fill": {
+      "_comment": "품목 줄마다 같은 값을 넣는 열: 열 이름 → 위 fields 역할",
+      "payee": "payee",
+      "representative": "representative",
+      "payment_method": "payment_method"
+    },
+    "optional": true,
+    "_optional_comment": "지출내역 표가 없는 결의서(기본 양식 등)도 있으므로 표가 없으면 작성 내역에만 남긴다.",
+    "total_role": "amount",
+    "_total_role_comment": "품목 표 합계 줄에 넣을 금액의 역할(품의서 사전은 total, 결의서는 지급금액 amount)."
+  },
+  "formats": {
+    "date": "{y}년 {m}월 {d}일",
+    "amount_korean": "금 {korean}원정 (￦{won})",
+    "amount": "{won}",
+    "checkbox_on": "■",
+    "checkbox_off": "□",
+    "inline_separator": " : "
+  },
+  "placeholders": {
+    "_comment": "값 칸에 이미 있는 이런 글자는 자리표시로 보고 지운다. 그 밖의 글자는 지우지 않고 값 뒤에 남긴다.",
+    "patterns": [
+      "^\\s*$",
+      "^년\\s*월\\s*일$",
+      "^\\d{4}\\s*\\.?\\s*\\.?\\s*\\.?$",
+      "^(일금|금)?\\s*원정?\\s*$",
+      "^(일금|금)?\\s*원정?\\s*[￦₩\\\\]?\\s*$",
+      "^(金|금)?\\s*整?\\s*\\(?\\s*[￦₩\\\\]?\\s*\\)?\\s*$",
+      "^〇+",
+      "^○+",
+      "^제\\s*호$",
+      "^\\{\\{\\w+\\}\\}$",
+      "^2\\d{3}\\.\\s*\\.\\s*\\.?$",
+      "^2\\d{3}\\.(\\s*\\.){1,2}\\s*$"
+    ],
+    "_keep_comment": "값 칸에 이런 글자가 있으면 지우지 않고 값 뒤에 남긴다(예: 서명란, 전화번호 라벨).",
+    "keep_if_matches": [
+      "\\(서명\\)",
+      "전화",
+      "\\(인\\)"
+    ]
+  },
+  "free_text": {
+    "_comment": "양식에 전용 칸이 없는 값은 양식 안의 넓은 빈 칸(본문 칸)에 '이름: 값' 줄로 적는다. 그런 칸도 없으면 담당자에게 묻는다.",
+    "enabled": true,
+    "min_colspan_ratio": 0.7,
+    "anchors": [
+      "지급코자",
+      "지출하고자",
+      "위와같이",
+      "위금액을"
+    ],
+    "end_markers": [
+      "끝"
+    ],
+    "_anchor_comment": "넓은 빈 칸이 없으면 anchors 문구가 든 본문 칸에 적는다: 그 칸에 end_markers 줄('끝.')이 있으면 그 앞에, 없으면 anchors 줄 앞에.",
+    "line": "{name}: {value}",
+    "names": {
+      "doc_no": "결의번호",
+      "resolution_date": "결의일",
+      "request_date": "발의(품의)일",
+      "request_number": "품의번호",
+      "drafter": "기안자",
+      "department": "부서",
+      "description": "적요",
+      "amount": "지급금액",
+      "account": "계정과목",
+      "payee": "지급처",
+      "representative": "대표자",
+      "payment_method": "지급방법",
+      "bank_account": "입금 계좌",
+      "funding": "재원",
+      "attachments": "증빙 첨부"
+    },
+    "order": [
+      "payee",
+      "payment_method",
+      "account",
+      "request_number",
+      "bank_account",
+      "attachments"
+    ]
+  },
+  "templates": {
+    "title": "{title}",
+    "attachments": "{attachments}",
+    "more": " 외 {n}건",
+    "_comment": "결의 정보에 값이 없을 때 쓰는 틀. {이름}은 결의 정보 칸 이름."
+  },
+  "report": {
+    "_comment": "작성 결과 보고 문구(명사형 짧게). {name}은 free_text.names의 이름이다.",
+    "rows_added": "품목 행 {n}개 추가",
+    "no_item_rows": "품목 행 없음",
+    "no_item_table": "지출내역 표 없음(품목 생략)",
+    "placeholder_replaced": "{label}: 예시 문구 '{text}' 대체",
+    "free_text_placed": "{name}: 본문에 기재",
+    "no_slot": "해당 칸 없음",
+    "no_form": "지출결의서 양식을 찾지 못함 (발견한 양식: {kinds})",
+    "first_of_many": "양식 {n}개 중 첫 결의서에 작성",
+    "item_name": "품목",
+    "form_name": "양식",
+    "blank_filled": "본문 빈자리 채움: {value}",
+    "marker_removed": "예시 표시 '{marker}' 삭제"
+  },
+  "leftover_check": {
+    "_comment": "채운 뒤 양식에 남은 예시 값 찾기. kinds의 pattern에 맞는 글 중 우리가 쓴 값에 없는 것을 {where(칸 이름), kind, values, action}으로 보고서에 올린다(화면은 누르면 팝업). 양식은 고치지 않는다. 칸 이름은 같은 줄 '이름 :', 왼쪽 칸, 위쪽 머리글 순으로 찾고 없으면 body.",
+    "kinds": [
+      {
+        "name": "날짜",
+        "pattern": "\\d{4}\\s*[.\\-년]\\s*\\d{1,2}\\s*[.\\-월]\\s*\\d{1,2}",
+        "action": "양식 견본에 원래 있던 날짜입니다. 이 결의 건의 날짜로 고치거나 지우세요."
+      },
+      {
+        "name": "금액",
+        "pattern": "\\d{1,3}(?:,\\d{3})+\\s*원?",
+        "action": "이 결의 건에 없는 금액입니다. 견본의 예시 금액이면 지우세요."
+      },
+      {
+        "name": "금액",
+        "pattern": "금\\s*[일이삼사오육칠팔구십백천만억]+원",
+        "action": "이 결의 건에 없는 금액입니다. 견본의 예시 금액이면 지우세요."
+      }
+    ],
+    "body": "본문",
+    "label_max_chars": 12
+  },
+  "inline_blanks": {
+    "_comment": "문장 안 빈자리 채우기(품의서와 같은 규칙). date_source: 빈 날짜 줄에 넣을 결의 정보 칸. slot_pattern: 양식에 심어 둔 {{역할}} 자리표시(forms/expense 기본 양식). body: 표 밖 본문 문단(날짜·기안자 줄)도 채운다.",
+    "item_summary": "{first_item}{more}",
+    "draft_dot": "{y}. {m}. {d}.",
+    "rules": [
+      {
+        "pattern": "^(\\s*)20\\d{2}\\.(?:\\s*\\.){1,2}\\s*$",
+        "context": [],
+        "value": "\\g<1>{draft_dot}"
+      }
+    ],
+    "strip_markers": [
+      "[예시]"
+    ],
+    "date_source": "resolution_date",
+    "slot_pattern": "\\{\\{(\\w+)\\}\\}",
+    "body": true
+  },
+  "_optional_comment": "optional: true인 칸은 양식에 자리가 없으면 그냥 넘어간다(보고서의 '양식에 해당 칸 없음'에 올리지 않는다)."
+}

@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>품의서 작업</title>
-<meta name="description" content="견적서를 Upstage Studio로 읽고, 검토와 업체 선정을 거쳐 기관 양식의 품의서를 만듭니다.">
+<title>품의서·결의서 작업</title>
+<meta name="description" content="견적서로 품의서를, 품의서와 영수증·거래명세서로 지출결의서를 Upstage Studio로 읽고 검토해 기관 양식에 채웁니다.">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <link rel="stylesheet" href="/ui/style.css">
 </head>
@@ -12,6 +12,7 @@
 <header class="bar">
   <div class="bar__inner">
     <a class="wordmark" href="#quotes" id="wordmark">품의서</a>
+    <nav class="modes" id="modes" aria-label="업무"></nav>
     <nav class="tabs" id="tabs" aria-label="작업 단계"></nav>
   </div>
 </header>
@@ -20,5 +21,6 @@
 </main>
 <dialog class="dlg" id="dlg" aria-labelledby="dlg-title"></dialog>
 <script src="/ui/app.js"></script>
+<script src="/ui/gyeolui.js"></script>
 </body>
 </html>

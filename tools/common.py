@@ -99,7 +99,8 @@ def html_to_pdf(html_path, pdf_path):
     if browser is None:
         sys.exit("PDF 변환에 쓸 Edge/Chrome을 찾지 못했습니다. 환경변수 PDF_BROWSER나 config/rules.json runtime.pdf_browsers에 경로를 넣어 주세요.")
     subprocess.run(
-        [browser, "--headless=new", "--disable-gpu", "--no-pdf-header-footer",
+        # PDF_BROWSER_FLAGS: 컨테이너(root 실행)처럼 추가 옵션이 필요할 때만 쓴다(예: --no-sandbox)
+        [browser, "--headless=new", "--disable-gpu", "--no-pdf-header-footer", *os.environ.get("PDF_BROWSER_FLAGS", "").split(),
          f"--print-to-pdf={Path(pdf_path).resolve()}", Path(html_path).resolve().as_uri()],
         check=True, capture_output=True, timeout=120,
     )

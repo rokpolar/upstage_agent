@@ -1,0 +1,149 @@
+{
+  "_comment": "결의 워크플로(Studio)의 추출 키 → 코드가 쓰는 역할 이름. Studio 추출 스키마의 키를 바꾸면 여기만 맞춘다. 품의 쪽 fields.json과 같은 방식.",
+  "request": {
+    "_comment": "Information Extract - purchase_request (결제 품의서)",
+    "number": "request_number",
+    "title": "request_title",
+    "date": "request_date",
+    "drafter": "drafter_name",
+    "department": "drafter_department",
+    "purpose": "purpose",
+    "amount": "requested_amount",
+    "tax_basis": "tax_basis",
+    "vendor": "vendor_name",
+    "budget": "budget_account",
+    "method": "payment_method",
+    "items": "requested_items",
+    "item": {
+      "description": "item_description",
+      "quantity": "quantity",
+      "unit_price": "unit_price",
+      "amount": "item_amount"
+    }
+  },
+  "receipt": {
+    "_comment": "Information Extract - receipt (영수증·거래명세서·세금계산서). lines는 receipt_index로 영수증에 붙인다.",
+    "list": "receipts",
+    "lines": "receipt_line_items",
+    "index": "receipt_index",
+    "number": "receipt_number",
+    "type": "receipt_type",
+    "vendor": "merchant_name",
+    "biz_no": "business_registration_number",
+    "date": "transaction_datetime",
+    "supply": "supply_amount",
+    "vat": "vat_amount",
+    "total": "total_amount",
+    "discount": "discount_amount",
+    "service": "service_charge_amount",
+    "method": "payment_method",
+    "card_last_four": "card_last_four",
+    "approval": "approval_number",
+    "cancel": "cancellation_or_refund_status",
+    "line": {
+      "index": "receipt_index",
+      "description": "item_description",
+      "quantity": "quantity",
+      "unit_price": "unit_price",
+      "amount": "line_amount",
+      "note": "tax_note"
+    }
+  },
+  "template": {
+    "_comment": "Information Extract - expense_template_inputs (지출결의서 양식)",
+    "title": "template_title",
+    "fields": "input_fields",
+    "label": "field_label",
+    "instruction": "input_instruction"
+  },
+  "receipt_kinds": {
+    "_comment": "영수증 종류(receipt_type)에 이 낱말이 있으면 그 종류로 본다. payment=실제 결제 증빙(카드전표·영수증), statement=거래 내역 증빙(거래명세서·세금계산서). 같은 거래의 두 증빙 금액은 더하지 않고 비교한다.",
+    "statement": [
+      "거래명세",
+      "세금계산서",
+      "계산서",
+      "명세서"
+    ],
+    "payment": [
+      "카드",
+      "매출전표",
+      "영수증",
+      "현금",
+      "승인"
+    ]
+  },
+  "vendor_strip": [
+    "\\(주\\)",
+    "㈜",
+    "주식회사",
+    "\\(유\\)",
+    "유한회사",
+    "\\s+"
+  ],
+  "draft_table": {
+    "_comment": "Studio '지출결의서 기입 데이터 작성' 결과의 표(양식 항목 | 넣을 값 | 기입 방법 | 출처)를 결의 정보 칸으로 옮길 때 쓰는 라벨 사전. 라벨은 공백·기호를 뺀 글자로 비교한다.",
+    "label_col": 0,
+    "value_col": 1,
+    "note_col": 2,
+    "unknown_value": "[확인 필요]",
+    "labels": {
+      "account": [
+        "계정과목",
+        "예산과목",
+        "비목"
+      ],
+      "description": [
+        "적요",
+        "건명",
+        "제목"
+      ],
+      "amount": [
+        "지급금액",
+        "지출금액",
+        "결의금액"
+      ],
+      "payee": [
+        "지급처",
+        "거래처",
+        "채주"
+      ],
+      "payment_method": [
+        "지급방법",
+        "지출방법",
+        "결제방법"
+      ],
+      "attachments": [
+        "증빙첨부",
+        "첨부",
+        "증빙서류",
+        "증빙자료"
+      ],
+      "resolution_date": [
+        "20년월일",
+        "년월일",
+        "결의일",
+        "결의일자",
+        "작성일",
+        "지출부기재",
+        "지출일"
+      ],
+      "drafter": [
+        "기안자",
+        "작성자",
+        "결의자",
+        "취급자인",
+        "취급자"
+      ],
+      "request_date": [
+        "발의및원인행위일",
+        "발의및원인행위",
+        "원인행위일",
+        "품의일"
+      ],
+      "funding_source": [
+        "재원구분",
+        "재원"
+      ]
+    }
+  }
+}

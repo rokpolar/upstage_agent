@@ -1,4 +1,5 @@
-// 품의서 작업 화면. 문구는 /api/init 의 ui(config/ui.json)에서 받는다. 단계는 URL 해시에 둔다.
+// 품의서·결의서 작업 화면. 문구는 /api/init 의 ui(config/ui.json)에서 받는다. 단계는 URL 해시에 둔다.
+// 품의 단계는 이 파일, 결의 단계는 gyeolui.js가 MODES.gyeolui로 더한다(해시가 #g-로 시작하면 결의).
 const S = { init: null, ui: null, error: null, picked: new Set(), set: 0, compare: null, chosen: null, reason: '',
   form: null, preview: null, previewState: 'idle', result: null, status: {}, busy: {} };
 const $ = (sel, el = document) => el.querySelector(sel);
@@ -23,14 +24,19 @@ async function api(path, body) {
   return j;
 }
 
-// ---------------------------------------------------------------- 단계와 주소
-const keys = () => S.ui.step_keys;
+// ---------------------------------------------------------------- 업무(품의/결의)와 단계, 주소
+// MODES[이름] = { keys(), steps(), wordmark(), title(), open(i), views: [[view, bind]...], after(at) }
+const MODES = {};
+const modeOf = () => (location.hash.startsWith('#g-') && MODES.gyeolui ? 'gyeolui' : 'pumui');
+const M = () => MODES[modeOf()];
+const keys = () => M().keys();
 const quotes = () => S.init.quotes;
 const byId = (id) => quotes().find((q) => q.id === id);
 const picked = () => [...S.picked].map(byId).filter(Boolean);
 const reviewDone = () => picked().length > 0 && picked().every((q) => !q.questions.length && !q.hold);
 const chosenSaved = () => S.init.selection && S.init.selection.result_file === S.chosen;
-const open = (i) => [true, S.picked.size > 0, reviewDone(), reviewDone() && chosenSaved(), reviewDone() && chosenSaved()][i];
+const pumuiOpen = (i) => [true, S.picked.size > 0, reviewDone(), reviewDone() && chosenSaved(), reviewDone() && chosenSaved()][i];
+const open = (i) => M().open(i);
 function current() {
   const i = Math.max(0, keys().indexOf(location.hash.slice(1)));
   for (let j = i; j >= 0; j--) if (open(j)) return j;
@@ -40,8 +46,12 @@ const go = (i) => { location.hash = keys()[i]; };
 window.addEventListener('hashchange', () => render(true));
 
 function renderTabs() {
-  const at = current();
-  $('#tabs').innerHTML = S.ui.steps.map((name, i) => open(i)
+  const at = current(), mode = modeOf();
+  $('#modes').innerHTML = Object.entries(MODES).map(([k, m]) =>
+    `<a class="mode" href="#${m.keys()[0]}" ${k === mode ? 'aria-current="page"' : ''}>${esc(S.ui.modes[k])}</a>`).join('');
+  $('#modes').setAttribute('aria-label', S.ui.modes.label);
+  $('#wordmark').textContent = M().wordmark(); $('#wordmark').href = `#${keys()[0]}`; document.title = M().title();
+  $('#tabs').innerHTML = M().steps().map((name, i) => open(i)
     ? `<a class="tab" href="#${keys()[i]}" ${i === at ? 'aria-current="step"' : ''}>${esc(name)}</a>`
     : `<span class="tab" aria-disabled="true">${esc(name)}</span>`).join('');
 }
@@ -222,9 +232,15 @@ function bindQuotes() {
   const main = $('#main');
   if (main && S.init.studio_ready && !main.dataset.drop) {
     main.dataset.drop = '1';
-    main.addEventListener('dragover', (e) => { if (location.hash.slice(1) !== keys()[0] && location.hash) return; e.preventDefault(); main.classList.add('is-drop'); });
+    // 끌어다 놓기: 품의 견적 선택 화면이면 견적서 업로드, 결의 증빙 선택 화면이면 증빙 파일 목록에 담는다
+    const dropOk = () => (location.hash.slice(1) || S.ui.step_keys[0]) === keys()[0] && (modeOf() === 'pumui' || S.init.gyeolui.ready);
+    main.addEventListener('dragover', (e) => { if (!dropOk()) return; e.preventDefault(); main.classList.add('is-drop'); });
     main.addEventListener('dragleave', (e) => { if (e.target === main) main.classList.remove('is-drop'); });
-    main.addEventListener('drop', (e) => { if (location.hash.slice(1) !== keys()[0] && location.hash) return; e.preventDefault(); main.classList.remove('is-drop'); uploadQuotes(e.dataTransfer.files); });
+    main.addEventListener('drop', (e) => {
+      if (!dropOk()) return; e.preventDefault(); main.classList.remove('is-drop');
+      if (modeOf() === 'gyeolui') { S.g.files = S.g.files.concat([...e.dataTransfer.files]); S.status.gupload = null; render(); }
+      else uploadQuotes(e.dataTransfer.files);
+    });
   }
   $$('[data-issues]').forEach((b) => (b.onclick = (e) => {
     e.stopPropagation();  // 줄 선택은 바꾸지 않는다
@@ -371,11 +387,13 @@ function bindCase() {
   };
 }
 
-// ---------------------------------------------------------------- 5. 품의서
-function viewForm() {
-  const t = S.ui.form, r = S.result;
-  const groups = {}; S.init.forms.forEach((f) => (groups[f.group] = groups[f.group] || []).push(f));
-  const list = Object.entries(groups).map(([g, fs]) => fs.map((f, i) => `<input type="radio" name="form" id="fm-${esc(g)}-${i}" value="${esc(f.path)}" ${S.form === f.path ? 'checked' : ''}>
+// ---------------------------------------------------------------- 5. 품의서 (양식 판은 결의서도 같이 쓴다)
+// st: 양식 상태 {form, preview, previewState, result, busy} (품의는 S, 결의는 S.g)
+// o: {t: 문구, forms(), statusKey, missingHref, fill(): 작성 API, setForms(r), extra(r): 작성 뒤 덧붙일 html}
+function formPanel(st, o) {
+  const t = o.t, r = st.result;
+  const groups = {}; o.forms().forEach((f) => (groups[f.group] = groups[f.group] || []).push(f));
+  const list = Object.entries(groups).map(([g, fs]) => fs.map((f, i) => `<input type="radio" name="form" id="fm-${esc(g)}-${i}" value="${esc(f.path)}" ${st.form === f.path ? 'checked' : ''}>
       <label for="fm-${esc(g)}-${i}"><span>${esc(f.name)}</span><span class="small muted">${esc(g)}</span></label>`).join('')).join('');
   let doc, side = '';
   if (r && r.ok) {
@@ -386,13 +404,13 @@ function viewForm() {
     const left = (rep.leftover || []).map((x, i) => `<button type="button" class="linkish" data-left="${i}">${esc(fmt(t.leftover_item, { where: x.where, values: x.values.join(', ') }))}</button>`);
     doc = `<div class="doc__head"><h2>${esc(t.result)}</h2><a class="key key--primary" href="${rep.files.hwpx}" download>${esc(t.download_hwpx)}</a><a class="key" href="${rep.files.pdf}" target="_blank" rel="noopener">${esc(t.download_pdf)}</a></div>
       <iframe title="${esc(t.result_title)}" src="${rep.files.html}"></iframe>`;
-    side = `<div class="report">${ul(t.leftover, left, true, t.leftover_help, '', true)}${ul(t.missing, rep.missing.map((m) => m.label), true, t.missing_help, `<a class="key" href="#${keys()[3]}">${esc(t.missing_action)}</a>`)}${ul(t.unplaced, rep.unplaced.map((u) => (u.value ? `${u.what}: ${u.value}` : `${u.what}, ${u.why}`)), true, t.unplaced_help)}${ul(t.unknown, rep.unknown_labels, true, t.unknown_help)}${ul(t.notes, rep.notes, false)}</div>`;
+    side = `${o.extra ? o.extra(r) : ''}<div class="report">${ul(t.leftover, left, true, t.leftover_help, '', true)}${ul(t.missing, rep.missing.map((m) => m.label), true, t.missing_help, `<a class="key" href="${o.missingHref}">${esc(t.missing_action)}</a>`)}${ul(t.unplaced, rep.unplaced.map((u) => (u.value ? `${u.what}: ${u.value}` : `${u.what}, ${u.why}`)), true, t.unplaced_help)}${ul(t.unknown, rep.unknown_labels, true, t.unknown_help)}${ul(t.notes, rep.notes, false)}</div>`;
   } else if (r && !r.ok) {
     doc = `<div class="doc__head"><h2>${esc(t.blocked)}</h2></div><div class="report"><ul>${r.blocked.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></div>`;
-  } else if (S.previewState === 'loading') {
+  } else if (st.previewState === 'loading') {
     doc = `<div class="doc__head"><h2>${esc(t.preview_title)}</h2></div><div class="doc__empty" aria-busy="true">${esc(S.ui.loading)}</div>`;
-  } else if (S.preview) {
-    doc = `<div class="doc__head"><h2>${esc(t.preview_title)}</h2></div><iframe title="${esc(t.preview_title)}" src="${S.preview}"></iframe>`;
+  } else if (st.preview) {
+    doc = `<div class="doc__head"><h2>${esc(t.preview_title)}</h2></div><iframe title="${esc(t.preview_title)}" src="${st.preview}"></iframe>`;
   } else {
     doc = `<div class="doc__empty">${esc(t.pick_first)}</div>`;
   }
@@ -400,37 +418,47 @@ function viewForm() {
       <fieldset class="seg" style="display:block"><legend>${esc(t.legend)}</legend><div class="formlist">${list}</div></fieldset>
       <label class="key key--file">${esc(t.upload)}<input type="file" id="fupload" accept=".hwpx"></label>
       <p class="help">${esc(t.upload_hint)}</p>
-      ${status('form')}
-      <button type="button" class="key key--primary" id="fill" ${S.form ? '' : 'disabled aria-describedby="fill-why"'} ${S.busy.fill ? 'aria-busy="true"' : ''}>${esc(S.busy.fill ? t.filling : t.fill)}</button>
-      ${S.form ? '' : `<p class="help" id="fill-why">${esc(t.fill_disabled)}</p>`}
+      ${status(o.statusKey)}
+      <button type="button" class="key key--primary" id="fill" ${st.form ? '' : 'disabled aria-describedby="fill-why"'} ${st.busy.fill ? 'aria-busy="true"' : ''}>${esc(st.busy.fill ? t.filling : t.fill)}</button>
+      ${st.form ? '' : `<p class="help" id="fill-why">${esc(t.fill_disabled)}</p>`}
       ${side}
     </div><section class="cut doc" aria-live="polite">${doc}</section></div>`;
 }
-async function previewForm() {
-  S.previewState = 'loading'; S.result = null; render();
-  try { S.preview = (await api('/api/form_preview?form=' + encodeURIComponent(S.form))).url; S.previewState = 'idle'; }
-  catch (e) { S.previewState = 'idle'; S.preview = null; say('form', fmt(S.ui.error, { msg: e.message }), true); }
+async function previewPanel(st, o) {
+  st.previewState = 'loading'; st.result = null; render();
+  try { st.preview = (await api('/api/form_preview?form=' + encodeURIComponent(st.form))).url; st.previewState = 'idle'; }
+  catch (e) { st.previewState = 'idle'; st.preview = null; say(o.statusKey, fmt(S.ui.error, { msg: e.message }), true); }
   render();
 }
-function bindForm() {
+function bindPanel(st, o) {
   $$('[data-left]').forEach((b) => (b.onclick = () => {
-    const t = S.ui.form, x = S.result.report.leftover[Number(b.dataset.left)];
+    const t = o.t, x = st.result.report.leftover[Number(b.dataset.left)];
     popup(fmt(t.leftover_title, { where: x.where }),
       [{ text: fmt(t.leftover_what, { kind: x.kind, values: x.values.join(', ') }) }, { text: x.action }, { text: t.leftover_note, muted: true }]);
   }));
-  $$('input[name="form"]').forEach((el) => (el.onchange = () => { S.form = el.value; S.status.form = null; previewForm(); }));
+  $$('input[name="form"]').forEach((el) => (el.onchange = () => { st.form = el.value; S.status[o.statusKey] = null; previewPanel(st, o); }));
   $('#fupload').onchange = async (e) => {
     const f = e.target.files[0]; if (!f) return;
-    try { const r = await api('/api/upload', { name: f.name, data: await readB64(f) }); S.init.forms = r.forms; S.form = r.path; previewForm(); }
-    catch (err) { say('form', fmt(S.ui.error, { msg: err.message }), true); render(); }
+    try { const r = await api('/api/upload', { name: f.name, data: await readB64(f) }); o.setForms(r); st.form = r.path; previewPanel(st, o); }
+    catch (err) { say(o.statusKey, fmt(S.ui.error, { msg: err.message }), true); render(); }
   };
   $('#fill').onclick = async () => {
-    S.busy.fill = true; render();
-    try { S.result = await api('/api/fill', { form: S.form, id: S.init.selection.result_file }); S.status.form = null; }
-    catch (err) { say('form', fmt(S.ui.error, { msg: err.message }), true); }
-    S.busy.fill = false; render();
+    st.busy.fill = true; render();
+    try { st.result = await o.fill(); S.status[o.statusKey] = null; if (o.done) o.done(st.result); }
+    catch (err) { say(o.statusKey, fmt(S.ui.error, { msg: err.message }), true); }
+    st.busy.fill = false; render();
   };
 }
+const setAllForms = (r) => { S.init.forms = r.forms; if (S.init.gyeolui) S.init.gyeolui.forms = r.gyeolui_forms; };
+const pumuiPanel = () => ({
+  t: S.ui.form, forms: () => S.init.forms, statusKey: 'form', missingHref: `#${keys()[3]}`, setForms: setAllForms,
+  fill: () => api('/api/fill', { form: S.form, id: S.init.selection.result_file }),
+  done: (r) => { if (r.handoff && S.init.gyeolui) S.init.gyeolui.handoff = r.handoff; },
+  // 품의서를 다 쓰면 결의로 이어 가는 길을 보여 준다
+  extra: (r) => (r.handoff && MODES.gyeolui ? `<div class="note"><p>${esc(S.ui.form.handoff_done)}</p><p style="margin-top:var(--space-sm)"><a class="key" href="#${MODES.gyeolui.keys()[0]}">${esc(S.ui.form.handoff_go)}</a></p></div>` : ''),
+});
+const viewForm = () => formPanel(S, pumuiPanel());
+const bindForm = () => bindPanel(S, pumuiPanel());
 
 // ---------------------------------------------------------------- 그리기
 // 양식 미리보기(A4 폭)를 미리보기 칸 폭에 맞춰 줄인다. 화면이 좁아도 가로로 잘리지 않게.
@@ -449,7 +477,17 @@ if (window.ResizeObserver) new ResizeObserver(barH).observe(document.querySelect
 let resizeTimer;
 window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(() => { barH(); $$('.doc iframe').forEach(fitFrame); }, 100); });
 
-const VIEWS = [[viewQuotes, bindQuotes], [viewReview, bindReview], [viewVendor, bindVendor], [viewCase, bindCase], [viewForm, bindForm]];
+MODES.pumui = {
+  keys: () => S.ui.step_keys, steps: () => S.ui.steps, wordmark: () => S.ui.wordmark, title: () => S.ui.title,
+  open: pumuiOpen,
+  views: [[viewQuotes, bindQuotes], [viewReview, bindReview], [viewVendor, bindVendor], [viewCase, bindCase], [viewForm, bindForm]],
+  // 업체 선정 단계는 비교 결과를 받아 온 뒤 다시 그린다
+  after: async (at, redraw) => {
+    if (at !== 2 || S.compare) return;
+    try { await loadCompare(); } catch (e) { say('vendor', fmt(S.ui.error, { msg: e.message }), true); S.compare = { quotes: [], excluded: [], recommended: null, auto_reason: '' }; }
+    redraw();
+  },
+};
 async function render(fromNav = false) {
   if (S.error) {
     $('#main').innerHTML = `<div class="note note--error"><p>${esc(S.error)}</p></div><div class="actions"><button type="button" class="key key--primary" id="retry">${esc(S.ui ? S.ui.retry : '다시 불러오기')}</button></div>`;
@@ -458,24 +496,23 @@ async function render(fromNav = false) {
   const at = current();
   if (keys()[at] !== location.hash.slice(1)) { history.replaceState(null, '', '#' + keys()[at]); }
   renderTabs();
-  const [view, bind] = VIEWS[at];
+  const [view, bind] = M().views[at];
+  const draw = () => { $('#main').innerHTML = view(); bind(); fitFrames(); };
   $('#main').classList.toggle('fit', at === 0);
-  $('#main').innerHTML = view(); bind(); fitFrames();
-  if (at === 2 && !S.compare) {
-    try { await loadCompare(); } catch (e) { say('vendor', fmt(S.ui.error, { msg: e.message }), true); S.compare = { quotes: [], excluded: [], recommended: null, auto_reason: '' }; }
-    $('#main').innerHTML = view(); bind(); fitFrames();
-  }
+  draw();
+  if (M().after) await M().after(at, draw);
   if (fromNav) $('#main').focus({ preventScroll: true });
 }
 
 async function start() {
   S.error = null; $('#main').innerHTML = '<p class="muted" aria-busy="true">불러오는 중</p>';
   try {
-    S.init = await api('/api/init'); S.ui = S.init.ui; document.title = S.ui.title;
-    $('#wordmark').textContent = S.ui.wordmark;
+    S.init = await api('/api/init'); S.ui = S.init.ui;
+    if (MODES.gyeolui && MODES.gyeolui.init) MODES.gyeolui.init();
     S.set = Math.max(0, S.init.sets.findIndex((_, i) => S.init.quotes.some((q) => q.set === i)));
     if (S.init.selection) { S.chosen = S.init.selection.result_file; }
   } catch (e) { S.error = fmt(S.ui ? S.ui.load_error : '작업 화면을 불러오지 못했습니다: {msg}', { msg: e.message }); }
   render();
 }
-start();
+// 결의 화면(gyeolui.js)이 MODES에 붙은 뒤 시작한다
+window.addEventListener('DOMContentLoaded', start);
