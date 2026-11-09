@@ -86,7 +86,7 @@ def test_pumui_changes_invalidate_only_current_handoff(
 ):
     gid = "g0:expense"
     app.execute(lambda: app.state["g"][gid].update(link=copy.deepcopy(generated)))
-    files = [Path(generated["files"][k]) for k in ("pdf", "hwpx")]
+    files = [Path(generated["files"][k]) for k in ("pdf", "doc")]
     api = Routes(app)
     if change == "answer":
         question = app.summary("0:q04")["questions"][0]

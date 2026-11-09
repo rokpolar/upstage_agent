@@ -805,4 +805,6 @@ def fill(form_hwpx, result, case, selection=None, roles_name="form_roles"):
     report["leftover"] = leftover_values(
         doc, written | set(report.pop("_written", [])), roles, tables if multi else None
     )
+    if hasattr(doc, "fit_page"):  # Word 양식: 품목 줄이 늘어도 한 쪽에 맞춘다(한글은 HWPX에서 알아서 맞춘다)
+        doc.fit_page()
     return doc, report

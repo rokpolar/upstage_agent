@@ -92,7 +92,7 @@ docker compose up -d --build --wait
 
 | 폴더 | 내용 |
 |---|---|
-| `data_team/견적서예시/` | 품의용 견적서 PDF |
+| `data_team/견적서예시/` | 최종 제출 데이터셋(구매 건 7건, 파일 13개). 정답지는 `answers_final/신라면_최종제출_answer.json` |
 | `data_team/거래명세서/` | 결의용 영수증·거래명세서 PDF |
 | `data_team/결의묶음예시/` | 품의서 + 증빙 + 양식을 한 파일로 묶은 결의 예시 |
 
@@ -136,7 +136,7 @@ upstage_agent/
 ├── config/          규칙, 화면·질문 문구, 양식 칸 사전
 ├── forms/           기관 양식 (forms/expense: 기본 지출결의서)
 ├── workflow/        Studio 품의 워크플로 설정
-├── data_team/       팀 예시 문서 (results_team: Studio 결과, answers_team: 정답지)
+├── data_team/       팀 예시 문서 (results_team·answers_team: 예전 견적서 60장의 Studio 결과·정답, 회귀 테스트용)
 ├── examples/        예시 입력·결과
 ├── docs/            설계 기록
 └── Dockerfile, compose.yaml, run.sh, run.bat
@@ -186,8 +186,14 @@ python3 -m venv .venv
 <summary>명령줄로 쓰기</summary>
 
 ```bash
-# Studio 워크플로만 실행
-python tools/run_api.py data_team/견적서예시 --out results_team --skip-existing
+# 최종 데이터셋을 구매 건 단위로 판정하고 정답지와 대조(파일 이름은 보지 않고 내용으로 구매 건을 나눈다)
+python tools/run_set.py data_team/견적서예시/*.pdf --no-form
+
+# Studio 품의 판정 워크플로 설정 파일 다시 만들기(Studio "워크플로우 설정 가져오기"로 넣는다)
+python tools/make_set_workflow.py
+
+# Studio 워크플로만 실행(견적서 한 장씩)
+python tools/run_api.py data_team/결의묶음예시 --kind gyeolui --out results_gyeolui_upload
 python tools/run_api.py data_team/결의묶음예시 --kind gyeolui --out results_gyeolui_upload
 
 # 터미널에서 검증 질문에 답하기

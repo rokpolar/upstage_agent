@@ -75,6 +75,9 @@ class QuotesService:
         return qid
 
     def load_quotes(self):
+        # 저장해 둔 목록 중 결과 파일이 지워진 견적은 뺀다(결과 폴더를 정리한 뒤 다시 켰을 때)
+        for qid in [k for k, q in self.state["quotes"].items() if not Path(q["file"]).is_file()]:
+            del self.state["quotes"][qid]
         for n, (res_dir, src_dir, _label) in enumerate(self.cfg["quote_sets"]):
             for p in sorted((self.root / res_dir).glob("*.json")):
                 if f"{n}:{p.stem}" not in self.state["quotes"]:
@@ -82,7 +85,10 @@ class QuotesService:
 
     def text_of(self, q):
         if q["source"] not in self.state["texts"]:
-            self.state["texts"][q["source"]] = source_text(q["source"])
+            # 원본 PDF가 지워졌으면 원문 대조 없이 진행한다
+            self.state["texts"][q["source"]] = (
+                source_text(q["source"]) if q["source"] and Path(q["source"]).is_file() else ""
+            )
         return self.state["texts"][q["source"]]
 
     def check(self, qid):

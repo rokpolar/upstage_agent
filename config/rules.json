@@ -82,9 +82,11 @@
       ".jpeg"
     ],
     "form_dirs": [
-      "forms/web",
-      "forms/uploads"
+      "forms/word"
     ],
+    "form_ext": ".docx",
+    "_form_comment": "품의서 양식은 forms/word의 Word 양식 하나(고덕 물품구매품의서)로 고정한다. 양식이 하나면 화면에서 고르지 않고 바로 쓴다. 작성하면 Word와 PDF(tools/docx_pdf.py)를 함께 저장한다.",
+    "gyeolui_form_ext": ".hwpx",
     "upload_dir": "forms/uploads",
     "default_case": "examples/case_team01.json",
     "output_dir": "out/ui",
@@ -301,8 +303,15 @@
     "split_dir": "data_upload",
     "result_dir": "results_upload",
     "out_dir": "out/sets",
-    "answer_dir": "answers_final",
-    "form": "forms/word/품의서.docx",
+    "answer_file": "answers_final/신라면_최종제출_answer.json",
+    "task": "물품 구매 품의: 비교견적 검토와 업체 선정",
+    "unit": "구매 건 1건(같은 품목의 비교견적서 묶음) = 케이스 1건 = 판정 1건",
+    "output_keys": ["decision", "selected_vendor", "selected_total", "quote_count", "needs_review"],
+    "review_codes": {"unreadable": "합계 확인 불가", "tie": "최저가 동률", "same_rep": "대표자 동일", "calc": "계산 불일치"},
+    "_review_codes_comment": "needs_review(사람 확인 칸)에 쓰는 말. 정답지·Studio 판정 노드·코드가 이 글자 그대로 쓴다. 순서도 이 순서. 해당 없으면 [].",
+    "unknown_vendor": "확인 불가",
+    "_unknown_vendor_comment": "최저가 동률이거나 합계를 읽지 못한 견적이 있어 업체를 정할 수 없을 때 selected_vendor 값(selected_total은 null).",
+    "form": "forms/word/물품구매품의서_양식.docx",
     "decisions": {
       "stop": "작성 중지",
       "requote": "재견적 필요",
@@ -344,7 +353,22 @@
       "돋움": "Dotum",
       "고딕": "Dotum",
       "산세리프": "Gulim",
-      "궁서": "Gungsuh"
+      "궁서": "Gungsuh",
+      "울릉도": "Malgun Gothic",
+      "Poppy": "Malgun Gothic"
+    },
+    "docx_pdf": {
+      "_comment": "Word 품의서 → PDF 변환 순서. word: 이 PC의 MS Word로 저장(Word 화면과 똑같음, Windows), soffice: LibreOffice(배포 서버), html: Word 없이 그린 미리보기를 Chrome으로 인쇄(근사치). 앞에서 실패하면 다음 것을 쓴다.",
+      "order": [
+        "html"
+      ],
+      "soffice": [
+        "soffice",
+        "libreoffice",
+        "C:\\Program Files\\LibreOffice\\program\\soffice.exe",
+        "/usr/bin/soffice"
+      ],
+      "timeout_seconds": 120
     },
     "default_fonts": [
       "Malgun Gothic",
