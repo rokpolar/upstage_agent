@@ -12,6 +12,30 @@ function renderTabs() {
     ? `<a class="tab" href="#${keys()[i]}" ${i === at ? 'aria-current="step"' : ''}>${esc(name)}</a>`
     : `<span class="tab" aria-disabled="true">${esc(name)}</span>`).join('');
 }
+function stepNavigation(at) {
+  const t = S.ui.navigation;
+  if (!at && modeOf() === 'pumui') return '';
+  return `<nav class="stepnav" aria-label="${esc(t.label)}">${at ? `<a class="stepnav__back" href="#${keys()[at - 1]}"><span aria-hidden="true">←</span> ${esc(t.back)}</a>` : ''}<a class="stepnav__home" href="#${S.ui.step_keys[0]}">${esc(t.home)}</a></nav>`;
+}
+function bindFileDrop() {
+  const main = $('#main');
+  if (main.dataset.drop) return;
+  main.dataset.drop = '1';
+  const accepts = (e) => current() === 0 && [...(e.dataTransfer?.types || [])].includes('Files')
+    && (modeOf() === 'pumui' ? S.init.studio_ready : S.init.gyeolui.ready);
+  main.addEventListener('dragover', (e) => {
+    if (!accepts(e)) return;
+    e.preventDefault(); main.classList.add('is-drop');
+  });
+  main.addEventListener('dragleave', (e) => {
+    if (!main.contains(e.relatedTarget)) main.classList.remove('is-drop');
+  });
+  main.addEventListener('drop', (e) => {
+    main.classList.remove('is-drop');
+    if (!accepts(e)) return;
+    e.preventDefault(); M().addFiles(e.dataTransfer.files);
+  });
+}
 function fitFrame(f) {
   try {
     const d = f.contentDocument; if (!d || !d.body) return;
@@ -36,16 +60,7 @@ async function render(fromNav = false) {
   if (keys()[at] !== location.hash.slice(1)) { history.replaceState(null, '', '#' + keys()[at]); }
   renderTabs();
   const [view, bind] = M().views[at];
-  // 첫 단계가 아니면 아래 동작 줄 맨 앞에 '이전' 버튼을 둔다(단계 이동은 위 탭으로도 된다)
-  const backKey = () => {
-    const bar = $('#main .actions');
-    if (!bar || at === 0 || bar.querySelector('[data-back]')) return;
-    const b = document.createElement('button');
-    b.type = 'button'; b.className = 'key key--back'; b.dataset.back = ''; b.textContent = S.ui.back;
-    b.onclick = () => go(at - 1);
-    bar.prepend(b);
-  };
-  const draw = () => { $('#main').innerHTML = view(); bind(); fitFrames(); backKey(); };
+  const draw = () => { $('#main').innerHTML = stepNavigation(at) + view(); bind(); bindFileDrop(); fitFrames(); };
   $('#main').classList.toggle('fit', at === 0);
   draw();
   if (M().after) await M().after(at, draw);
