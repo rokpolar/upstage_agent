@@ -296,6 +296,43 @@
     ],
     "_info_comment": "결의 정보 칸 중 Studio 기입 데이터의 값으로 미리 채우는 칸. 결의일·기안자는 Studio가 값을 줘도 담당자가 직접 정한다(품의서 작성자·거래일을 그대로 옮기지 않는다)."
   },
+  "set_pipeline": {
+    "_comment": "세트 파이프라인(tools/run_set.py): 견적서 여러 장이 든 PDF 한 파일 → 쪽마다 Studio → 세트 판정 → <입력파일명>.json + Word 품의서. 판정 기준은 위에서부터 먼저 맞는 것 하나(tools/set_decision.py).",
+    "split_dir": "data_upload",
+    "result_dir": "results_upload",
+    "out_dir": "out/sets",
+    "answer_dir": "answers_final",
+    "form": "forms/word/품의서.docx",
+    "decisions": {
+      "stop": "작성 중지",
+      "requote": "재견적 필요",
+      "check": "담당자 확인 필요",
+      "ok": "작성 가능"
+    },
+    "min_quotes": 2,
+    "item_keys": [
+      "quantity",
+      "unit_price",
+      "estimated_amount",
+      "calculation_basis"
+    ],
+    "blocking_flag_words": [
+      "불일치"
+    ],
+    "messages": {
+      "item_mismatch": "품목 {n} 금액 불일치: 단가×수량 {calc}원, 견적서 {doc}원",
+      "supply_mismatch": "공급가액 불일치: 품목 합계 {calc}원, 견적서 공급가액 {doc}원",
+      "vat_mismatch": "부가세 불일치: 공급가액의 10% {calc}원, 견적서 부가세 {doc}원",
+      "total_mismatch": "합계금액 불일치: 공급가액+부가세 {calc}원, 견적서 합계 {doc}원",
+      "unreadable_total": "{vendor} 합계금액 확인 불가: 최저가 업체를 정할 수 없음",
+      "tie": "최저가 동률: {vendors} ({total}원)",
+      "same_rep": "대표자 동일: {vendors} (대표자 {rep})",
+      "too_few": "비교견적이 {n}건이라 {min}건 미만입니다.",
+      "requote": "최저가 {vendor} 견적서의 금액 계산이 맞지 않습니다({flag}).",
+      "ok": "비교견적 {n}개 업체 중 최저가 {vendor}({total}원)이며 차순위보다 {gap}원 저렴합니다.",
+      "vendor_flag": "{vendor}: {flag}"
+    }
+  },
   "preview": {
     "_comment": "미리보기·PDF 글꼴. 양식 글꼴 이름에 font_fallback의 키가 들어 있으면 그 글꼴을 다음 후보로 쓴다(양식 글꼴이 이 PC에 없을 때). default_fonts는 마지막 후보.",
     "font_fallback": {
