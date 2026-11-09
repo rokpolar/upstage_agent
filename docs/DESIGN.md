@@ -55,7 +55,7 @@ python tools/render_pumui.py out/q04_resolved.json examples/case_q01.json --appr
 - 모델이 대표자 이름에 도장 표시를 붙이거나("한도윤 인"), 산출근거 표기(`2,000부`/`2000부`, `㎡`/`m²`)가 흔들린다. `harness.normalize()`가 정리한다.
 - 추출 모델은 적힌 값을 옮길 뿐 검산하지 않는다(샘플 q03의 잘못 적힌 공급가액을 그대로 가져옴). 원 단위 산술은 코드가 한다. 팀 기획서의 "원 단위 산술은 서버에서 처리" 원칙과 같다.
 
-`workflow/품의서_extract_schema.json`에는 20건 결과를 보고 합계 설명("VAT 별도" 주의)을 보강했지만 Studio에는 아직 다시 넣지 않았다(`workflow/품의 Agent.json`이 Studio의 현재 설정).
+`workflow/품의서_extract_schema.json`에는 20건 결과를 보고 합계 설명("VAT 별도" 주의)을 보강했지만 Studio에는 아직 다시 넣지 않았다(`workflow/품의 Agent.json`은 Mission 2 제출 당시 설정).
 
 ## 전체 흐름 (2026-11-05 기준)
 
@@ -128,7 +128,9 @@ python tools/fill_form.py forms/web/cne/품의서양식.hwpx results/a.json exam
 | 경로 | 내용 |
 |---|---|
 | `workflow/품의서_extract_schema.json` | Studio Extract 노드에 "JSON 추출 항목 가져오기"로 넣는 스키마 |
-| `workflow/품의 Agent.json` | Studio에서 내보낸 워크플로우 설정 (Mission 2 `팀명_미션2workflow.json`의 원본) |
+| `workflow/품의 판정 Agent.json` | **최종 제출 워크플로**(구매 건 단위 판정). `tools/make_set_workflow.py`가 만든다 |
+| `workflow/품의 Agent (노드).json` | 견적서 한 장 단위 노드 워크플로(앱이 업로드마다 부름). 판정 워크플로의 Parse·Extract 설정 출처 |
+| `workflow/품의 Agent.json` | Mission 2 제출 당시 워크플로우 설정(기록용) |
 | `results/q01~q05.json`, `results_team/` | Studio 품의 Agent 실행 결과 (샘플 5건, 데이터 담당 20건) |
 | `samples/q01~q05.pdf` | 개발용 가상 견적서 5건 (양식 4종, 예외 2건) |
 | `answers/q01~q05.json` | 위 견적서의 정답 (스키마와 같은 키) |
@@ -158,6 +160,38 @@ python tools/fill_form.py forms/web/cne/품의서양식.hwpx results/a.json exam
 
 정답 규칙: 금액은 **견적서에 적힌 값 그대로**, 맞지 않으면 `review_flags`에 사유. 부가세 표기가 없으면 `vat_amount=0` + `"부가세 표기 없음"`.
 재원구분·단위사업명·사업기간·관련계획서·결재란은 견적서에 없으므로 agent가 아니라 담당자 입력(`examples/case_q01.json`)으로 받는다.
+
+## Studio 최종 제출 워크플로 "품의 판정 Agent" (2026-11-10)
+
+구매 건 하나(PDF 한 개에 견적서 여러 장, 또는 통합 업로드한 파일 여러 개)를 받아 정답지 키로 판정한다.
+원본은 `workflow/품의 판정 Agent.json`이고 `python tools/make_set_workflow.py`로 다시 만든다(규칙 문구·고정 라벨은 `config/rules.json` set_pipeline에서 읽는다).
+Studio 워크플로 메뉴 "워크플로우 설정 가져오기"로 올린 뒤 실행하면 새 설정 버전으로 저장된다.
+
+```
+Parse → Classify(나누기 켬: 견적서 / 기타) → Extract(견적서마다) → Merge
+     → Instruct '견적 비교 검토'   검산·최저가·동률·대표자 동일을 글로 쓰고, 마지막 네 줄(확인 항목/판정/선정 업체/선정 금액)을 규칙 표에서 고른다
+     → Instruct '품의 판정'        네 줄을 정답지 키 JSON 한 줄로 옮겨 적기만 한다(판단 없음, 입력→출력 예시 3개)
+     → Instruct '후속 처리 판정'   선택지 4개(작성 가능 / 담당자 확인 필요 / 재견적 필요 / 작성 중지)로 갈래를 고른다
+         └ 갈래별 안내문(품의 문장 / 담당자 질문 / 재견적 요청 문안 / 중지 사유)
+```
+
+| 정답지 키 | 값 |
+|---|---|
+| `decision` | 작성 가능 · 담당자 확인 필요 · 재견적 필요 · 작성 중지 |
+| `selected_vendor` | 최저가 업체명. 정할 수 없으면 "확인 불가" |
+| `selected_total` | 선정 업체 합계(정수). 정할 수 없으면 null |
+| `quote_count` | 비교한 견적서 수('기타'로 분류된 표지 등은 빼고) |
+| `needs_review` | 고정 라벨만: 합계 확인 불가 · 최저가 동률 · 대표자 동일 · 계산 불일치. 없으면 [] |
+
+판정 규칙(검토 노드의 규칙 표와 `tools/set_decision.py`가 같다): 견적서 2건 미만 → 작성 중지 / 합계 확인 불가·최저가 동률 → 담당자 확인 필요, 업체 확인 불가, 금액 null / 대표자 동일 → 담당자 확인 필요, 최저가 업체 / 계산 불일치만 → 재견적 필요 / 없음 → 작성 가능.
+
+운영에서 겪은 것:
+- 판단과 JSON 쓰기를 한 노드에 두면 규칙 적용이 흔들렸다. 검토 노드가 자연어로 결론까지 쓰고 판정 노드는 옮겨 적게 나누자(G&O, EMNLP 2024 Findings의 생성→정리 분리) 7케이스가 모두 맞았다.
+- Studio에는 노드별 temperature 설정이 없다. 규칙을 길게 설명하는 대신 입력→출력 예시를 넣었다(IFEval++, ACL 2026: 지시 표현이 조금만 달라져도 결과가 흔들림).
+- 판정 노드 출력이 `{` 한 글자로 저장되는 일이 간헐적으로 있었다(설정 8~12판). 중괄호 안쪽에 공백을 둔 한 줄 JSON(14판)으로 13/13 온전히 저장됨을 확인했다.
+- Extract 항목 설명에 "원문에 없으면 null, 흐려서 읽을 수 없으면 null"을 적어, 부가세 포함 표기만 있는 견적서(set02)에서 공급가액을 지어내거나 흐린 합계(set05)를 품목 합으로 채우지 않게 했다.
+
+결과: 최종 데이터셋 13개 파일(7케이스) 모두 정답지(`answers_final/신라면_최종제출_answer.json`)와 일치(설정 14판, 2026-11-10).
 
 ## Studio 노드 워크플로 "품의 Agent (노드)" (2026-11-05)
 
@@ -193,7 +227,7 @@ python tools/run_api.py data_team/견적서예시 --out results_team --skip-exis
 
 ## Studio에서 만들기
 
-이미 만든 워크플로우를 다른 스페이스(팀 스페이스)로 옮기려면 워크플로우 목록의 **워크플로우 설정 일괄 가져오기**로 `workflow/품의 Agent.json`을 불러오면 된다. 새로 만들 때는:
+이미 만든 워크플로우를 다른 스페이스(팀 스페이스)로 옮기려면 워크플로우 목록의 **워크플로우 설정 일괄 가져오기**로 `workflow/` 아래 JSON을 불러오면 된다(최종 제출은 `품의 판정 Agent.json`). 새로 만들 때는:
 
 1. Studio → AI 워크플로우 → 워크플로우 만들기 → **문서 정보 추출** → 이름 `품의 Agent`
 2. `samples/q01~q05.pdf`를 한 번에 업로드 → 설정 방식에서 **직접 설정**
