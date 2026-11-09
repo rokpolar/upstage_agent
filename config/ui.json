@@ -55,6 +55,12 @@
     "issues_title": "{vendor}: 확인 필요 {n}건",
     "issues_help": "검토 단계에서 항목마다 처리 방법을 고르면 해결됩니다.",
     "issues_go": "검토로 이동",
+    "studio_errors": {
+      "not_found": "Studio 워크플로를 찾지 못했습니다. .env 파일의 UPSTAGE_API_KEY가 워크플로가 있는 팀 조직의 키인지 확인하세요.",
+      "bad_key": "Upstage API 키가 맞지 않습니다. .env 파일의 UPSTAGE_API_KEY를 확인하세요.",
+      "quota": "Upstage 사용량 한도를 넘었습니다. 팀 조직의 사용량을 확인하세요.",
+      "other": "Studio에서 견적서를 읽지 못했습니다(오류 {code}). 잠시 뒤 다시 올려 주세요."
+    },
     "not_quote": "견적서가 아니라 '{category}'(으)로 분류되어 목록에 넣지 않았습니다."
   },
   "review": {

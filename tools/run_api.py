@@ -73,6 +73,18 @@ def run_file(path, out_dir):
     return result, job_id
 
 
+class StudioError(RuntimeError):
+    """Studio API가 오류 코드를 돌려줬다. code=HTTP 상태, kind=분류(not_found/bad_key/quota/other)."""
+
+    def __init__(self, code, detail, message):
+        super().__init__(message)
+        self.code, self.detail = code, detail
+        low = detail.lower()
+        self.kind = ("quota" if code == 403 and "usage_limit" in low else
+                     "bad_key" if code == 401 else
+                     "not_found" if code == 404 else "other")
+
+
 def call(method, path, key, body=None, headers=None):
     req = urllib.request.Request(BASE + path, data=body, method=method)
     req.add_header("Authorization", f"Bearer {key}")
@@ -83,7 +95,7 @@ def call(method, path, key, body=None, headers=None):
             return json.loads(res.read().decode("utf-8"))
     except urllib.error.HTTPError as e:
         detail = e.read().decode("utf-8", "replace")[:300]
-        raise RuntimeError(f"{method} {path} → HTTP {e.code}: {detail}") from None
+        raise StudioError(e.code, detail, f"{method} {path} → HTTP {e.code}: {detail}") from None
 
 
 def upload(path, key):

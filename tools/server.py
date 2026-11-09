@@ -69,12 +69,20 @@ def studio_quote(name, data_b64):
     src = ROOT / src_dir / name
     src.parent.mkdir(parents=True, exist_ok=True)
     src.write_bytes(base64.b64decode(data_b64))
-    from run_api import NotQuote
+    from run_api import NotQuote, StudioError
+    msg = config("ui")["quotes"]
     try:
         _, job_id = run_file(src, ROOT / res_dir)
     except NotQuote as e:  # 견적서가 아니면 올린 파일을 남기지 않는다
         src.unlink(missing_ok=True)
-        raise ValueError(config("ui")["quotes"]["not_quote"].format(category=e.category)) from None
+        raise ValueError(msg["not_quote"].format(category=e.category)) from None
+    except StudioError as e:  # 읽지 못했으면 올린 파일도 남기지 않고, 무엇을 확인할지 알려 준다
+        src.unlink(missing_ok=True)
+        print(f"Studio 오류: {e}", file=sys.stderr)
+        raise RuntimeError(msg["studio_errors"][e.kind].format(code=e.code)) from None
+    except Exception:
+        src.unlink(missing_ok=True)
+        raise
     return add_quote(0, ROOT / res_dir / f"{src.stem}.json", src_dir), job_id
 
 
