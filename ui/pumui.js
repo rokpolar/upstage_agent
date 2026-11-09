@@ -1,4 +1,4 @@
-import { S, MODES } from './state.js';
+import { S, MODES, invalidatePumuiOutput } from './state.js';
 import { $, $$, won, fmt, esc, ICON, status, say, head, popup, setHTML } from './dom.js';
 import { api, readB64 } from './api.js';
 import { modeOf, keys, current, go } from './navigation.js';
@@ -246,7 +246,7 @@ function viewReview() {
 async function answer(id, key, value) {
   try {
     const q = await api('/api/answer', { id, key, value });
-    S.init.quotes[S.init.quotes.findIndex((x) => x.id === id)] = q; S.compare = null; S.status.review = null; render();
+    S.init.quotes[S.init.quotes.findIndex((x) => x.id === id)] = q; S.compare = null; S.status.review = null; invalidatePumuiOutput(); render();
   } catch (e) { say('review', fmt(S.ui.error, { msg: e.message }), true); render(); }
 }
 function bindReview() {
@@ -312,6 +312,7 @@ function bindVendor() {
     e.target.setAttribute('aria-busy', 'true');
     try {
       S.init.selection = await api('/api/select', { ids: [...S.picked], pick: S.chosen, reason: S.reason });
+      invalidatePumuiOutput();
       say('vendor', fmt(S.ui.vendor.chosen, { vendor: S.init.selection.vendor, reason: S.init.selection.reason }));
     } catch (err) { say('vendor', err.message, true); $('#reason').setAttribute('aria-invalid', 'true'); }
     render(); if (S.status.vendor && S.status.vendor.error) $('#reason').focus();
@@ -337,7 +338,7 @@ function bindCase() {
       else { const v = $(`input[name="${k}"]`).value.trim(); if (v) c[k] = v; else delete c[k]; }
     });
     try {
-      const r = await api('/api/case', { case: c }); S.init.case = c; S.init.quotes = r.quotes; S.compare = null;
+      const r = await api('/api/case', { case: c }); S.init.case = c; S.init.quotes = r.quotes; S.compare = null; invalidatePumuiOutput();
       say('case', S.ui.case.saved); go(reviewDone() ? 4 : 1);
     } catch (err) { say('case', fmt(S.ui.error, { msg: err.message }), true); render(); }
   };

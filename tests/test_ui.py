@@ -5,12 +5,13 @@ from pathlib import Path
 import pytest
 
 
-def test_es_modules_restore_and_progress():
+@pytest.mark.parametrize("script", ["ui_smoke.mjs", "gyeolui_ui.mjs"])
+def test_es_modules_restore_and_progress(script):
     node = shutil.which("node")
     if not node:
         pytest.skip("Node.js가 필요한 화면 모듈 검증")
     result = subprocess.run(
-        [node, str(Path(__file__).with_name("ui_smoke.mjs"))],
+        [node, str(Path(__file__).with_name(script))],
         text=True,
         capture_output=True,
     )

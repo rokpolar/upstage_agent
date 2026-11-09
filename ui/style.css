@@ -94,6 +94,26 @@ body { word-break: keep-all; word-wrap: break-word; overflow-wrap: anywhere; let
 .studio__note summary { cursor: pointer; font-weight: 600; min-height: 32px; display: flex; align-items: center; }
 .studio__note summary:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-radius: 4px; }
 .studio__note p { white-space: pre-wrap; color: var(--color-ink-2); margin-top: var(--space-2xs); }
+.markdown-body { min-width: 0; overflow-wrap: anywhere; line-height: 1.65; padding: var(--space-xs) 0; }
+.markdown-body p { white-space: normal; margin: 0 0 .75em; }
+.markdown-body :is(h1, h2, h3, h4, h5, h6) { font-size: 1.1em; font-weight: 600; margin: 1em 0 .5em; max-width: none; }
+.markdown-body h1 { font-size: 1.35em; }
+.markdown-body h2 { font-size: 1.2em; }
+.markdown-body :is(ul, ol) { display: block; padding-left: 1.75em; margin: .5em 0; }
+.markdown-body ul { list-style: disc; }
+.markdown-body ol { list-style: decimal; }
+.markdown-body li { display: list-item; margin: .25em 0; }
+.markdown-body blockquote { border-left: 3px solid var(--color-rule-input); padding-left: 1em; margin: .75em 0; color: var(--color-ink-2); }
+.markdown-body code { font-family: ui-monospace, monospace; font-size: .9em; background: var(--color-paper); padding: .1em .3em; border-radius: 3px; }
+.markdown-body pre { max-width: 100%; overflow: auto; white-space: pre; background: var(--color-paper); padding: .75em; margin: .75em 0; border-radius: var(--radius-tile); }
+.markdown-body pre code { padding: 0; background: none; }
+.markdown-table { max-width: 100%; overflow-x: auto; margin: .75em 0; }
+.markdown-body table { border-collapse: collapse; width: max-content; min-width: 100%; }
+.markdown-body :is(th, td) { padding: .5em .75em; border: var(--rule-hair) solid var(--color-rule-input); text-align: left; }
+.markdown-body th { font-weight: 600; }
+.markdown-body > :first-child { margin-top: 0; }
+.markdown-body > :last-child { margin-bottom: 0; }
+#ginfo .input[readonly] { background: var(--color-paper-2); color: var(--color-ink-2); }
 
 /* 업체 선정: 왼쪽 요약 판, 오른쪽 선택 타일 */
 .buy { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: var(--space-lg); align-items: start; }

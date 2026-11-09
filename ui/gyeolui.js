@@ -4,6 +4,7 @@ import { api, readB64 } from './api.js';
 import { modeOf, keys, current, go } from './navigation.js';
 import { render } from './shell.js';
 import { stageMark, stageList } from './progress.js';
+import { renderMarkdown } from './markdown.js';
 // 결의서 작업 화면: 증빙 선택 → 검증 → 결의 정보 → 결의서 작성. app.js의 도우미(S, $, api, head, popup, formPanel…)를 그대로 쓴다.
 // 문구는 /api/init 의 ui.gyeolui(config/ui.json). 단계 주소는 #g-docs, #g-review, #g-info, #g-form.
 S.g = { set: 0, sel: null, files: [], withPumui: true, link: true, form: null, preview: null, previewState: 'idle',
@@ -229,7 +230,7 @@ function viewGReview() {
   const tags = Object.entries(st.decisions || {}).map(([k, v]) => `<span class="studio__tag">${esc((t.decision_names[k] || k) + ': ' + v)}</span>`).join(' ');
   const reports = Object.entries(t.report_names).map(([k, name]) => [name, k === 'draft' ? st.draft : (st.reports || {})[k]])
     .concat((st.others || []).map((o) => [o.name, o.text])).filter(([, v]) => v)
-    .map(([name, v]) => `<details class="studio__note"><summary>${esc(name)}</summary><p>${esc(v)}</p></details>`).join('');
+    .map(([name, v]) => `<details class="studio__note"><summary>${esc(name)}</summary><div class="markdown-body">${renderMarkdown(v)}</div></details>`).join('');
   const studio = `<section class="group"><h2>${esc(t.studio_title)}</h2><div class="studio"><p class="small">${tags} <span class="muted">${esc(t.studio_help)}</span></p>
       ${st.categories && st.categories.length ? `<p class="small muted">${esc(fmt(t.categories, { list: st.categories.join(', ') }))}</p>` : ''}${reports}</div></section>`;
   const status_ = gClear(it) ? `<span class="status status--ok">${ICON.ok}${esc(t.done)}</span>` : it.hold ? `<span class="status status--bad">${ICON.warn}${esc(GT().docs.hold)}</span>` : '';
@@ -257,25 +258,22 @@ function bindGReview() {
 
 // ---------------------------------------------------------------- 3. 결의 정보
 function viewGInfo() {
-  const t = GT().info, it = gSel(), info = it.info || {}, hints = it.hints || {};
-  const field = ([k, label, type]) => {
-    const hint = hints[k] ? `<p class="help">${esc(fmt(t.hint, { note: hints[k] }))}</p>` : '';
-    return type === 'funding'
-      ? `<fieldset class="seg"><legend>${esc(label)}</legend>${S.init.funding_sources.map((f, i) => `<input type="radio" name="${k}" id="g${k}${i}" value="${esc(f)}" ${info[k] === f ? 'checked' : ''}><label for="g${k}${i}">${esc(f)}</label>`).join('')}</fieldset>`
-      : `<div class="field"><label for="gf-${k}">${esc(label)}</label><input class="input" id="gf-${k}" name="${k}" type="${type}" autocomplete="off" value="${esc(info[k] || '')}">${hint}</div>`;
+  const t = GT().info, it = gSel(), info = it.info || {};
+  const field = ([key, label, type]) => {
+    const readonly = type === 'readonly';
+    const value = key === 'amount' ? (it.amount == null ? GT().review.undecided : won(it.amount) + S.ui.won)
+      : key === 'payee' ? (it.payee || GT().review.undecided) : info[key] ?? '';
+    return `<div class="field"><label for="gf-${key}">${esc(label)}</label><input class="input" id="gf-${key}" name="${key}" type="${readonly ? 'text' : type}" autocomplete="off" value="${esc(value)}"${readonly ? ' readonly' : ''}></div>`;
   };
-  const fixed = `<div class="cut fixed"><div><span class="label">${esc(t.fixed_payee)}</span><span class="vendor">${esc(it.payee || '')}</span></div>
-      <div><span class="label">${esc(t.fixed_amount)}</span><span class="total">${won(it.amount)}${esc(S.ui.won)}</span></div><p class="help">${esc(t.fixed_help)}</p></div>`;
-  return `${head(t)}${fixed}<form id="ginfo" class="fields" style="margin-top:var(--space-lg)">${t.fields.map(field).join('')}</form>${status('ginfo')}
+  return `${head(t)}<form id="ginfo" class="fields" style="margin-top:var(--space-lg)">${t.fields.map(field).join('')}</form>${status('ginfo')}
     <div class="actions"><button type="submit" form="ginfo" class="key key--primary" id="gsave">${esc(t.save)}</button></div>`;
 }
 function bindGInfo() {
   $('#ginfo').onsubmit = async (e) => {
     e.preventDefault(); $('#gsave').setAttribute('aria-busy', 'true');
     const info = {};
-    GT().info.fields.forEach(([k, , type]) => {
-      if (type === 'funding') { const r = $(`input[name="${k}"]:checked`); if (r) info[k] = r.value; }
-      else { const v = $(`#ginfo input[name="${k}"]`).value.trim(); if (v) info[k] = v; }
+    GT().info.fields.forEach(([key, , type]) => {
+      if (type !== 'readonly') info[key] = $(`#gf-${key}`).value.trim();
     });
     try {
       gPut(await api('/api/gyeolui/info', { id: S.g.sel, info })); S.g.result = null;

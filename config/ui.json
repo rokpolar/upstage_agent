@@ -401,6 +401,16 @@
           "text"
         ],
         [
+          "amount",
+          "지급금액",
+          "readonly"
+        ],
+        [
+          "payee",
+          "지급처",
+          "readonly"
+        ],
+        [
           "payment_method",
           "지급방법",
           "text"
@@ -419,47 +429,8 @@
           "drafter",
           "기안자",
           "text"
-        ],
-        [
-          "department",
-          "부서",
-          "text"
-        ],
-        [
-          "doc_no",
-          "결의번호",
-          "text"
-        ],
-        [
-          "representative",
-          "지급처 대표자",
-          "text"
-        ],
-        [
-          "bank_account",
-          "입금 계좌",
-          "text"
-        ],
-        [
-          "funding_source",
-          "재원",
-          "funding"
-        ],
-        [
-          "request_number",
-          "품의번호",
-          "text"
-        ],
-        [
-          "request_date",
-          "발의(품의)일",
-          "date"
         ]
       ],
-      "fixed_amount": "지급금액",
-      "fixed_payee": "지급처",
-      "fixed_help": "검증 단계에서 정한 값입니다.",
-      "hint": "Studio: {note}",
       "save": "저장 후 다음",
       "saved": "저장했습니다."
     },

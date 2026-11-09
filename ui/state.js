@@ -3,4 +3,10 @@ const S = { init: null, ui: null, error: null, picked: new Set(), set: 0, compar
 
 const MODES = {};
 
-export { S, MODES };
+function invalidatePumuiOutput() {
+  S.result = null;
+  if (S.init?.gyeolui) S.init.gyeolui.handoff = null;
+  for (const quote of S.init?.quotes || []) quote.fill = null;
+}
+
+export { S, MODES, invalidatePumuiOutput };

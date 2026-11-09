@@ -130,7 +130,6 @@ class QuotesService:
 
     def answer(self, qid, key, value, who):
         st = self.state["quotes"][qid]["state"]
-        self.state["quotes"][qid]["fill"] = None
         qs = st["questions"]
         idx = next(i for i, x in enumerate(qs) if x["key"] == key)
         st["questions"] = (
@@ -138,6 +137,7 @@ class QuotesService:
         )  # resolve()는 맨 앞 질문에 답한다
         resolve(st, coerce(qs[idx]["field"], value), who)
         self.check(qid)
+        self.invalidate_handoff()
 
     def quote_for_select(self, qid):
         s = self.summary(qid)

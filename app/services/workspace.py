@@ -78,6 +78,12 @@ class Application(QuotesService, FormsService, ExpensesService):
         with self.lock:
             return copy.deepcopy(self.state), self.version
 
+    def invalidate_handoff(self):
+        """편집 뒤 이전 품의 생성 결과를 새 결의의 기준으로 사용하지 않는다."""
+        self.state["handoff"] = None
+        for quote in self.state["quotes"].values():
+            quote["fill"] = None
+
     def studio_missing(self, kind="pumui"):
         return self.studio.settings(kind)[1]
 
@@ -116,7 +122,7 @@ class Application(QuotesService, FormsService, ExpensesService):
         self.state["case"] = case
         for qid in self.state["quotes"]:
             self.check(qid)
-            self.state["quotes"][qid]["fill"] = None
+        self.invalidate_handoff()
         return {"quotes": [self.summary(i) for i in self.state["quotes"]]}
 
     def select(self, ids, pick, reason):
@@ -128,6 +134,7 @@ class Application(QuotesService, FormsService, ExpensesService):
         self.state["selection"] = finalize(
             quotes, rec, auto, chosen, reason.strip(), True
         )
+        self.invalidate_handoff()
         return self.state["selection"]
 
     def g_answer(self, gid, key, value, who):
@@ -151,7 +158,15 @@ class Application(QuotesService, FormsService, ExpensesService):
             raise ConflictError("처리가 완료된 뒤 저장하세요.")
         if any(not isinstance(v, str) for v in info.values()):
             raise ValueError("결의 정보는 문자열이어야 합니다.")
-        e["state"]["info"] = {k: v for k, v in info.items() if v.strip()}
+        # Missing fields are unchanged, including metadata hidden from the form.
+        # An explicit blank string clears only that field.
+        updated = dict(e["state"]["info"])
+        for key, value in info.items():
+            if value.strip():
+                updated[key] = value
+            else:
+                updated.pop(key, None)
+        e["state"]["info"] = updated
         e["info_saved"] = True
         e["fill"] = None
         return self.g_summary(gid)
