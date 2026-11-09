@@ -28,9 +28,17 @@ function viewQuotes() {
   // 같은 물품끼리 묶어서 보여 준다(묶음이 하나면 머리줄 없이)
   const byGroup = new Map();
   list.forEach((q) => { const g = groupOf(q.id); if (!byGroup.has(g.group)) byGroup.set(g.group, { label: g.label, items: [] }); byGroup.get(g.group).items.push(q); });
-  const rows = [...byGroup.entries()].sort((a, b) => a[0] - b[0]).map(([n, g]) => (byGroup.size > 1
-    ? `<tr class="grouphead"><th colspan="6"><span>${esc(fmt(t.group_head, { label: g.label || '-', n: g.items.length }))}</span><button type="button" class="linkish" data-group="${n}">${esc(t.group_pick)}</button></th></tr>`
-    : '') + g.items.map(row).join('')).join('');
+  // 묶음이 셋 이상이면 고른 견적이 없는 묶음은 접어 둔다(한 화면에 20건 넘게 늘어서지 않게). 머리줄을 누르면 펼치고 접는다.
+  const folded = (n, g) => S.fold[n] ?? (byGroup.size > 2 && !g.items.some((q) => S.picked.has(q.id)));
+  const low = (g) => g.items.reduce((m, q) => (q.total != null && (m == null || q.total < m.total) ? q : m), null);
+  const rows = [...byGroup.entries()].sort((a, b) => a[0] - b[0]).map(([n, g]) => {
+    if (byGroup.size < 2) return g.items.map(row).join('');
+    const closed = folded(n, g), l = low(g);
+    return `<tr class="grouphead ${closed ? 'is-folded' : ''}"><th colspan="6">
+        <button type="button" class="fold" data-fold="${n}" aria-expanded="${!closed}"><span class="chev" aria-hidden="true"></span><span>${esc(fmt(t.group_head, { label: g.label || '-', n: g.items.length }))}</span></button>
+        ${closed && l ? `<span class="muted small">${esc(fmt(t.group_low, { vendor: l.vendor, total: won(l.total) }))}</span>` : ''}
+        <button type="button" class="linkish" data-group="${n}">${esc(t.group_pick)}</button></th></tr>` + (closed ? '' : g.items.map(row).join(''));
+  }).join('');
   const table = list.length
     ? `<div class="ledger-wrap"><table class="ledger"><thead><tr><th><span class="visually-hidden">${esc(S.ui.select_col)}</span></th>${t.cols.map((c, i) => `<th class="${[1, 3].includes(i) ? 'num' : ''} ${[2, 3].includes(i) ? 'hide-sm' : ''}">${esc(c)}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div>`
     : `<div class="note"><p>${esc(t.empty)}</p><p class="muted">${esc(t.empty_action)}</p></div>`;
@@ -206,9 +214,11 @@ function bindQuotes() {
       [{ label: t.issues_go, primary: true, run: () => { S.picked.add(q.id); S.compare = null; go(1); } }]);
   }));
   $$('[data-group]').forEach((b) => (b.onclick = () => {
-    S.picked = new Set(quotes().filter((q) => q.set === S.set && groupOf(q.id).group === Number(b.dataset.group)).map((q) => q.id));
-    S.compare = null; S.chosen = null; render();
+    const n = Number(b.dataset.group);
+    S.picked = new Set(quotes().filter((q) => q.set === S.set && groupOf(q.id).group === n).map((q) => q.id));
+    S.fold[n] = false; S.compare = null; S.chosen = null; render();
   }));
+  $$('[data-fold]').forEach((b) => (b.onclick = () => { S.fold[Number(b.dataset.fold)] = b.getAttribute('aria-expanded') === 'true'; render(); }));
   $$('.ledger tbody tr[data-id]').forEach((tr) => (tr.onclick = (e) => {
     const id = tr.dataset.id; S.picked.has(id) ? S.picked.delete(id) : S.picked.add(id);
     S.compare = null; S.chosen = null; render(); if (e.target.matches('input')) $(`tr[data-id="${CSS.escape(id)}"] input`).focus();

@@ -13,12 +13,26 @@ body { word-break: keep-all; word-wrap: break-word; overflow-wrap: anywhere; let
 .wordmark:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 4px; border-radius: 4px; }
 /* 단계는 숨기지 않는다: 자리가 모자라면 다음 줄로 */
 .tabs { margin-left: auto; display: flex; flex-wrap: wrap; gap: 0 var(--space-lg); min-width: 0; }
-.tab { position: relative; display: inline-flex; align-items: center; min-height: 44px; color: var(--color-ink); font-size: var(--text-xs); text-decoration: none; white-space: nowrap; opacity: 0.8; transition: opacity var(--dur-micro) var(--ease-out); }
+.tab { position: relative; display: inline-flex; align-items: center; min-height: 44px; color: var(--color-ink); font-size: var(--text-sm); text-decoration: none; white-space: nowrap; opacity: 0.8; transition: opacity var(--dur-micro) var(--ease-out); }
 .tab:hover { opacity: 1; }
 .tab:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-radius: 4px; }
 .tab[aria-current="step"] { opacity: 1; font-weight: 600; }
 .tab[aria-current="step"]::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: var(--color-ink); }
 .tab[aria-disabled="true"] { color: var(--color-disabled); opacity: 1; cursor: not-allowed; }
+/* 넓은 화면(주 사용: 데스크톱 전체 화면)에서는 상단 바의 이름·단계·품의/결의 전환을 큼직하게 */
+@media (min-width: 60rem) {
+  .bar__inner { min-height: 64px; gap: 0 var(--space-xl); }
+  .wordmark { font-size: var(--text-xl); }
+  .tabs { gap: 0 var(--space-xl); }
+  .tab { font-size: var(--text-md); min-height: 64px; }
+  .tab[aria-current="step"]::after { height: 3px; }
+  .bar .seg label { min-height: 40px; padding: 0 20px; font-size: var(--text-md); }
+}
+@media (min-width: 90rem) {  /* 전체 화면: 단계 글자를 본문 제목 크기로 */
+  .bar__inner { min-height: 72px; }
+  .tab { font-size: var(--text-lg); min-height: 72px; }
+  .wordmark { font-size: var(--text-2xl); }
+}
 
 /* 작업 영역과 두 톤 제목 */
 .work { padding-block: var(--space-lg) 0; max-width: var(--container); }
@@ -202,6 +216,8 @@ textarea.input { min-height: 72px; resize: vertical; line-height: 1.5; }
 }
 /* 견적 선택: 페이지는 고정, 목록만 넘긴다 (머리글 고정). 아주 좁은 화면은 페이지 스크롤 그대로 */
 :root { --bar-h: 53px; }
+@media (min-width: 60rem) { :root { --bar-h: 65px; } }  /* 위 상단 바 확대 규칙과 짝 */
+@media (min-width: 90rem) { :root { --bar-h: 73px; } }
 @media (min-width: 40.0625rem) {
   .work.fit { display: flex; flex-direction: column; height: calc(100vh - var(--bar-h)); height: calc(100dvh - var(--bar-h)); padding-bottom: 0; }
   .work.fit > * { flex: none; }
@@ -287,7 +303,11 @@ textarea.input { min-height: 72px; resize: vertical; line-height: 1.5; }
 .ledger tbody tr.grouphead { cursor: default; background: none; }
 .ledger tbody tr.grouphead:hover { background: none; }
 .ledger .grouphead th { padding: var(--space-md) var(--space-sm) var(--space-2xs); font-size: var(--text-sm); color: var(--color-ink); border-bottom: var(--rule-hair) solid var(--color-rule); }
-.ledger .grouphead th span { font-weight: 700; margin-right: var(--space-sm); }
+.ledger .grouphead th > * { margin-right: var(--space-sm); }
+.ledger .grouphead .fold { border: 0; padding: 0; background: none; font: inherit; font-weight: 700; color: inherit; cursor: pointer; display: inline-flex; align-items: center; gap: var(--space-xs); }
+.ledger .grouphead .fold:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-radius: 4px; }
+.ledger .grouphead .chev { width: .45em; height: .45em; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: translateY(-.15em) rotate(45deg); transition: transform var(--dur-micro) var(--ease-out); }
+.ledger .grouphead.is-folded .chev { transform: translateX(-.1em) rotate(-45deg); }
 .ledger .grouphead .linkish { font-size: var(--text-xs); }
 
 /* 업무 전환(품의/결의): 이름 옆 작은 알약 두 개 */

@@ -55,7 +55,7 @@ python tools/render_pumui.py out/q04_resolved.json examples/case_q01.json --appr
 - 모델이 대표자 이름에 도장 표시를 붙이거나("한도윤 인"), 산출근거 표기(`2,000부`/`2000부`, `㎡`/`m²`)가 흔들린다. `harness.normalize()`가 정리한다.
 - 추출 모델은 적힌 값을 옮길 뿐 검산하지 않는다(샘플 q03의 잘못 적힌 공급가액을 그대로 가져옴). 원 단위 산술은 코드가 한다. 팀 기획서의 "원 단위 산술은 서버에서 처리" 원칙과 같다.
 
-`품의서_extract_schema.json`에는 20건 결과를 보고 합계 설명("VAT 별도" 주의)을 보강했지만 Studio에는 아직 다시 넣지 않았다(`workflow/품의 Agent.json`이 Studio의 현재 설정).
+`workflow/품의서_extract_schema.json`에는 20건 결과를 보고 합계 설명("VAT 별도" 주의)을 보강했지만 Studio에는 아직 다시 넣지 않았다(`workflow/품의 Agent.json`이 Studio의 현재 설정).
 
 ## 전체 흐름 (2026-11-05 기준)
 
@@ -127,7 +127,7 @@ python tools/fill_form.py forms/web/cne/품의서양식.hwpx results/a.json exam
 
 | 경로 | 내용 |
 |---|---|
-| `품의서_extract_schema.json` | Studio Extract 노드에 "JSON 추출 항목 가져오기"로 넣는 스키마 |
+| `workflow/품의서_extract_schema.json` | Studio Extract 노드에 "JSON 추출 항목 가져오기"로 넣는 스키마 |
 | `workflow/품의 Agent.json` | Studio에서 내보낸 워크플로우 설정 (Mission 2 `팀명_미션2workflow.json`의 원본) |
 | `results/q01~q05.json`, `results_team/` | Studio 품의 Agent 실행 결과 (샘플 5건, 데이터 담당 20건) |
 | `samples/q01~q05.pdf` | 개발용 가상 견적서 5건 (양식 4종, 예외 2건) |
@@ -197,7 +197,7 @@ python tools/run_api.py data_team/견적서예시 --out results_team --skip-exis
 
 1. Studio → AI 워크플로우 → 워크플로우 만들기 → **문서 정보 추출** → 이름 `품의 Agent`
 2. `samples/q01~q05.pdf`를 한 번에 업로드 → 설정 방식에서 **직접 설정**
-3. 워크플로우 편집기에서 Extract 노드 선택 → 추출 항목 오른쪽 `⋯` → **JSON 추출 항목 가져오기** → `품의서_extract_schema.json`
+3. 워크플로우 편집기에서 Extract 노드 선택 → 추출 항목 오른쪽 `⋯` → **JSON 추출 항목 가져오기** → `workflow/품의서_extract_schema.json`
 4. 노드 이름 `Extract-품의서` 확인 → 편집기 닫기 → **실행**
 
 주의: Studio는 목록 항목(`review_flags`)의 **목록 쪽 설명을 버리고 항목 쪽 설명만** 남긴다. 그래서 검토 사유 규칙은 `review_flags.items.description`에 적어 두었다.
