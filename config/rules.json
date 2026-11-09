@@ -134,7 +134,8 @@
       },
       "quote_category": "견적서",
       "instruct_name_prefix": "Instruct - ",
-      "review_step": "견적 검토", "kind_pattern": "^\\s*품목 분류\\s*[:：]\\s*(.+?)\\s*$",
+      "review_step": "견적 검토",
+      "kind_pattern": "^\\s*품목 분류\\s*[:：]\\s*(.+?)\\s*$",
       "citation_pattern": "【[^】]*】",
       "workers": 5
     }
@@ -145,7 +146,49 @@
     "kind_bonus": 0.2,
     "strip_pattern": "[^가-힣a-z ]+",
     "min_len": 2,
-    "stopwords": ["구매", "구매를", "위한", "포함", "포함한", "및", "외", "건", "식", "개", "세트", "용역", "일괄", "제작을", "설치를", "set", "ea", "mm", "cm", "kg", "ml", "led"],
+    "stopwords": [
+      "구매",
+      "구매를",
+      "위한",
+      "포함",
+      "포함한",
+      "및",
+      "외",
+      "건",
+      "식",
+      "개",
+      "세트",
+      "용역",
+      "일괄",
+      "제작을",
+      "설치를",
+      "set",
+      "ea",
+      "mm",
+      "cm",
+      "kg",
+      "ml",
+      "led"
+    ],
     "label": "{first} 외 {more}건"
+  },
+  "preview": {
+    "_comment": "미리보기·PDF 글꼴. 양식 글꼴 이름에 font_fallback의 키가 들어 있으면 그 글꼴을 다음 후보로 쓴다(양식 글꼴이 이 PC에 없을 때). default_fonts는 마지막 후보.",
+    "font_fallback": {
+      "명조": "Batang",
+      "바탕": "Batang",
+      "굴림체": "GulimChe",
+      "굴림": "Gulim",
+      "돋움체": "DotumChe",
+      "돋움": "Dotum",
+      "고딕": "Dotum",
+      "산세리프": "Gulim",
+      "궁서": "Gungsuh"
+    },
+    "default_fonts": [
+      "Malgun Gothic",
+      "Apple SD Gothic Neo",
+      "Noto Sans KR"
+    ]
   }
 }

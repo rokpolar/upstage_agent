@@ -397,7 +397,7 @@ function viewForm() {
     // 묶음마다: 제목과 개수, 무엇을 하면 되는지 한 줄(help), 항목(html이면 그대로), 바로 갈 곳(action)
     const ul = (title, arr, open = true, help = '', action = '', raw = false) => arr.length ? `<details ${open ? 'open' : ''}><summary>${esc(title)} <span class="count">${arr.length}</span></summary>${help ? `<p class="help">${esc(help)}</p>` : ''}<ul>${arr.map((x) => `<li>${raw ? x : esc(x)}</li>`).join('')}</ul>${action}</details>` : '';
     const left = (rep.leftover || []).map((x, i) => `<button type="button" class="linkish" data-left="${i}">${esc(fmt(t.leftover_item, { where: x.where, values: x.values.join(', ') }))}</button>`);
-    doc = `<div class="doc__head"><h2>${esc(t.result)}</h2><a class="key key--primary" href="${rep.files.hwpx}" download>${esc(t.download_hwpx)}</a><a class="key" href="${rep.files.pdf}" target="_blank" rel="noopener">${esc(t.download_pdf)}</a></div>
+    doc = `<div class="doc__head"><h2>${esc(t.result)}</h2><a class="key key--primary" href="${rep.files.hwpx}" download>${esc(t.download_hwpx)}</a><a class="key" href="${rep.files.html}?print" target="_blank" rel="noopener">${esc(t.print)}</a></div><p class="help">${esc(t.print_help)}</p>
       <iframe title="${esc(t.result_title)}" src="${rep.files.html}"></iframe>`;
     side = `<div class="report">${ul(t.leftover, left, true, t.leftover_help, '', true)}${ul(t.missing, rep.missing.map((m) => m.label), true, t.missing_help, `<a class="key" href="#${keys()[3]}">${esc(t.missing_action)}</a>`)}${ul(t.unplaced, rep.unplaced.map((u) => (u.value ? `${u.what}: ${u.value}` : `${u.what}, ${u.why}`)), true, t.unplaced_help)}${ul(t.unknown, rep.unknown_labels, true, t.unknown_help)}${ul(t.notes, rep.notes, false)}</div>`;
   } else if (r && !r.ok) {

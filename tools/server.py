@@ -210,8 +210,8 @@ def do_fill(form_rel, qid):
     folder.mkdir(parents=True, exist_ok=True)
     name = f"{STATE['case'].get('case_id', 'case')}_{Path(form_rel).stem}"
     filled = doc.save(folder / f"{name}.hwpx")
-    pdf = preview(filled, pdf=True)
-    report["files"] = {"hwpx": out_url(filled), "pdf": out_url(pdf), "html": out_url(filled.with_suffix(".preview.html"))}
+    html_file = preview(filled)  # PDF는 만들지 않는다: 미리보기를 브라우저에서 인쇄하거나 한글에서 PDF로 저장한다
+    report["files"] = {"hwpx": out_url(filled), "html": out_url(html_file)}
     (folder / f"{name}.report.json").write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
     return {"ok": True, "report": report}
 

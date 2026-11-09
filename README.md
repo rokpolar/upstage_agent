@@ -6,7 +6,7 @@
 
 ![Python](https://img.shields.io/badge/Python-3.11+-3776AB?logo=python&logoColor=white)
 ![Upstage](https://img.shields.io/badge/Upstage-Studio%20%C2%B7%20Solar%20Pro%204-7B61FF)
-![HWPX](https://img.shields.io/badge/output-HWPX%20%C2%B7%20PDF-1f9d55)
+![HWPX](https://img.shields.io/badge/output-HWPX-1f9d55)
 
 ## 왜 만들었나
 
@@ -24,7 +24,7 @@
 | 업체 선정 | 품의서 작성 |
 |---|---|
 | ![업체 선정](docs/images/3_vendor.jpg) | ![품의서 작성](docs/images/4_form.jpg) |
-| 유효기간 안의 견적 중 최저가 업체를 추천하고 선정 사유를 써 줍니다. | 기관 양식(HWPX)의 칸을 찾아 그대로 채우고, HWPX와 PDF로 내려받습니다. |
+| 유효기간 안의 견적 중 최저가 업체를 추천하고 선정 사유를 써 줍니다. | 기관 양식(HWPX)의 칸을 찾아 그대로 채웁니다. HWPX로 받거나, 미리보기에서 바로 인쇄·PDF 저장을 합니다. |
 
 ## 빠른 시작
 
@@ -54,7 +54,7 @@ Upstage Studio 워크플로 ─ 업로드할 때만 실행
    │
    ▼
 이 저장소의 Python 코드 ─ 내 PC에서 실행
-   원 단위 검산·질문 → 업체 추천 → 기관 양식(HWPX) 채우기 → PDF 미리보기
+   원 단위 검산·질문 → 업체 추천 → 기관 양식(HWPX) 채우기 → 미리보기·인쇄
 ```
 
 - **모델은 읽기만, 계산과 규칙은 코드가, 애매한 건 사람이** 정합니다.
@@ -72,7 +72,7 @@ Upstage Studio 워크플로 ─ 업로드할 때만 실행
 | 문서 인식·추출 | Upstage Studio (Document Parse, Classify, Information Extract) |
 | 판단·문장 | Solar Pro 4 (Studio Instruct 노드) |
 | 서버 | Python 표준 라이브러리 HTTP 서버 |
-| 양식 | HWPX 직접 편집(lxml), PDF 미리보기(Edge/Chrome) |
+| 양식 | HWPX 직접 편집(lxml), 양식 여백·글꼴대로 그린 미리보기(브라우저 인쇄로 PDF 저장) |
 | 화면 | HTML · CSS · JavaScript (프레임워크 없음) |
 
 ## 폴더 구조
