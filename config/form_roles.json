@@ -275,6 +275,25 @@
         "^.*?(?:을|를)\\s*위한\\s+",
         "\\s*(?:구매|구입)$"
       ]
+    },
+    "fit": {
+      "_comment": "품목 표 모양 맞추기. max_row_ratio: 채운 품목 줄이 머리줄 높이의 이 배수보다 높으면 머리줄 높이로 줄인다(한글은 글자가 넘치면 알아서 늘림). number_roles 칸은 좌우 여백을 number_margin(HWPUNIT, 141 = 0.5mm) 이하로 줄인다. shrink_numbers: 숫자가 칸 안쪽 폭(char_width로 어림)보다 넓으면 양식에 있는 같은 글꼴의 더 작은 글자 모양(min_char_height 1/100pt 이상)으로 바꾼다.",
+      "max_row_ratio": 1.6,
+      "number_roles": [
+        "quantity",
+        "unit_price",
+        "amount"
+      ],
+      "number_margin": 141,
+      "shrink_numbers": true,
+      "min_char_height": 800,
+      "char_width": {
+        "default": 0.55,
+        ",": 0.3,
+        ".": 0.3,
+        " ": 0.3,
+        "-": 0.35
+      }
     }
   },
   "formats": {
