@@ -81,7 +81,7 @@ def build_values(result, case, selection, roles):
            "case": case, "selection": selection or {}}
     first_item = item_name(items[0].get(I["description"]) if items else "", cfg["item_table"])
     more = cfg["templates"]["more"].format(n=len(items) - 1) if len(items) > 1 else ""
-    form_ctx = {"project_name": case.get("project_name", ""), "first_item": first_item.split("(")[0].strip(),
+    form_ctx = {"project_name": case.get("project_name", ""), "first_item": title_item(first_item, cfg["templates"]),
                 "more": more, "quote_count": (selection or {}).get("quote_count", 1)}
     src["form"] = {k: v.format(**form_ctx) for k, v in cfg["templates"].items() if not k.startswith("_") and k != "more"}
     out = {}
@@ -185,6 +185,18 @@ def find_item_table(table, roles):
                     data.append(rr)
             return {"header_end": header_end, "columns": cols, "data_rows": data, "total_rows": totals}
     return None
+
+
+def title_item(name, tpl):
+    """제목에 넣을 첫 품목 이름: 괄호 앞까지, 그리고 규격 덩어리(i5-14500, 16GB, 2.4GHz, '/')가 나오기 전까지."""
+    name = name.split("(")[0].strip()
+    stop = re.compile(tpl.get("title_item_stop") or "$^")
+    words = []
+    for w in name.split():
+        if words and stop.fullmatch(w):
+            break
+        words.append(w)
+    return " ".join(words) or name
 
 
 def fill_item_table(table, info, rows, values, roles, report, written):
@@ -306,11 +318,12 @@ def fill_inline_blanks(tables, result, case, roles, report):
         return
     msg = roles.cfg["report"]
     items = result.get(fields()["items"]) or []
-    first = item_name(items[0].get(fields()["item"]["description"]), roles.cfg["item_table"]).split("(")[0].strip() if items else ""
+    first = title_item(item_name(items[0].get(fields()["item"]["description"]), roles.cfg["item_table"]), roles.cfg["templates"]) if items else ""
     more = roles.cfg["templates"]["more"].format(n=len(items) - 1) if len(items) > 1 else ""
     d = re.match(r"(\d{4})-(\d{1,2})-(\d{1,2})", str(case.get("draft_date") or ""))
     ctx = {"item_summary": cfg["item_summary"].format(first_item=first, more=more) if first else "",
-           "draft_dot": cfg["draft_dot"].format(y=d[1], m=int(d[2]), d=int(d[3])) if d else ""}
+           "draft_dot": cfg["draft_dot"].format(y=d[1], m=int(d[2]), d=int(d[3])) if d else "",
+           "project_name": case.get("project_name", "")}
     rules_ = [(re.compile(r["pattern"]), r["context"], r["value"]) for r in cfg["rules"]]
     for tbl in tables:
         for c in tbl.cells:

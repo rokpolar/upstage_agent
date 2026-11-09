@@ -100,7 +100,7 @@ function viewQuotes() {
 const groupOf = (id) => (S.init.groups && S.init.groups[id]) || { group: 0, label: '' };
 const UP = () => S.uploads || (S.uploads = []);
 const viewed = () => UP().find((u) => u.id === S.upView) || UP().find((u) => !u.finished && !u.error) || UP()[UP().length - 1];
-const upState = (u) => (u.error ? 'fail' : u.finished ? 'done' : u.started ? 'now' : 'wait');
+const upState = (u) => (u.error ? 'fail' : u.skipped ? 'skip' : u.finished ? 'done' : u.started ? 'now' : 'wait');
 function nowStage(u) {
   const st = S.ui.quotes.intake.stages, done = new Set(u.done || []);
   return st.find(([key]) => !done.has(key)) || st[st.length - 1];
@@ -129,7 +129,7 @@ function intakeList() {
   if (UP().length < 2) return '';
   return UP().map((u) => {
     const st = upState(u), f = u.found || {};
-    const text = st === 'done' ? fmt(t.row.done, { vendor: f.vendor || '', total: won(f.total || 0) })
+    const text = st === 'skip' ? fmt(t.row.skip, { category: f.category || '' }) : st === 'done' ? fmt(t.row.done, { vendor: f.vendor || '', total: won(f.total || 0) })
       : st === 'now' ? fmt(t.row.now, { stage: nowStage(u)[1] }) : t.row[st];
     const mark = st === 'done' ? ICON.ok : st === 'fail' ? ICON.warn : st === 'now' ? '<span class="spin keep-motion" aria-hidden="true"></span>' : '<span class="dot" aria-hidden="true"></span>';
     return `<li><button type="button" class="intake__row is-${st}" data-up="${u.id}" ${u === v ? 'aria-current="true"' : ''}>${mark}<span class="intake__name">${esc(u.name)}</span><span class="intake__state">${esc(text)}</span></button></li>`;
@@ -177,6 +177,7 @@ async function readOne(u) {
   }, 600);
   try {
     const r = await api('/api/quotes/upload', { name: u.name, data: await readB64(u.file), token: u.id });
+    if (r.skipped) { u.skipped = r.skipped; u.finished = true; u.done = t.intake.stages.map(([key]) => key); u.found = { category: r.category }; clearInterval(poll); return; }
     S.init.quotes = S.init.quotes.filter((q) => q.id !== r.quote.id).concat(r.quote);
     if (r.groups) S.init.groups = r.groups;
     u.qid = r.quote.id; S.set = r.quote.set; S.compare = null;
@@ -190,7 +191,18 @@ async function uploadQuotes(files) {
   const t = S.ui.quotes, fresh = [...files];
   if (!fresh.length) return;
   const exts = S.init.upload_ext || ['.pdf', '.png', '.jpg', '.jpeg'];
-  const ok = fresh.filter((f) => exts.some((x) => f.name.toLowerCase().endsWith(x)));
+  let ok = fresh.filter((f) => exts.some((x) => f.name.toLowerCase().endsWith(x)));
+  // 여러 쪽 PDF는 쪽마다 나눠 한 장씩 읽는다(한 파일에 업체 견적서 여러 장이 들어오는 경우)
+  const pages = [];
+  for (const f of ok) {
+    if (!/\.pdf$/i.test(f.name)) { pages.push(f); continue; }
+    try {
+      const r = await api('/api/quotes/split', { name: f.name, data: await readB64(f) });
+      if (r.pages.length < 2) { pages.push(f); continue; }
+      r.pages.forEach((p) => pages.push(new File([Uint8Array.from(atob(p.data), (c) => c.charCodeAt(0))], p.name, { type: 'application/pdf' })));
+    } catch (e) { pages.push(f); }
+  }
+  ok = pages;
   if (ok.length < fresh.length) say('upload', fmt(t.upload_bad_ext, { ext: exts.join(', ') }), true);
   if (!UP().some((u) => !u.finished && !u.error)) { UP().forEach((u) => URL.revokeObjectURL(u.url)); S.uploads = []; S.upView = null; }  // 새 묶음
   const added = ok.map((f) => ({ id: (crypto.randomUUID && crypto.randomUUID()) || `${Date.now()}-${Math.random()}`, name: f.name, file: f,
@@ -299,7 +311,8 @@ function viewVendor() {
   // 업체마다 고르는 타일 하나: 이름과 합계, 아래에 견적일과 최저가 대비. 추천은 위에 작은 글씨.
   const tiles = c.quotes.map((q, i) => {
     const rec = q.file === c.recommended, ex = c.excluded.includes(q.file), on = q.file === S.chosen;
-    const tag = rec ? esc(t.recommended) : ex ? esc(fmt(t.excluded, { why: q.issue_messages.join(', ') })) : '';
+    const same = (c.warnings || []).filter((w) => w.files.includes(q.file)).map((w) => (w.kind === 'same_lowest_total' ? t.same_low_tag : t.same_rep_tag));
+    const tag = [rec ? esc(t.recommended) : ex ? esc(fmt(t.excluded, { why: q.issue_messages.join(', ') })) : '', same.map(esc).join(' · ')].filter(Boolean).join(' · ');
     return `<input type="radio" name="vendor" id="v${i}" value="${esc(q.file)}" ${on ? 'checked' : ''}>
       <label for="v${i}" class="tile ${ex ? 'is-off' : ''}">${tag ? `<span class="tag">${tag}</span>` : ''}
         <span class="name">${esc(q.vendor)}</span><span class="price">${won(q.total)}${esc(S.ui.won)}</span>
@@ -314,7 +327,7 @@ function viewVendor() {
       <span class="label" style="margin-top:var(--space-md)">${esc(t.summary_total)}</span>
       <span class="total">${won(pick.total)}${esc(S.ui.won)}</span></aside>`;
   const isRec = S.chosen === c.recommended;
-  return `${head(t)}${c.quotes.length === 1 ? `<p class="note">${esc(t.single)}</p>` : ''}
+  return `${head(t)}${(c.warnings || []).map((w) => `<p class="note note--warn" role="alert">${esc(w.kind === 'same_lowest_total' ? fmt(t.same_low, { vendors: w.vendors.join(', '), total: won(w.total) }) : fmt(t.same_rep, { vendors: w.vendors.join(', '), rep: w.rep }))}</p>`).join('')}${c.quotes.length === 1 ? `<p class="note">${esc(t.single)}</p>` : ''}
     <div class="buy">${summary}<div class="stack">
       <fieldset class="tiles" style="border:0;padding:0;margin:0"><legend class="visually-hidden">${esc(t.heading)}</legend>${tiles}</fieldset>
       <div class="field" style="margin-top:var(--space-md)"><label for="reason">${esc(t.reason_label)}${isRec ? '' : ' ' + esc(S.ui.required)}</label>

@@ -356,7 +356,8 @@
     "title": "{project_name} {first_item}{more} 구매의 건",
     "attachments": "견적서 {quote_count}부",
     "more": " 외 {n}건",
-    "_comment": "first_item은 첫 품목의 품명(괄호 앞), more는 품목이 둘 이상일 때만 붙는다."
+    "title_item_stop": "/|[A-Za-z]*\\d[A-Za-z0-9.\\-×*/]*",
+    "_comment": "first_item은 첫 품목의 품명(괄호 앞, title_item_stop에 맞는 규격 덩어리 앞까지), more는 품목이 둘 이상일 때만 붙는다."
   },
   "report": {
     "_comment": "작성 결과 보고 문구(명사형 짧게). {name}은 free_text.names의 이름이다.",
@@ -396,7 +397,7 @@
     "label_max_chars": 12
   },
   "inline_blanks": {
-    "_comment": "문장 안 빈자리 채우기. rules마다 pattern에 맞고 context 낱말(비어 있으면 조건 없음)이 같은 문단에 있을 때만 채운다('접수 (   )' 같은 칸은 그대로). value에 쓸 수 있는 값: {item_summary}(첫 품목 외 N건), {draft_dot}(기안일, 예: 2026. 11. 5.). \\g<1>은 pattern의 첫 괄호(앞 공백 유지). strip_markers는 채운 양식에서 지울 예시 표시.",
+    "_comment": "문장 안 빈자리 채우기. rules마다 pattern에 맞고 context 낱말(비어 있으면 조건 없음)이 같은 문단에 있을 때만 채운다('접수 (   )' 같은 칸은 그대로). value에 쓸 수 있는 값: {item_summary}(첫 품목 외 N건), {draft_dot}(기안일, 예: 2026. 11. 5.), {project_name}(사업명, '○○○○ 다음과 같이' 자리). \\g<1>은 pattern의 첫 괄호(앞 공백 유지). strip_markers는 채운 양식에서 지울 예시 표시.",
     "item_summary": "{first_item}{more}",
     "draft_dot": "{y}. {m}. {d}.",
     "rules": [
@@ -413,6 +414,11 @@
         "pattern": "^(\\s*)20\\d{2}\\.(?:\\s*\\.){1,2}\\s*$",
         "context": [],
         "value": "\\g<1>{draft_dot}"
+      },
+      {
+        "pattern": "^(\\s*)[〇○◯]{2,}\\s*(?=다음과)",
+        "context": [],
+        "value": "\\g<1>{project_name} 관련하여 "
       }
     ],
     "strip_markers": [
