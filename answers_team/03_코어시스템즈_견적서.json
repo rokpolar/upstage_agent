@@ -1,0 +1,35 @@
+{
+  "vendor_name": "㈜코어시스템즈",
+  "vendor_representative": "한도윤",
+  "quote_date": "2026-10-22",
+  "items": [
+    {
+      "quantity": 12,
+      "unit_price": 1200000,
+      "estimated_amount": 14400000,
+      "calculation_basis": "1,200,000원*12월"
+    },
+    {
+      "quantity": 12,
+      "unit_price": 650000,
+      "estimated_amount": 7800000,
+      "calculation_basis": "650,000원*12월"
+    },
+    {
+      "quantity": 4,
+      "unit_price": 900000,
+      "estimated_amount": 3600000,
+      "calculation_basis": "900,000원*4회"
+    },
+    {
+      "quantity": 6,
+      "unit_price": 350000,
+      "estimated_amount": 2100000,
+      "calculation_basis": "350,000원*6회"
+    }
+  ],
+  "supply_amount": 27900000,
+  "vat_amount": 2790000,
+  "total_amount": 30690000,
+  "review_flags": []
+}

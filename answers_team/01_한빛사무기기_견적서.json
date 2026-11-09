@@ -1,0 +1,47 @@
+{
+  "vendor_name": "한빛사무기기㈜",
+  "vendor_representative": "김정수",
+  "quote_date": "2026-10-19",
+  "items": [
+    {
+      "quantity": 40,
+      "unit_price": 23500,
+      "estimated_amount": 940000,
+      "calculation_basis": "23,500원*40BOX"
+    },
+    {
+      "quantity": 120,
+      "unit_price": 1850,
+      "estimated_amount": 222000,
+      "calculation_basis": "1,850원*120EA"
+    },
+    {
+      "quantity": 30,
+      "unit_price": 6200,
+      "estimated_amount": 186000,
+      "calculation_basis": "6,200원*30DZ"
+    },
+    {
+      "quantity": 100,
+      "unit_price": 380,
+      "estimated_amount": 38000,
+      "calculation_basis": "380원*100BOX"
+    },
+    {
+      "quantity": 25,
+      "unit_price": 4800,
+      "estimated_amount": 120000,
+      "calculation_basis": "4,800원*25SET"
+    },
+    {
+      "quantity": 20,
+      "unit_price": 2900,
+      "estimated_amount": 58000,
+      "calculation_basis": "2,900원*20EA"
+    }
+  ],
+  "supply_amount": 1564000,
+  "vat_amount": 156400,
+  "total_amount": 1720400,
+  "review_flags": []
+}

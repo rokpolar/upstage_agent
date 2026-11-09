@@ -1,0 +1,55 @@
+{
+  "vendor_name": "(주)비전러닝",
+  "vendor_representative": "강현우",
+  "quote_date": "2026-10-27",
+  "supply_amount": 8552000,
+  "vat_amount": 855200,
+  "total_amount": 9407200,
+  "review_flags": [],
+  "items": [
+    {
+      "expense_category": "용역비",
+      "description": "직무역량 교육 강의 4H",
+      "quantity": 8,
+      "unit_price": 643000,
+      "estimated_amount": 5144000,
+      "calculation_basis": "643,000원*8회",
+      "note": ""
+    },
+    {
+      "expense_category": "기타",
+      "description": "교재 인쇄·제본 A4/흑백",
+      "quantity": 160,
+      "unit_price": 7850,
+      "estimated_amount": 1256000,
+      "calculation_basis": "7,850원*160부",
+      "note": ""
+    },
+    {
+      "expense_category": "임차료",
+      "description": "강의실 임차 60명 수용",
+      "quantity": 4,
+      "unit_price": 484000,
+      "estimated_amount": 1936000,
+      "calculation_basis": "484,000원*4일",
+      "note": ""
+    },
+    {
+      "expense_category": "기타",
+      "description": "수료증 제작 코팅",
+      "quantity": 160,
+      "unit_price": 1350,
+      "estimated_amount": 216000,
+      "calculation_basis": "1,350원*160EA",
+      "note": ""
+    }
+  ],
+  "studio": {
+    "category": "견적서",
+    "review": "{",
+    "decision": "작성 가능",
+    "branch": "품의 내용 작성",
+    "note": "제목: 직무역량 교육 강의 4H 외 3건 구매의 건",
+    "job_id": "job_S3NZaxasdPxTHQMs5vYHqG"
+  }
+}

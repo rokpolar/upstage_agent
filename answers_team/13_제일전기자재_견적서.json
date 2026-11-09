@@ -1,0 +1,41 @@
+{
+  "vendor_name": "제일전기자재",
+  "vendor_representative": "송민철",
+  "quote_date": "2026-10-22",
+  "items": [
+    {
+      "quantity": 200,
+      "unit_price": 16500,
+      "estimated_amount": 3300000,
+      "calculation_basis": "16,500원*200EA"
+    },
+    {
+      "quantity": 15,
+      "unit_price": 58000,
+      "estimated_amount": 870000,
+      "calculation_basis": "58,000원*15롤"
+    },
+    {
+      "quantity": 40,
+      "unit_price": 6800,
+      "estimated_amount": 272000,
+      "calculation_basis": "6,800원*40EA"
+    },
+    {
+      "quantity": 100,
+      "unit_price": 2100,
+      "estimated_amount": 210000,
+      "calculation_basis": "2,100원*100EA"
+    },
+    {
+      "quantity": 300,
+      "unit_price": 1450,
+      "estimated_amount": 435000,
+      "calculation_basis": "1,450원*300본"
+    }
+  ],
+  "supply_amount": 5087000,
+  "vat_amount": 508700,
+  "total_amount": 5595700,
+  "review_flags": []
+}

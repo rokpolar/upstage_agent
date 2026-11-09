@@ -1,0 +1,55 @@
+{
+  "vendor_name": "미래인재교육원",
+  "vendor_representative": "신기태",
+  "quote_date": "2026-10-23",
+  "supply_amount": 7360000,
+  "vat_amount": 736000,
+  "total_amount": 8096000,
+  "review_flags": [],
+  "items": [
+    {
+      "expense_category": "용역비",
+      "description": "외부강사 강의료 (회당 4시간)",
+      "quantity": 8,
+      "unit_price": 557000,
+      "estimated_amount": 4456000,
+      "calculation_basis": "557,000원*8회",
+      "note": ""
+    },
+    {
+      "expense_category": "기타",
+      "description": "교재 제작 (A4/흑백)",
+      "quantity": 160,
+      "unit_price": 6650,
+      "estimated_amount": 1064000,
+      "calculation_basis": "6,650원*160부",
+      "note": ""
+    },
+    {
+      "expense_category": "임차료",
+      "description": "강의실 임차 (60명 수용)",
+      "quantity": 4,
+      "unit_price": 418000,
+      "estimated_amount": 1672000,
+      "calculation_basis": "418,000원*4일",
+      "note": ""
+    },
+    {
+      "expense_category": "기타",
+      "description": "수료증(코팅) (-)",
+      "quantity": 160,
+      "unit_price": 1050,
+      "estimated_amount": 168000,
+      "calculation_basis": "1,050원*160장",
+      "note": ""
+    }
+  ],
+  "studio": {
+    "category": "견적서",
+    "review": "{",
+    "decision": "작성 가능",
+    "branch": "품의 내용 작성",
+    "note": "{\n  \"제목\": \"외부강사 강의료 (회당 4시간) 외 3건 구매의 건\",\n  \"품목 요약\": \"외부강사 강의료 (회당 4시간) 외 3건\",\n  \"업체\": \"미래인재교육원\",\n  \"합계\": 8096000,\n  \"품의 요지\": \"아래와 같이 물품을 구매하고자 합니다.\"\n}",
+    "job_id": "job_kgjWQC86KLwqWoDNeFPgg9"
+  }
+}

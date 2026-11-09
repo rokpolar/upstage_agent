@@ -1,0 +1,73 @@
+{
+  "vendor_name": "새한문구사무용품",
+  "vendor_representative": "오서연",
+  "quote_date": "2026-10-16",
+  "supply_amount": 1725250,
+  "vat_amount": 172525,
+  "total_amount": 1897775,
+  "review_flags": [],
+  "items": [
+    {
+      "expense_category": "사무용품비",
+      "description": "A4 복사용지(80g) (2500매/박스)",
+      "quantity": 40,
+      "unit_price": 26500,
+      "estimated_amount": 1060000,
+      "calculation_basis": "26,500원*40BOX",
+      "note": ""
+    },
+    {
+      "expense_category": "사무용품비",
+      "description": "문서보관상자 (A4/백색)",
+      "quantity": 120,
+      "unit_price": 2000,
+      "estimated_amount": 240000,
+      "calculation_basis": "2,000원*120EA",
+      "note": ""
+    },
+    {
+      "expense_category": "사무용품비",
+      "description": "3색 볼펜 (흑·청·적 0.7mm)",
+      "quantity": 30,
+      "unit_price": 6600,
+      "estimated_amount": 198000,
+      "calculation_basis": "6,600원*30다스",
+      "note": ""
+    },
+    {
+      "expense_category": "사무용품비",
+      "description": "스테이플 심 (NO.10)",
+      "quantity": 100,
+      "unit_price": 410,
+      "estimated_amount": 41000,
+      "calculation_basis": "410원*100BOX",
+      "note": ""
+    },
+    {
+      "expense_category": "사무용품비",
+      "description": "화이트보드 마카 (흑·청·적)",
+      "quantity": 25,
+      "unit_price": 5050,
+      "estimated_amount": 126250,
+      "calculation_basis": "5,050원*25SET",
+      "note": ""
+    },
+    {
+      "expense_category": "사무용품비",
+      "description": "서류결재판 (A4 PVC)",
+      "quantity": 20,
+      "unit_price": 3000,
+      "estimated_amount": 60000,
+      "calculation_basis": "3,000원*20개",
+      "note": ""
+    }
+  ],
+  "studio": {
+    "category": "견적서",
+    "review": "{",
+    "decision": "작성 가능",
+    "branch": "품의 내용 작성",
+    "note": "제목: A4 복사용지(80g) (2500매/박스) 외 5건 구매의 건",
+    "job_id": "job_9tDCaR9EQemKdPPAk3U4o3"
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "vendor_name": "대양오피스(주)",
+  "vendor_representative": "이성호",
+  "quote_date": "2026-10-22",
+  "supply_amount": 1430000,
+  "vat_amount": 143000,
+  "total_amount": 1573000,
+  "review_flags": [],
+  "items": [
+    {
+      "expense_category": "사무용품비",
+      "description": "복사용지 A4(80g/m²) 2,500매입",
+      "quantity": 40,
+      "unit_price": 21500,
+      "estimated_amount": 860000,
+      "calculation_basis": "21,500원*40BOX",
+      "note": ""
+    },
+    {
+      "expense_category": "사무용품비",
+      "description": "문서보관상자 A4/백색",
+      "quantity": 120,
+      "unit_price": 1650,
+      "estimated_amount": 198000,
+      "calculation_basis": "1,650원*120EA",
+      "note": ""
+    },
+    {
+      "expense_category": "사무용품비",
+      "description": "3색 볼펜 흑·청·적 0.7mm",
+      "quantity": 30,
+      "unit_price": 5650,
+      "estimated_amount": 169500,
+      "calculation_basis": "5,650원*30다스",
+      "note": ""
+    },
+    {
+      "expense_category": "사무용품비",
+      "description": "스테이플러 침 NO.10",
+      "quantity": 100,
+      "unit_price": 360,
+      "estimated_amount": 36000,
+      "calculation_basis": "360원*100BOX",
+      "note": ""
+    },
+    {
+      "expense_category": "사무용품비",
+      "description": "보드마카 3색 혼합",
+      "quantity": 25,
+      "unit_price": 4500,
+      "estimated_amount": 112500,
+      "calculation_basis": "4,500원*25세트",
+      "note": ""
+    },
+    {
+      "expense_category": "사무용품비",
+      "description": "결재판 A4/PVC",
+      "quantity": 20,
+      "unit_price": 2700,
+      "estimated_amount": 54000,
+      "calculation_basis": "2,700원*20EA",
+      "note": ""
+    }
+  ],
+  "studio": {
+    "category": "견적서",
+    "review": "{",
+    "decision": "작성 가능",
+    "branch": "품의 내용 작성",
+    "note": "{\n  \"제목\": \"복사용지 A4(80g/m²) 2,500매입 외 5건 구매의 건\",\n  \"품목 요약\": \"복사용지 A4(80g/m²) 2,500매입 외 5건\",\n  \"업체\": \"대양오피스(주)\",\n  \"합계\": 1573000,\n  \"품의 요지\": \"아래와 같이 물품을 구매하고자 합니다.\"\n}",
+    "job_id": "job_cip4yPqQhohNY5AiAwipTW"
+  }
+}

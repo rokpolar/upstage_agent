@@ -1,0 +1,46 @@
+{
+  "vendor_name": "(주)청정워터",
+  "vendor_representative": "오기태 인",
+  "quote_date": "2026-10-19",
+  "supply_amount": 1630000,
+  "vat_amount": 163000,
+  "total_amount": 1793000,
+  "review_flags": [],
+  "items": [
+    {
+      "expense_category": "임차료",
+      "description": "냉온정수기(직수) 렌탈 36개월",
+      "quantity": 20,
+      "unit_price": 27500,
+      "estimated_amount": 550000,
+      "calculation_basis": "27,500원*20EA",
+      "note": ""
+    },
+    {
+      "expense_category": "용역비",
+      "description": "필터 교체 정기 방문",
+      "quantity": 20,
+      "unit_price": 31500,
+      "estimated_amount": 630000,
+      "calculation_basis": "31,500원*20회",
+      "note": ""
+    },
+    {
+      "expense_category": "기타",
+      "description": "초기 설치비 1회",
+      "quantity": 20,
+      "unit_price": 22500,
+      "estimated_amount": 450000,
+      "calculation_basis": "22,500원*20대",
+      "note": ""
+    }
+  ],
+  "studio": {
+    "category": "견적서",
+    "review": "{",
+    "decision": "작성 가능",
+    "branch": "품의 내용 작성",
+    "note": "{\n  \"제목\": \"냉온정수기(직수) 렌탈 36개월 외 2건 구매의 건\",\n  \"품목 요약\": \"냉온정수기(직수) 렌탈 36개월 외 2건\",\n  \"업체\": \"(주)청정워터\",\n  \"합계\": 1793000,\n  \"품의 요지\": \"아래와 같이 물품을 구매하고자 합니다.\"\n}",
+    "job_id": "job_2Tuo9FfXhgo8n7iL9Th4vj"
+  }
+}

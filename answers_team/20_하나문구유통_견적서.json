@@ -1,0 +1,41 @@
+{
+  "vendor_name": "하나문구유통",
+  "vendor_representative": "백승기",
+  "quote_date": "2026-11-03",
+  "items": [
+    {
+      "quantity": 600,
+      "unit_price": 520,
+      "estimated_amount": 312000,
+      "calculation_basis": "520원*600EA"
+    },
+    {
+      "quantity": 100,
+      "unit_price": 2800,
+      "estimated_amount": 280000,
+      "calculation_basis": "2,800원*100팩"
+    },
+    {
+      "quantity": 200,
+      "unit_price": 1500,
+      "estimated_amount": 300000,
+      "calculation_basis": "1,500원*200EA"
+    },
+    {
+      "quantity": 20,
+      "unit_price": 6500,
+      "estimated_amount": 130000,
+      "calculation_basis": "6,500원*20DZ"
+    },
+    {
+      "quantity": 200,
+      "unit_price": 420,
+      "estimated_amount": 84000,
+      "calculation_basis": "420원*200BOX"
+    }
+  ],
+  "supply_amount": 1106000,
+  "vat_amount": 110600,
+  "total_amount": 1216600,
+  "review_flags": []
+}

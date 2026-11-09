@@ -1,0 +1,35 @@
+{
+  "vendor_name": "에듀플랜",
+  "vendor_representative": "조은영",
+  "quote_date": "2026-10-26",
+  "items": [
+    {
+      "quantity": 8,
+      "unit_price": 600000,
+      "estimated_amount": 4800000,
+      "calculation_basis": "600,000원*8회"
+    },
+    {
+      "quantity": 160,
+      "unit_price": 7500,
+      "estimated_amount": 1200000,
+      "calculation_basis": "7,500원*160부"
+    },
+    {
+      "quantity": 4,
+      "unit_price": 450000,
+      "estimated_amount": 1800000,
+      "calculation_basis": "450,000원*4일"
+    },
+    {
+      "quantity": 160,
+      "unit_price": 1200,
+      "estimated_amount": 192000,
+      "calculation_basis": "1,200원*160EA"
+    }
+  ],
+  "supply_amount": 7992000,
+  "vat_amount": 799200,
+  "total_amount": 8791200,
+  "review_flags": []
+}

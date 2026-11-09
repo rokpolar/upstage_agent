@@ -1,0 +1,55 @@
+{
+  "vendor_name": "(주)빛나사인",
+  "vendor_representative": "윤승민",
+  "quote_date": "2026-11-04",
+  "supply_amount": 4435000,
+  "vat_amount": 443500,
+  "total_amount": 4878500,
+  "review_flags": [],
+  "items": [
+    {
+      "expense_category": "홍보비",
+      "description": "돌출 채널 사인 (LED 3m)",
+      "quantity": 1,
+      "unit_price": 2600000,
+      "estimated_amount": 2600000,
+      "calculation_basis": "2,600,000원*1개",
+      "note": ""
+    },
+    {
+      "expense_category": "홍보비",
+      "description": "포맥스 실사출력물 (5T)",
+      "quantity": 12,
+      "unit_price": 47000,
+      "estimated_amount": 564000,
+      "calculation_basis": "47,000원*12m²",
+      "note": ""
+    },
+    {
+      "expense_category": "홍보비",
+      "description": "아크릴 안내판 (각종 사인)",
+      "quantity": 30,
+      "unit_price": 33500,
+      "estimated_amount": 1005000,
+      "calculation_basis": "33,500원*30KG",
+      "note": ""
+    },
+    {
+      "expense_category": "홍보비",
+      "description": "현수막 거치 프레임 (고정형)",
+      "quantity": 4,
+      "unit_price": 66500,
+      "estimated_amount": 266000,
+      "calculation_basis": "66,500원*4EA",
+      "note": ""
+    }
+  ],
+  "studio": {
+    "category": "견적서",
+    "review": "계산: 품목별: [\"돌출 채널 사인 (LED 3m): 2,600,000 × 1 = 2,600,000 (2,600,000)\", \"포맥스 실사출력물 (5T): 47,000 × 12 = 564,000 (564,000)\", \"아크릴 안내판 (각종 사인): 33,500 × 30 = 1,005,000 (1,005,000)\", \"현수막 거치 프레임 (고정형): 66,500 × 4 = 266,000 (266,000)\"], 품목 금액 합계: 4,435,000, 공급가액: 4,435,000, 부가세 10%: 443,500, 부가세: 443,500, 공급가액 + 부가세: 4,878,500, 합계: 4,878,500, issues: [], 요약: 모든 계산이 견적서와 일치함",
+    "decision": "작성 가능",
+    "branch": "품의 내용 작성",
+    "note": "{\n  \"제목\": \"돌출 채널 사인 (LED 3m) 외 3건 구매의 건\",\n  \"품목 요약\": \"돌출 채널 사인 (LED 3m) 외 3건\",\n  \"업체\": \"(주)빛나사인\",\n  \"합계\": 4878500,\n  \"품의 요지\": \"아래와 같이 물품을 구매하고자 합니다.\"\n}",
+    "job_id": "job_LDAN9notczC8gKrdoE6EPk"
+  }
+}

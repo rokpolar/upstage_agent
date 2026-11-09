@@ -1,0 +1,55 @@
+{
+  "vendor_name": "성원광고사",
+  "vendor_representative": "강성호",
+  "quote_date": "2026-11-04",
+  "supply_amount": 3754000,
+  "vat_amount": 375400,
+  "total_amount": 4129400,
+  "review_flags": [],
+  "items": [
+    {
+      "expense_category": "홍보비",
+      "description": "LED 채널간판 제작·설치 가로 3m",
+      "quantity": 1,
+      "unit_price": 2170000,
+      "estimated_amount": 2170000,
+      "calculation_basis": "2,170,000원*1식",
+      "note": ""
+    },
+    {
+      "expense_category": "홍보비",
+      "description": "실사 출력물 포맥스 5T",
+      "quantity": 12,
+      "unit_price": 41500,
+      "estimated_amount": 498000,
+      "calculation_basis": "41,500원*12m2",
+      "note": ""
+    },
+    {
+      "expense_category": "홍보비",
+      "description": "안내 사인물 아크릴",
+      "quantity": 30,
+      "unit_price": 28000,
+      "estimated_amount": 840000,
+      "calculation_basis": "28,000원*30EA",
+      "note": ""
+    },
+    {
+      "expense_category": "홍보비",
+      "description": "현수막 거치 프레임 고정형",
+      "quantity": 4,
+      "unit_price": 61500,
+      "estimated_amount": 246000,
+      "calculation_basis": "61,500원*4EA",
+      "note": ""
+    }
+  ],
+  "studio": {
+    "category": "견적서",
+    "review": "계산: 품목별: [\"LED 채널간판 제작·설치: 2,170,000 × 1 = 2,170,000 (2,170,000)\", \"실사 출력물: 41,500 × 12 = 498,000 (498,000)\", \"안내 사인물: 28,000 × 30 = 840,000 (840,000)\", \"현수막 거치 프레임: 61,500 × 4 = 246,000 (246,000)\"], 품목 금액 합계: 3,754,000, 공급가액: 3,754,000, 부가세 10%: 375,400, 부가세: 375,400, 공급가액 + 부가세: 4,129,400, 합계: 4,129,400, issues: [], 요약: 모든 계산 값이 견적서와 일치함.",
+    "decision": "작성 가능",
+    "branch": "품의 내용 작성",
+    "note": "제목: LED 채널간판 제작·설치 가로 3m 외 3건 구매의 건",
+    "job_id": "job_U4R8AuywA7sceiRE3ZfZDB"
+  }
+}

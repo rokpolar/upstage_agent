@@ -1,0 +1,35 @@
+{
+  "vendor_name": "한국소방안전㈜",
+  "vendor_representative": "이정훈",
+  "quote_date": "2026-10-28",
+  "items": [
+    {
+      "quantity": 1,
+      "unit_price": 3800000,
+      "estimated_amount": 3800000,
+      "calculation_basis": "3,800,000원*1식"
+    },
+    {
+      "quantity": 40,
+      "unit_price": 21000,
+      "estimated_amount": 840000,
+      "calculation_basis": "21,000원*40EA"
+    },
+    {
+      "quantity": 25,
+      "unit_price": 38000,
+      "estimated_amount": 950000,
+      "calculation_basis": "38,000원*25EA"
+    },
+    {
+      "quantity": 1,
+      "unit_price": 650000,
+      "estimated_amount": 650000,
+      "calculation_basis": "650,000원*1식"
+    }
+  ],
+  "supply_amount": 6240000,
+  "vat_amount": 624000,
+  "total_amount": 6864000,
+  "review_flags": []
+}

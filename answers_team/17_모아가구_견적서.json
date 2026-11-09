@@ -1,0 +1,41 @@
+{
+  "vendor_name": "모아가구",
+  "vendor_representative": "차동민",
+  "quote_date": "2026-10-29",
+  "items": [
+    {
+      "quantity": 25,
+      "unit_price": 185000,
+      "estimated_amount": 4625000,
+      "calculation_basis": "185,000원*25EA"
+    },
+    {
+      "quantity": 25,
+      "unit_price": 142000,
+      "estimated_amount": 3550000,
+      "calculation_basis": "142,000원*25EA"
+    },
+    {
+      "quantity": 25,
+      "unit_price": 78000,
+      "estimated_amount": 1950000,
+      "calculation_basis": "78,000원*25EA"
+    },
+    {
+      "quantity": 12,
+      "unit_price": 125000,
+      "estimated_amount": 1500000,
+      "calculation_basis": "125,000원*12EA"
+    },
+    {
+      "quantity": 1,
+      "unit_price": 380000,
+      "estimated_amount": 380000,
+      "calculation_basis": "380,000원*1식"
+    }
+  ],
+  "supply_amount": 12005000,
+  "vat_amount": 1200500,
+  "total_amount": 13205500,
+  "review_flags": []
+}

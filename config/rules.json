@@ -1,0 +1,142 @@
+{
+  "_comment": "하네스 업무 규칙. 코드에 숫자·문구를 박지 말고 여기서 바꾼다.",
+  "vat_rate": 0.1,
+  "amount_tolerance_won": 1,
+  "seal_marks": [
+    "(인)",
+    "(印)",
+    "인",
+    "印"
+  ],
+  "patterns": {
+    "_comment": "원문 텍스트에서 찾는 정규식. 새 견적서 양식이 나오면 여기에 추가한다.",
+    "cover_total_vat_excluded": [
+      "합계금액.*(VAT|부가세|부가가치세)\\s*별도"
+    ],
+    "quote_validity_days": [
+      "유효기간\\s*:?\\s*(?:발행일|견적일)로부터\\s*(\\d+)\\s*일"
+    ]
+  },
+  "vendor_selection": {
+    "_comment": "견적이 여러 개일 때 추천 규칙. exclude_if: 이런 견적은 추천에서 뺀다(하네스 질문 종류). rank_by: 남은 견적을 이 순서로 정렬해 첫 번째를 추천한다.",
+    "exclude_if": [
+      "expired",
+      "missing_amount",
+      "missing_items"
+    ],
+    "rank_by": [
+      "total_asc",
+      "quote_date_desc"
+    ],
+    "reason_parts": {
+      "lowest": "비교견적 {count}개 업체 중 최저가({total}원)",
+      "gap": "차순위({second_vendor}, {second_total}원) 대비 {gap}원 저렴",
+      "valid": "견적 유효기간 내",
+      "single": "단일 견적({vendor}, {total}원)"
+    },
+    "reason_joiner": ", ",
+    "user_reason_prefix": ""
+  },
+  "form": {
+    "_comment": "지출품의서 기본값. 구매건 JSON에 값이 있으면 그쪽이 우선한다. template_dir은 품의서 양식 템플릿 폴더.",
+    "template_dir": "templates/지출품의서",
+    "output_name": "${case_id}_지출품의서",
+    "approvers": [
+      "담당",
+      "팀장",
+      "기관장"
+    ],
+    "funding_sources": [
+      "보조금",
+      "자부담"
+    ],
+    "default_funding_source": "보조금"
+  },
+  "ui": {
+    "_comment": "로컬 웹 화면(tools/server.py). quote_sets: [결과 JSON 폴더, 원본 견적서 PDF 폴더, 화면에 보일 이름].",
+    "host": "127.0.0.1",
+    "port": 8765,
+    "quote_sets": [
+      [
+        "results_upload",
+        "data_upload",
+        "업로드한 견적서"
+      ],
+      [
+        "results_team",
+        "data_team/견적서예시",
+        "팀 견적서 예시"
+      ],
+      [
+        "results",
+        "samples",
+        "개발용 샘플"
+      ]
+    ],
+    "_upload_comment": "화면에서 올린 견적서는 quote_sets 첫 번째 줄의 PDF 폴더에 저장하고, Studio 품의 Agent 결과는 같은 줄의 결과 폴더에 저장한다.",
+    "quote_upload_ext": [
+      ".pdf",
+      ".png",
+      ".jpg",
+      ".jpeg"
+    ],
+    "form_dirs": [
+      "forms/web",
+      "forms/uploads"
+    ],
+    "upload_dir": "forms/uploads",
+    "default_case": "examples/case_team01.json",
+    "output_dir": "out/ui"
+  },
+  "runtime": {
+    "_comment": "실행 환경. 환경변수 UPSTAGE_BASE_URL, PDF_BROWSER가 있으면 그쪽이 우선한다.",
+    "hwp": {
+      "_comment": "한글(HWP) 자동화. 확장자 → 한글 저장 형식 이름.",
+      "progid": "HWPFrame.HwpObject",
+      "open_options": "forceopen:true;suspendpassword:true",
+      "message_box_mode": 65553,
+      "_message_box_comment": "한글 대화상자 자동 응답(SetMessageBoxMode). 65553 = 0x10011: 확인창은 '확인', 예/아니오는 '예'. 자동화가 숨은 창에서 멈추지 않게 한다.",
+      "timeout_seconds": 90,
+      "formats": {
+        ".hwp": "HWP",
+        ".hwpx": "HWPX",
+        ".pdf": "PDF",
+        ".docx": "OOXML"
+      }
+    },
+    "soffice": [
+      "C:\\Program Files\\LibreOffice\\program\\soffice.exe",
+      "/Applications/LibreOffice.app/Contents/MacOS/soffice",
+      "/usr/bin/soffice"
+    ],
+    "api_base_url": "https://api.upstage.ai/v2",
+    "api_poll_seconds": 3,
+    "api_timeout_seconds": 600,
+    "pdf_browsers": [
+      "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
+      "C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe",
+      "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+      "/usr/bin/google-chrome",
+      "/usr/bin/chromium"
+    ],
+    "studio": {
+      "_comment": "Studio 노드 워크플로(workflow/품의 Agent (노드).json). agent_id가 있으면 .env의 AGENT_ID보다 먼저 쓴다. config_id가 null이면 Studio의 기본(최근 저장) 설정으로 돈다. include all이면 단계별 결과가 온다.",
+      "agent_id": "agt_95GnPJwPPiKTfBVzSLa5yk",
+      "config_id": null,
+      "include": [
+        "all"
+      ],
+      "step_types": {
+        "classify": "document-classify",
+        "extract": "information-extract",
+        "instruct": "instruct"
+      },
+      "quote_category": "견적서",
+      "instruct_name_prefix": "Instruct - ",
+      "review_step": "견적 검토",
+      "citation_pattern": "【[^】]*】",
+      "workers": 5
+    }
+  }
+}

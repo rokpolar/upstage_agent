@@ -1,0 +1,55 @@
+{
+  "vendor_name": "한국소방안전(주)",
+  "vendor_representative": "이정훈",
+  "quote_date": "2026-10-28",
+  "supply_amount": 6240000,
+  "vat_amount": 624000,
+  "total_amount": 6864000,
+  "review_flags": [],
+  "items": [
+    {
+      "expense_category": "용역비",
+      "description": "소방시설 종합점검 연면적 3,200m²",
+      "quantity": 1,
+      "unit_price": 3800000,
+      "estimated_amount": 3800000,
+      "calculation_basis": "3,800,000원*1식",
+      "note": ""
+    },
+    {
+      "expense_category": "기타",
+      "description": "소화기 교체 3.3kg ABC",
+      "quantity": 40,
+      "unit_price": 21000,
+      "estimated_amount": 840000,
+      "calculation_basis": "21,000원*40EA",
+      "note": ""
+    },
+    {
+      "expense_category": "기타",
+      "description": "유도등 교체 LED/중형",
+      "quantity": 25,
+      "unit_price": 38000,
+      "estimated_amount": 950000,
+      "calculation_basis": "38,000원*25EA",
+      "note": ""
+    },
+    {
+      "expense_category": "용역비",
+      "description": "자탐설비 수리 수신기 포함",
+      "quantity": 1,
+      "unit_price": 650000,
+      "estimated_amount": 650000,
+      "calculation_basis": "650,000원*1식",
+      "note": ""
+    }
+  ],
+  "studio": {
+    "category": "견적서",
+    "review": "{",
+    "decision": "작성 가능",
+    "branch": "품의 내용 작성",
+    "note": "제목: 소방시설 종합점검 외 3건 구매의 건\n품목 요약: 소방시설 종합점검 외 3건\n업체: 한국소방안전(주)\n합계: 6864000\n품의 요지: 아래와 같이 물품을 구매하고자 합니다.",
+    "job_id": "job_DBvMbyCKn9toWRYC7KtzcA"
+  }
+}

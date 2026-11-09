@@ -1,0 +1,12 @@
+{
+  "_comment": "page.html 안에 반복·조건부로 들어가는 조각. ${이름}은 render_pumui.py가 채운다.",
+  "item_row": "<tr><td class='c'>${no}</td><td class='c'>${category}</td><td>${description}</td><td class='num'>${amount}</td><td>${basis}</td><td>${note}</td></tr>",
+  "flags": "<div class='flags'><b>검토 필요</b> — ${messages}</div>",
+  "flags_separator": " / ",
+  "funding_checked": "■ ${name}",
+  "funding_unchecked": "□ ${name}",
+  "funding_separator": " &nbsp; ",
+  "sign_head_cell": "<td>${name}</td>",
+  "sign_blank_cell": "<td></td>",
+  "related_plan": "1. ${plan} 1부 끝"
+}

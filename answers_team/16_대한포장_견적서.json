@@ -1,0 +1,41 @@
+{
+  "vendor_name": "대한포장㈜",
+  "vendor_representative": "윤재석",
+  "quote_date": "2026-10-28",
+  "items": [
+    {
+      "quantity": 3000,
+      "unit_price": 520,
+      "estimated_amount": 1560000,
+      "calculation_basis": "520원*3,000EA"
+    },
+    {
+      "quantity": 40,
+      "unit_price": 14500,
+      "estimated_amount": 580000,
+      "calculation_basis": "14,500원*40롤"
+    },
+    {
+      "quantity": 30,
+      "unit_price": 9800,
+      "estimated_amount": 294000,
+      "calculation_basis": "9,800원*30롤"
+    },
+    {
+      "quantity": 500,
+      "unit_price": 780,
+      "estimated_amount": 390000,
+      "calculation_basis": "780원*500EA"
+    },
+    {
+      "quantity": 25,
+      "unit_price": 22000,
+      "estimated_amount": 550000,
+      "calculation_basis": "22,000원*25박스"
+    }
+  ],
+  "supply_amount": 3374000,
+  "vat_amount": 337400,
+  "total_amount": 3711400,
+  "review_flags": []
+}

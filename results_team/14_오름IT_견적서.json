@@ -1,0 +1,55 @@
+{
+  "vendor_name": "오름IT(주)",
+  "vendor_representative": "정민수",
+  "quote_date": "2026-10-19",
+  "supply_amount": 27570000,
+  "vat_amount": 2757000,
+  "total_amount": 30327000,
+  "review_flags": [],
+  "items": [
+    {
+      "expense_category": "장비구입비",
+      "description": "노트북 14\" i7/16GB",
+      "quantity": 15,
+      "unit_price": 1350000,
+      "estimated_amount": 20250000,
+      "calculation_basis": "1,350,000원*15대",
+      "note": ""
+    },
+    {
+      "expense_category": "장비구입비",
+      "description": "27형 QHD 모니터 IPS",
+      "quantity": 15,
+      "unit_price": 310000,
+      "estimated_amount": 4650000,
+      "calculation_basis": "310,000원*15대",
+      "note": ""
+    },
+    {
+      "expense_category": "장비구입비",
+      "description": "도킹스테이션 USB-C",
+      "quantity": 15,
+      "unit_price": 134000,
+      "estimated_amount": 2010000,
+      "calculation_basis": "134,000원*15EA",
+      "note": ""
+    },
+    {
+      "expense_category": "장비구입비",
+      "description": "보안 잠금장치 켄싱턴",
+      "quantity": 15,
+      "unit_price": 44000,
+      "estimated_amount": 660000,
+      "calculation_basis": "44,000원*15EA",
+      "note": ""
+    }
+  ],
+  "studio": {
+    "category": "견적서",
+    "review": "계산 결과:\n- 노트북: 1,350,000 × 15 = 20,250,000 (견적서 금액: 20,250,000) 일치\n- 27형 QHD 모니터: 310,000 × 15 = 4,650,000 (견적서 금액: 4,650,000) 일치\n- 도킹스테이션: 134,000 × 15 = 2,010,000 (견적서 금액: 2,010,000) 일치\n- 보안 잠금장치: 44,000 × 15 = 660,000 (견적서 금액: 660,000) 일치\n\n품목 금액 합계: 27,570,000\n공급가액: 27,570,000 (일치)\n부가세 10%: 2,757,000\n부가세: 2,757,000 (일치)\n공급가액 + 부가세: 30,327,000\n합계: 30,327,000 (일치)\n\n모든 계산이 견적서와 정확히 일치하며, 업체명, 견적일, 합계 모두 정상 기재되어 있어 issues는 없습니다.",
+    "decision": "작성 가능",
+    "branch": "품의 내용 작성",
+    "note": "제목: 노트북 14\" i7/16GB 외 3건 구매의 건",
+    "job_id": "job_LVZ5NVe9cLovtP93LDQCbN"
+  }
+}

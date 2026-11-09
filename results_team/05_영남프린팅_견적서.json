@@ -1,0 +1,64 @@
+{
+  "vendor_name": "(주)영남프린팅",
+  "vendor_representative": "조영식",
+  "quote_date": "2026-10-29",
+  "supply_amount": 5461000,
+  "vat_amount": 546100,
+  "total_amount": 6007100,
+  "review_flags": [],
+  "items": [
+    {
+      "expense_category": "홍보비",
+      "description": "성과보고서 인쇄 A4 72쪽",
+      "quantity": 500,
+      "unit_price": 7550,
+      "estimated_amount": 3775000,
+      "calculation_basis": "7,550원*500권",
+      "note": ""
+    },
+    {
+      "expense_category": "홍보비",
+      "description": "기관 소개 리플릿 3단",
+      "quantity": 2000,
+      "unit_price": 460,
+      "estimated_amount": 920000,
+      "calculation_basis": "460원*2,000부",
+      "note": ""
+    },
+    {
+      "expense_category": "홍보비",
+      "description": "행사용 현수막 5×0.9m",
+      "quantity": 4,
+      "unit_price": 52000,
+      "estimated_amount": 208000,
+      "calculation_basis": "52,000원*4개",
+      "note": ""
+    },
+    {
+      "expense_category": "홍보비",
+      "description": "X-배너 60×160cm",
+      "quantity": 6,
+      "unit_price": 43000,
+      "estimated_amount": 258000,
+      "calculation_basis": "43,000원*6EA",
+      "note": ""
+    },
+    {
+      "expense_category": "홍보비",
+      "description": "명찰·목걸이줄 PVC",
+      "quantity": 150,
+      "unit_price": 2000,
+      "estimated_amount": 300000,
+      "calculation_basis": "2,000원*150EA",
+      "note": ""
+    }
+  ],
+  "studio": {
+    "category": "견적서",
+    "review": "{",
+    "decision": "작성 가능",
+    "branch": "품의 내용 작성",
+    "note": "제목: 성과보고서 인쇄 A4 72쪽 외 4건 구매의 건\n품목 요약: 성과보고서 인쇄 A4 72쪽 외 4건\n업체: (주)영남프린팅\n합계: 6007100\n품의 요지: 아래와 같이 물품을 구매하고자 합니다.",
+    "job_id": "job_gwnE4fMipWXLKYobBLm3Sh"
+  }
+}

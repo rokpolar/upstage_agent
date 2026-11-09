@@ -1,0 +1,35 @@
+/* 색·글꼴·간격 토큰. 참고: Apple 스토어 구입 페이지(담당자 요청).
+   흰 바탕과 #f5f5f7 회색 판, 글자 #1d1d1f, 보조 글자 #6e6e73, 강조는 파랑 #0071e3 하나, 알약 버튼, 고르면 파란 테두리.
+   글꼴은 시스템 글꼴(맥은 SF), 윈도는 Pretendard. 이름(--color-paper 등)은 그대로 두고 값만 바꾼다. */
+:root {
+  color-scheme: light;
+  --space-3xs: 2px; --space-2xs: 4px; --space-xs: 8px; --space-sm: 12px; --space-md: 16px; --space-lg: 24px; --space-xl: 40px; --space-2xl: 64px; --space-3xl: 96px; --space-4xl: 144px;
+  --text-xs: 0.75rem; --text-sm: 0.875rem; --text-md: 1.0625rem; --text-lg: 1.3125rem; --text-xl: 1.75rem; --text-2xl: 2.5rem; --text-3xl: 3rem;
+  --text-display-s: 1.75rem; --text-display: 2.5rem; --text-section: 1.3125rem; --text-title: 1.0625rem; --text-lead: 1.0625rem;
+  --ease-out: cubic-bezier(0.25, 0.1, 0.25, 1); --ease-in: cubic-bezier(0.42, 0, 1, 1); --ease-in-out: cubic-bezier(0.42, 0, 0.58, 1);
+  --dur-micro: 150ms; --dur-short: 240ms; --dur-long: 420ms;
+  --container: 1240px; --gutter: 40px; --gap-columns: 32px; --section-gap-s: 120px; --section-gap: 144px; --section-gap-l: 176px;
+  --z-base: 1; --z-raised: 10; --z-dropdown: 100; --z-sticky: 200; --z-sticky-nav: 300; --z-modal: 400; --z-toast: 500; --z-tooltip: 600;
+
+  --color-paper: #ffffff; --color-paper-2: #f5f5f7; --color-paper-3: #e8e8ed;
+  --color-ink: #1d1d1f; --color-ink-2: #424245; --color-muted: #6e6e73; --color-disabled: #86868b;
+  --color-rule: #d2d2d7; --color-rule-2: #d2d2d7; --color-rule-input: #86868b;
+
+  --color-accent: #0071e3; --color-accent-hover: #0077ed; --color-accent-press: #006edb; --color-link: #0066cc;
+  --color-accent-ink: #ffffff; --color-focus: #0071e3;
+  --color-tag: #b64400;
+
+  --color-success: #008009; --color-warning: #b64400; --color-error: #e30000; --color-error-wash: #fff2f4;
+
+  --color-graphite: #1d1d1f; --color-graphite-2: #424245; --color-graphite-ink: #f5f5f7; --color-graphite-muted: #86868b;
+
+  --font-display: -apple-system, BlinkMacSystemFont, "SF Pro KR", "SF Pro Display", "Apple SD Gothic Neo", "Pretendard Variable", "Pretendard", "Malgun Gothic", sans-serif;
+  --font-body: -apple-system, BlinkMacSystemFont, "SF Pro KR", "SF Pro Text", "Apple SD Gothic Neo", "Pretendard Variable", "Pretendard", "Malgun Gothic", sans-serif;
+  --font-outlier: ui-monospace, "SF Mono", monospace;
+
+  --radius-tile: 12px; --radius-panel: 18px; --radius-input: 12px; --radius-pill: 980px; --radius-card: 18px;
+  --cut: 0px; --cut-l: 0px;
+  --rule-hair: 1px; --rule-pick: 2px;
+  --shadow-card: none;
+  --tracking-display: -0.02em; --tracking-body: -0.01em; --display-weight: 700;
+}

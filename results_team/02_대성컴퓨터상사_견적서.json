@@ -1,0 +1,64 @@
+{
+  "vendor_name": "대성컴퓨터상사",
+  "vendor_representative": "박대성",
+  "quote_date": "2026-10-21",
+  "supply_amount": 3160000,
+  "vat_amount": 316000,
+  "total_amount": 3476000,
+  "review_flags": [],
+  "items": [
+    {
+      "expense_category": "장비구입비",
+      "description": "무선 키보드 마우스 MK270",
+      "quantity": 30,
+      "unit_price": 32000,
+      "estimated_amount": 960000,
+      "calculation_basis": "32,000원*30SET",
+      "note": ""
+    },
+    {
+      "expense_category": "장비구입비",
+      "description": "USB-C 멀티허브 7in1",
+      "quantity": 30,
+      "unit_price": 28500,
+      "estimated_amount": 855000,
+      "calculation_basis": "28,500원*30EA",
+      "note": ""
+    },
+    {
+      "expense_category": "장비구입비",
+      "description": "LAN 케이블 CAT.6/20m",
+      "quantity": 50,
+      "unit_price": 6800,
+      "estimated_amount": 340000,
+      "calculation_basis": "6,800원*50EA",
+      "note": ""
+    },
+    {
+      "expense_category": "장비구입비",
+      "description": "모니터 거치대 싱글암",
+      "quantity": 30,
+      "unit_price": 24000,
+      "estimated_amount": 720000,
+      "calculation_basis": "24,000원*30EA",
+      "note": ""
+    },
+    {
+      "expense_category": "장비구입비",
+      "description": "노트북 파우치 15.6인치",
+      "quantity": 30,
+      "unit_price": 9500,
+      "estimated_amount": 285000,
+      "calculation_basis": "9,500원*30EA",
+      "note": ""
+    }
+  ],
+  "studio": {
+    "category": "견적서",
+    "review": "{",
+    "decision": "작성 가능",
+    "branch": "품의 내용 작성",
+    "note": "제목: 무선 키보드 마우스 MK270 외 4건 구매의 건",
+    "job_id": "job_hoVVgjwAtwKK4UJLBZ6kLq"
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "vendor_name": "정원조경(주)",
+  "vendor_representative": "배성호",
+  "quote_date": "2026-10-21",
+  "supply_amount": 9630000,
+  "vat_amount": 963000,
+  "total_amount": 10593000,
+  "review_flags": [],
+  "items": [
+    {
+      "expense_category": "용역비",
+      "description": "수목 전정 교목",
+      "quantity": 120,
+      "unit_price": 35000,
+      "estimated_amount": 4200000,
+      "calculation_basis": "35,000원*120주",
+      "note": ""
+    },
+    {
+      "expense_category": "용역비",
+      "description": "잔디 관리 월 2회",
+      "quantity": 1800,
+      "unit_price": 1200,
+      "estimated_amount": 2160000,
+      "calculation_basis": "1,200원*1800m²",
+      "note": ""
+    },
+    {
+      "expense_category": "용역비",
+      "description": "화단 식재 계절초화",
+      "quantity": 150,
+      "unit_price": 9000,
+      "estimated_amount": 1350000,
+      "calculation_basis": "9,000원*150m²",
+      "note": ""
+    },
+    {
+      "expense_category": "용역비",
+      "description": "제초·병해충 방제 월 1회",
+      "quantity": 6,
+      "unit_price": 320000,
+      "estimated_amount": 1920000,
+      "calculation_basis": "320,000원*6회",
+      "note": ""
+    }
+  ],
+  "studio": {
+    "category": "견적서",
+    "review": "{",
+    "decision": "작성 가능",
+    "branch": "품의 내용 작성",
+    "note": "제목: 수목 전정 교목 외 3건 구매의 건",
+    "job_id": "job_AnHpkYfxLjzh5MUcJF64b4"
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "vendor_name": "(주)한울전기유통",
+  "vendor_representative": "정미경",
+  "quote_date": "2026-10-22",
+  "supply_amount": 5473500,
+  "vat_amount": 547350,
+  "total_amount": 6020850,
+  "review_flags": [],
+  "items": [
+    {
+      "expense_category": "기타",
+      "description": "LED 평판등 50W/6500K",
+      "quantity": 200,
+      "unit_price": 18000,
+      "estimated_amount": 3600000,
+      "calculation_basis": "18,000원*200EA",
+      "note": ""
+    },
+    {
+      "expense_category": "기타",
+      "description": "비닐절연전선 HIV 2.5mm² 100m",
+      "quantity": 15,
+      "unit_price": 60500,
+      "estimated_amount": 907500,
+      "calculation_basis": "60,500원*15롤",
+      "note": ""
+    },
+    {
+      "expense_category": "기타",
+      "description": "MCB 차단기 2P/20A",
+      "quantity": 40,
+      "unit_price": 7400,
+      "estimated_amount": 296000,
+      "calculation_basis": "7,400원*40EA",
+      "note": ""
+    },
+    {
+      "expense_category": "기타",
+      "description": "콘센트 매립형 2구/접지",
+      "quantity": 100,
+      "unit_price": 2200,
+      "estimated_amount": 220000,
+      "calculation_basis": "2,200원*100EA",
+      "note": ""
+    },
+    {
+      "expense_category": "기타",
+      "description": "합성수지 전선관 16mm 3.6m",
+      "quantity": 300,
+      "unit_price": 1500,
+      "estimated_amount": 450000,
+      "calculation_basis": "1,500원*300개",
+      "note": ""
+    }
+  ],
+  "studio": {
+    "category": "견적서",
+    "review": "계산: 품목별: [\"LED 평판등: 18,000 × 200 = 3,600,000 (3,600,000)\", \"비닐절연전선 HIV: 60,500 × 15 = 907,500 (907,500)\", \"MCB 차단기: 7,400 × 40 = 296,000 (296,000)\", \"콘센트 매립형: 2,200 × 100 = 220,000 (220,000)\", \"합성수지 전선관: 1,500 × 300 = 450,000 (450,000)\"], 품목 금액 합계: 5,473,500, 공급가액: 5,473,500, 부가세 10%: 547,350, 부가세: 547,350, 공급가액 + 부가세: 6,020,850, 합계: 6,020,850, issues: [], 요약: 모든 품목 계산, 공급가액, 부가세, 합계가 견적서와 일치한다.",
+    "decision": "작성 가능",
+    "branch": "품의 내용 작성",
+    "note": "{\n  \"제목\": \"LED 평판등 50W/6500K 외 4건 구매의 건\",\n  \"품목 요약\": \"LED 평판등 50W/6500K 외 4건\",\n  \"업체\": \"(주)한울전기유통\",\n  \"합계\": 6020850,\n  \"품의 요지\": \"아래와 같이 물품을 구매하고자 합니다.\"\n}",
+    "job_id": "job_B2587cEZ3JpjsEr5acxGVe"
+  }
+}

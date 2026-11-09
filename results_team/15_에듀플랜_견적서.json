@@ -1,0 +1,55 @@
+{
+  "vendor_name": "에듀플랜",
+  "vendor_representative": "조은영",
+  "quote_date": "2026-10-26",
+  "supply_amount": 7992000,
+  "vat_amount": 799200,
+  "total_amount": 8791200,
+  "review_flags": [],
+  "items": [
+    {
+      "expense_category": "용역비",
+      "description": "직무교육 강사료 4시간/회",
+      "quantity": 8,
+      "unit_price": 600000,
+      "estimated_amount": 4800000,
+      "calculation_basis": "600,000원*8회",
+      "note": ""
+    },
+    {
+      "expense_category": "기타",
+      "description": "교재 제작 A4/흑백",
+      "quantity": 160,
+      "unit_price": 7500,
+      "estimated_amount": 1200000,
+      "calculation_basis": "7,500원*160부",
+      "note": ""
+    },
+    {
+      "expense_category": "임차료",
+      "description": "교육장 대관 60인실",
+      "quantity": 4,
+      "unit_price": 450000,
+      "estimated_amount": 1800000,
+      "calculation_basis": "450,000원*4일",
+      "note": ""
+    },
+    {
+      "expense_category": "기타",
+      "description": "수료증 제작 코팅",
+      "quantity": 160,
+      "unit_price": 1200,
+      "estimated_amount": 192000,
+      "calculation_basis": "1,200원*160EA",
+      "note": ""
+    }
+  ],
+  "studio": {
+    "category": "견적서",
+    "review": "계산:\n- 직무교육 강사료: 600,000 × 8 = 4,800,000 (견적서 금액: 4,800,000)\n- 교재 제작: 7,500 × 160 = 1,200,000 (견적서 금액: 1,200,000)\n- 교육장 대관: 450,000 × 4 = 1,800,000 (견적서 금액: 1,800,000)\n- 수료증 제작: 1,200 × 160 = 192,000 (견적서 금액: 192,000)\n\n품목 금액 합계: 7,992,000\n공급가액: 7,992,000\n부가세 10%: 799,200\n부가세: 799,200\n공급가액 + 부가세: 8,791,200\n합계: 8,791,200\n\nissues: []\n\n요약: 모든 계산 값이 견적서 값과 일치함.",
+    "decision": "작성 가능",
+    "branch": "품의 내용 작성",
+    "note": "제목: 직무교육 강사료 4시간/회 외 3건 구매의 건",
+    "job_id": "job_B4rbRNWjS9xVgjYFYWpDmB"
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "vendor_name": "대구냉난방㈜",
+  "vendor_representative": "정우성",
+  "quote_date": "2026-10-29",
+  "items": [
+    {
+      "quantity": 12,
+      "unit_price": 85000,
+      "estimated_amount": 1020000,
+      "calculation_basis": "85,000원*12대"
+    },
+    {
+      "quantity": 20,
+      "unit_price": 32000,
+      "estimated_amount": 640000,
+      "calculation_basis": "32,000원*20KG"
+    },
+    {
+      "quantity": 12,
+      "unit_price": 25000,
+      "estimated_amount": 300000,
+      "calculation_basis": "25,000원*12대"
+    },
+    {
+      "quantity": 3,
+      "unit_price": 180000,
+      "estimated_amount": 540000,
+      "calculation_basis": "180,000원*3EA"
+    }
+  ],
+  "supply_amount": 2500000,
+  "vat_amount": 250000,
+  "total_amount": 2750000,
+  "review_flags": []
+}

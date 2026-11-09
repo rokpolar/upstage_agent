@@ -1,0 +1,80 @@
+{
+  "type": "json_schema",
+  "json_schema": {
+    "name": "Extract-품의서",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "vendor_name": {
+          "type": "string",
+          "description": "견적서를 발행한 업체(공급자)의 상호. ㈜, (주) 등 법인 표기는 원문 그대로 둔다. 찾을 수 없으면 '검토 필요'."
+        },
+        "vendor_representative": {
+          "type": "string",
+          "description": "공급자 대표자 성명. 없으면 빈 문자열."
+        },
+        "quote_date": {
+          "type": "string",
+          "description": "견적일자. YYYY-MM-DD 형식. 없으면 빈 문자열."
+        },
+        "items": {
+          "type": "array",
+          "description": "지출품의서 '내역' 표의 행. 견적서의 품목 한 줄당 한 행.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "expense_category": {
+                "type": "string",
+                "description": "비목. 다음 중 하나만 고른다: 사무용품비(종이·필기구·토너 등 소모성 사무용품), 홍보비(포스터·현수막·리플렛 등 홍보물 제작), 장비구입비(노트북·모니터·마우스 등 기기 구입), 용역비(촬영·편집·디자인 등 사람이 하는 작업), 임차료(장비·장소 대여), 기타. 판단이 어려우면 '검토 필요'."
+              },
+              "description": {
+                "type": "string",
+                "description": "적요(품명). 견적서의 품명과 규격을 그대로 쓴다. 예: 'A4 파일(40매/투명)'. 목적이나 '구매' 같은 말은 붙이지 않는다."
+              },
+              "quantity": {
+                "type": "number",
+                "description": "수량. 숫자만."
+              },
+              "unit_price": {
+                "type": "number",
+                "description": "단가(원). 쉼표와 '원' 없이 정수."
+              },
+              "estimated_amount": {
+                "type": "number",
+                "description": "추정금액(원) = 해당 품목의 금액. 견적서에 적힌 품목 금액을 쓰고 쉼표 없이 정수."
+              },
+              "calculation_basis": {
+                "type": "string",
+                "description": "산출근거. '단가원*수량단위' 형식, 단가에는 천 단위 쉼표, 공백 없음. 예: '4,000원*100장', '300,000원*1식'."
+              },
+              "note": {
+                "type": "string",
+                "description": "비고. 품목 행에 따로 적힌 특이사항만. 없으면 빈 문자열."
+              }
+            }
+          }
+        },
+        "supply_amount": {
+          "type": "number",
+          "description": "공급가액 합계(원, 부가세 제외). 쉼표 없이 정수."
+        },
+        "vat_amount": {
+          "type": "number",
+          "description": "부가세(원). 견적서에 부가세(세액, VAT) 표기가 없으면 0으로 두고 review_flags에 '부가세 표기 없음'을 넣는다."
+        },
+        "total_amount": {
+          "type": "number",
+          "description": "부가세를 포함한 합계 금액(원). 지출품의서의 '지출 추정금액'이 된다. 쉼표 없이 정수. 주의: 견적서 상단의 '합계금액' 옆에 'VAT 별도'라고 적혀 있으면 그 값은 공급가액이므로 쓰지 말고, 표 아래의 총 합계(공급가액+세액)를 쓴다."
+        },
+        "review_flags": {
+          "type": "array",
+          "description": "사람이 확인해야 할 사유 목록. 금액은 견적서에 적힌 값을 그대로 추출하고, 맞지 않으면 여기에 사유를 적는다. 사용할 문구: '품목 금액 합계와 공급가액 불일치', '공급가액과 부가세의 합이 합계와 불일치', '부가세 표기 없음', '업체명 판독 불가', '금액 판독 불가'. 문제가 없으면 빈 배열.",
+          "items": {
+            "type": "string",
+            "description": "사람이 확인해야 할 사유 한 줄. 금액은 견적서에 적힌 값을 그대로 추출하고, 맞지 않으면 사유를 적는다. 사용할 문구: '품목 금액 합계와 공급가액 불일치', '공급가액과 부가세의 합이 합계와 불일치', '부가세 표기 없음', '업체명 판독 불가', '금액 판독 불가'. 문제가 없으면 아무것도 넣지 않는다(빈 목록)."
+          }
+        }
+      }
+    }
+  }
+}

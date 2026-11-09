@@ -1,0 +1,55 @@
+{
+  "vendor_name": "바른공조(주)",
+  "vendor_representative": "이서연",
+  "quote_date": "2026-10-30",
+  "supply_amount": 2671000,
+  "vat_amount": 267100,
+  "total_amount": 2938100,
+  "review_flags": [],
+  "items": [
+    {
+      "expense_category": "용역비",
+      "description": "냉난방기 정기점검 시스템/천장형 18평",
+      "quantity": 12,
+      "unit_price": 90000,
+      "estimated_amount": 1080000,
+      "calculation_basis": "90,000원*12EA",
+      "note": ""
+    },
+    {
+      "expense_category": "용역비",
+      "description": "냉매 가스 충전 R410A",
+      "quantity": 20,
+      "unit_price": 35000,
+      "estimated_amount": 700000,
+      "calculation_basis": "35,000원*20kg",
+      "note": ""
+    },
+    {
+      "expense_category": "용역비",
+      "description": "필터 세척 전체",
+      "quantity": 12,
+      "unit_price": 25500,
+      "estimated_amount": 306000,
+      "calculation_basis": "25,500원*12대",
+      "note": ""
+    },
+    {
+      "expense_category": "용역비",
+      "description": "팬모터 교체 송풍모터",
+      "quantity": 3,
+      "unit_price": 195000,
+      "estimated_amount": 585000,
+      "calculation_basis": "195,000원*3EA",
+      "note": ""
+    }
+  ],
+  "studio": {
+    "category": "견적서",
+    "review": "계산\n품목별\n냉난방기 정기점검: 90,000 × 12 = 1,080,000 (견적서 금액 1,080,000)\n냉매 가스 충전: 35,000 × 20 = 700,000 (견적서 금액 700,000)\n필터 세척: 25,500 × 12 = 306,000 (견적서 금액 306,000)\n팬모터 교체: 195,000 × 3 = 585,000 (견적서 금액 585,000)\n품목 금액 합계: 2,671,000\n공급가액: 2,671,000\n부가세 10%: 267,100\n부가세: 267,100\n공급가액 + 부가세: 2,938,100\n합계: 2,938,100\n\nissues: []\n\n요약: 모든 품목 계산 금액, 품목 합계, 공급가액, 부가세 10%, 부가세, 공급가액+부가세, 합계가 견적서 값과 일치하여 문제가 없다.",
+    "decision": "작성 가능",
+    "branch": "품의 내용 작성",
+    "note": "{\n  \"제목\": \"냉난방기 정기점검 시스템/천장형 18평 외 3건 구매의 건\",\n  \"품목 요약\": \"냉난방기 정기점검 시스템/천장형 18평 외 3건\",\n  \"업체\": \"바른공조(주)\",\n  \"합계\": 2938100,\n  \"품의 요지\": \"아래와 같이 물품을 구매하고자 합니다.\"\n}",
+    "job_id": "job_YLkcT6ipHWkAiw3rEeVrDg"
+  }
+}

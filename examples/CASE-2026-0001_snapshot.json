@@ -1,0 +1,37 @@
+{
+  "case_id": "CASE-2026-0001",
+  "approval_version": 1,
+  "status": "APPROVED",
+  "approved_by": "팀장",
+  "approved_at": "2026-11-04T23:38:17+09:00",
+  "funding_source": "보조금",
+  "project_name": "2026 대울경 AI 해커톤 홍보",
+  "source_quote_file": "q01.pdf",
+  "vendor_name": "㈜진주인쇄",
+  "vendor_representative": "이인쇄",
+  "quote_date": "2026-11-02",
+  "items": [
+    {
+      "expense_category": "홍보비",
+      "description": "사업 홍보를 위한 포스터 제작(A2, 아트지 150g)",
+      "quantity": 100,
+      "unit_price": 4000,
+      "estimated_amount": 400000,
+      "calculation_basis": "4,000원*100장",
+      "note": ""
+    },
+    {
+      "expense_category": "홍보비",
+      "description": "사업 홍보를 위한 현수막 제작(5m x 0.9m)",
+      "quantity": 10,
+      "unit_price": 50000,
+      "estimated_amount": 500000,
+      "calculation_basis": "50,000원*10개",
+      "note": ""
+    }
+  ],
+  "supply_amount": 900000,
+  "vat_amount": 90000,
+  "total_amount": 990000,
+  "review_flags": []
+}

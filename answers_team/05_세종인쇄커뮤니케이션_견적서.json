@@ -1,0 +1,41 @@
+{
+  "vendor_name": "세종인쇄커뮤니케이션",
+  "vendor_representative": "서민규",
+  "quote_date": "2026-10-26",
+  "items": [
+    {
+      "quantity": 500,
+      "unit_price": 6800,
+      "estimated_amount": 3400000,
+      "calculation_basis": "6,800원*500부"
+    },
+    {
+      "quantity": 2000,
+      "unit_price": 420,
+      "estimated_amount": 840000,
+      "calculation_basis": "420원*2,000부"
+    },
+    {
+      "quantity": 4,
+      "unit_price": 48000,
+      "estimated_amount": 192000,
+      "calculation_basis": "48,000원*4장"
+    },
+    {
+      "quantity": 6,
+      "unit_price": 38000,
+      "estimated_amount": 228000,
+      "calculation_basis": "38,000원*6EA"
+    },
+    {
+      "quantity": 150,
+      "unit_price": 1900,
+      "estimated_amount": 285000,
+      "calculation_basis": "1,900원*150EA"
+    }
+  ],
+  "supply_amount": 4945000,
+  "vat_amount": 494500,
+  "total_amount": 5439500,
+  "review_flags": []
+}

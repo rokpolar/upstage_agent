@@ -1,0 +1,35 @@
+{
+  "vendor_name": "㈜한성테크",
+  "vendor_representative": "권혁준",
+  "quote_date": "2026-10-23",
+  "items": [
+    {
+      "quantity": 15,
+      "unit_price": 1480000,
+      "estimated_amount": 22200000,
+      "calculation_basis": "1,480,000원*15EA"
+    },
+    {
+      "quantity": 15,
+      "unit_price": 326000,
+      "estimated_amount": 4890000,
+      "calculation_basis": "326,000원*15EA"
+    },
+    {
+      "quantity": 15,
+      "unit_price": 138000,
+      "estimated_amount": 2070000,
+      "calculation_basis": "138,000원*15EA"
+    },
+    {
+      "quantity": 15,
+      "unit_price": 45000,
+      "estimated_amount": 675000,
+      "calculation_basis": "45,000원*15EA"
+    }
+  ],
+  "supply_amount": 29835000,
+  "vat_amount": 2983500,
+  "total_amount": 32818500,
+  "review_flags": []
+}

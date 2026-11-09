@@ -1,0 +1,29 @@
+{
+  "vendor_name": "나래정수기㈜",
+  "vendor_representative": "임채원",
+  "quote_date": "2026-10-19",
+  "items": [
+    {
+      "quantity": 20,
+      "unit_price": 29900,
+      "estimated_amount": 598000,
+      "calculation_basis": "29,900원*20대"
+    },
+    {
+      "quantity": 20,
+      "unit_price": 35000,
+      "estimated_amount": 700000,
+      "calculation_basis": "35,000원*20회"
+    },
+    {
+      "quantity": 20,
+      "unit_price": 25000,
+      "estimated_amount": 500000,
+      "calculation_basis": "25,000원*20대"
+    }
+  ],
+  "supply_amount": 1798000,
+  "vat_amount": 179800,
+  "total_amount": 1977800,
+  "review_flags": []
+}

@@ -1,0 +1,422 @@
+{
+  "_comment": "어떤 품의서 양식이 와도 칸을 찾아 채우기 위한 사전. 새 양식에서 못 찾는 라벨이 있으면 labels에 동의어를 더한다. 라벨 비교는 공백·기호를 뺀 글자로 한다. source는 값이 오는 곳(result=품의 agent 결과, case=담당자 입력, selection=업체 선정, form=아래 templates).",
+  "form_title": {
+    "_comment": "한 파일에 여러 양식이 있으면 include에 맞고 exclude에 안 맞는 첫 양식만 채운다.",
+    "include": [
+      "품\\s*의",
+      "구\\s*매\\s*요\\s*청",
+      "지\\s*출\\s*계\\s*획"
+    ],
+    "exclude": [
+      "결\\s*의",
+      "검\\s*수",
+      "영\\s*수\\s*증",
+      "견\\s*적\\s*서"
+    ]
+  },
+  "skip_line_prefixes": [
+    "*",
+    "※",
+    "＊"
+  ],
+  "_skip_comment": "이 글자로 시작하는 줄은 양식의 작성 안내문이라 건드리지 않는다. 같은 칸에서 그 줄 뒤에 오는 줄도 안내문으로 본다.",
+  "line_number_prefix": "^\\s*(\\d+\\s*[.)]|[①-⑳]|[가-하]\\s*[.)]|[-·•]\\s)\\s*",
+  "_line_number_comment": "'1. 시행일자 :'처럼 줄 앞 번호는 라벨 비교에서 뺀다.",
+  "fields": {
+    "doc_no": {
+      "labels": [
+        "문서번호",
+        "품의번호",
+        "관리번호"
+      ],
+      "source": "case.doc_no"
+    },
+    "draft_date": {
+      "labels": [
+        "작성일자",
+        "작성일",
+        "기안일자",
+        "기안일",
+        "품의일자",
+        "품의일",
+        "신청일",
+        "일자"
+      ],
+      "source": "case.draft_date",
+      "format": "date"
+    },
+    "drafter": {
+      "labels": [
+        "작성자",
+        "기안자",
+        "신청자",
+        "품의자",
+        "요청자"
+      ],
+      "source": "case.drafter"
+    },
+    "department": {
+      "labels": [
+        "부서",
+        "소속",
+        "주관분과",
+        "주관부서",
+        "담당부서",
+        "요청부서"
+      ],
+      "source": "case.department"
+    },
+    "title": {
+      "labels": [
+        "제목",
+        "건명",
+        "품의제목"
+      ],
+      "source": "case.title",
+      "fallback": "form.title"
+    },
+    "total": {
+      "labels": [
+        "지출추정금액",
+        "지출금액",
+        "추정금액",
+        "합계금액",
+        "총금액",
+        "총액",
+        "소요예산",
+        "예정금액",
+        "품의금액",
+        "예산액",
+        "소요금액",
+        "구매금액"
+      ],
+      "source": "result.total",
+      "format": "amount_korean"
+    },
+    "payment_method": {
+      "labels": [
+        "지출방법",
+        "지급방법",
+        "결제방법"
+      ],
+      "source": "case.payment_method"
+    },
+    "project_name": {
+      "labels": [
+        "단위사업명",
+        "사업명",
+        "세부사업명"
+      ],
+      "source": "case.project_name"
+    },
+    "project_period": {
+      "labels": [
+        "사업기간",
+        "사업일정"
+      ],
+      "source": "case.project_period"
+    },
+    "expected_date": {
+      "labels": [
+        "지출예정일",
+        "구매예정일",
+        "납품예정일",
+        "집행예정일",
+        "시행일자",
+        "시행일"
+      ],
+      "source": "case.expected_date",
+      "format": "date"
+    },
+    "budget_item": {
+      "labels": [
+        "예산과목",
+        "예산항목",
+        "지출항목",
+        "지출항비목",
+        "비목"
+      ],
+      "source": "selection.budget_item"
+    },
+    "vendor": {
+      "labels": [
+        "거래처",
+        "업체명",
+        "구매처",
+        "계약상대자",
+        "선정업체",
+        "납품업체",
+        "지출처",
+        "지급처"
+      ],
+      "source": "result.vendor_name"
+    },
+    "funding": {
+      "labels": [
+        "재원구분",
+        "재원"
+      ],
+      "source": "case.funding_source",
+      "format": "checkbox"
+    },
+    "purpose": {
+      "labels": [
+        "구매목적",
+        "사용목적",
+        "목적",
+        "용도"
+      ],
+      "source": "case.purpose"
+    },
+    "related_plan": {
+      "labels": [
+        "관련계획서",
+        "관련근거",
+        "근거"
+      ],
+      "source": "case.related_plan"
+    },
+    "selection_reason": {
+      "labels": [
+        "선정사유",
+        "업체선정사유",
+        "선정이유",
+        "업체선정이유"
+      ],
+      "source": "selection.reason"
+    },
+    "attachments": {
+      "labels": [
+        "첨부서류",
+        "첨부"
+      ],
+      "source": "form.attachments"
+    }
+  },
+  "item_table": {
+    "_comment": "품목 표 머리글. 머리글 줄에서 서로 다른 열이 2개 이상 맞으면 품목 표로 본다.",
+    "columns": {
+      "no": [
+        "연번",
+        "번호",
+        "순번",
+        "no",
+        "NO"
+      ],
+      "category": [
+        "비목",
+        "구분",
+        "항목"
+      ],
+      "description": [
+        "적요",
+        "품명",
+        "품목",
+        "내역",
+        "내용",
+        "품명및규격",
+        "물품명"
+      ],
+      "spec": [
+        "규격",
+        "사양"
+      ],
+      "unit": [
+        "단위"
+      ],
+      "quantity": [
+        "수량"
+      ],
+      "unit_price": [
+        "단가",
+        "단가원"
+      ],
+      "amount": [
+        "금액",
+        "금액원",
+        "추정금액",
+        "공급가액",
+        "소요금액"
+      ],
+      "basis": [
+        "산출근거",
+        "산출내역",
+        "산출기초"
+      ],
+      "note": [
+        "비고"
+      ]
+    },
+    "total_row": [
+      "합계",
+      "계",
+      "총계",
+      "합",
+      "소계"
+    ],
+    "stop_row": [
+      "관련계획서",
+      "채주",
+      "첨부",
+      "참고사항",
+      "영수",
+      "상기",
+      "위와같이"
+    ],
+    "vat_row": {
+      "_comment": "견적서의 부가세를 품목 표에 한 줄로 넣어 합계(부가세 포함)와 맞춘다.",
+      "enabled": true,
+      "category": "부가세",
+      "description": "부가가치세 ({rate}%)"
+    },
+    "item_name": {
+      "_comment": "적요(품명) 칸에 쓸 글. 추출 결과의 설명에서 아래 정규식에 맞는 부분을 지운다(예: '문구 도매 구매를 위한 A4 파일 구매' → 'A4 파일'). 양식은 고정이고 칸에는 품명과 규격만 쓴다.",
+      "strip": [
+        "^.*?(?:을|를)\\s*위한\\s+",
+        "\\s*(?:구매|구입)$"
+      ]
+    }
+  },
+  "formats": {
+    "date": "{y}년 {m}월 {d}일",
+    "amount_korean": "금 {korean}원정 (￦{won})",
+    "amount": "{won}",
+    "checkbox_on": "■",
+    "checkbox_off": "□",
+    "inline_separator": " : "
+  },
+  "placeholders": {
+    "_comment": "값 칸에 이미 있는 이런 글자는 자리표시로 보고 지운다. 그 밖의 글자는 지우지 않고 값 뒤에 남긴다.",
+    "patterns": [
+      "^\\s*$",
+      "^년\\s*월\\s*일$",
+      "^\\d{4}\\s*\\.?\\s*\\.?\\s*\\.?$",
+      "^(일금|금)?\\s*원정?\\s*$",
+      "^(일금|금)?\\s*원정?\\s*[￦₩\\\\]?\\s*$",
+      "^(金|금)?\\s*整?\\s*\\(?\\s*[￦₩\\\\]?\\s*\\)?\\s*$",
+      "^〇+",
+      "^○+",
+      "^제\\s*호$"
+    ],
+    "_keep_comment": "값 칸에 이런 글자가 있으면 지우지 않고 값 뒤에 남긴다(예: 서명란, 전화번호 라벨).",
+    "keep_if_matches": [
+      "\\(서명\\)",
+      "전화",
+      "\\(인\\)"
+    ]
+  },
+  "free_text": {
+    "_comment": "양식에 전용 칸이 없는 값은 양식 안의 넓은 빈 칸(본문 칸)에 '이름: 값' 줄로 적는다. 그런 칸도 없으면 담당자에게 묻는다.",
+    "enabled": true,
+    "min_colspan_ratio": 0.7,
+    "anchors": [
+      "다음과같이",
+      "아래와같이",
+      "상기와같이",
+      "위와같이"
+    ],
+    "end_markers": [
+      "끝"
+    ],
+    "_anchor_comment": "넓은 빈 칸이 없으면 anchors 문구가 든 본문 칸에 적는다: 그 칸에 end_markers 줄('끝.')이 있으면 그 앞에, 없으면 anchors 줄 앞에.",
+    "line": "{name}: {value}",
+    "names": {
+      "vendor": "선정 업체",
+      "selection_reason": "선정 사유",
+      "purpose": "구매 목적",
+      "funding": "재원",
+      "related_plan": "관련 계획서",
+      "attachments": "첨부",
+      "project_name": "사업명",
+      "project_period": "사업기간",
+      "budget_item": "예산과목",
+      "doc_no": "문서번호",
+      "expected_date": "지출 예정일",
+      "department": "부서",
+      "drafter": "기안자",
+      "payment_method": "지출 방법",
+      "draft_date": "작성일",
+      "title": "제목",
+      "total": "지출 금액"
+    },
+    "order": [
+      "vendor",
+      "selection_reason",
+      "purpose",
+      "budget_item",
+      "payment_method",
+      "funding",
+      "project_name",
+      "project_period",
+      "related_plan",
+      "attachments"
+    ]
+  },
+  "templates": {
+    "title": "{project_name} {first_item}{more} 구매의 건",
+    "attachments": "견적서 {quote_count}부",
+    "more": " 외 {n}건",
+    "_comment": "first_item은 첫 품목의 품명(괄호 앞), more는 품목이 둘 이상일 때만 붙는다."
+  },
+  "report": {
+    "_comment": "작성 결과 보고 문구(명사형 짧게). {name}은 free_text.names의 이름이다.",
+    "rows_added": "품목 행 {n}개 추가",
+    "no_item_rows": "품목 행 없음",
+    "no_item_table": "품목 표를 찾지 못함",
+    "placeholder_replaced": "{label}: 예시 문구 '{text}' 대체",
+    "free_text_placed": "{name}: 본문에 기재",
+    "no_slot": "해당 칸 없음",
+    "no_form": "품의서 양식을 찾지 못함 (발견한 양식: {kinds})",
+    "first_of_many": "양식 {n}개 중 첫 품의서에 작성",
+    "item_name": "품목",
+    "form_name": "양식",
+    "blank_filled": "본문 빈자리 채움: {value}",
+    "marker_removed": "예시 표시 '{marker}' 삭제"
+  },
+  "leftover_check": {
+    "_comment": "채운 뒤 양식에 남은 예시 값 찾기. kinds의 pattern에 맞는 글 중 우리가 쓴 값에 없는 것을 {where(칸 이름), kind, values, action}으로 보고서에 올린다(화면은 누르면 팝업). 양식은 고치지 않는다. 칸 이름은 같은 줄 '이름 :', 왼쪽 칸, 위쪽 머리글 순으로 찾고 없으면 body.",
+    "kinds": [
+      {
+        "name": "날짜",
+        "pattern": "\\d{4}\\s*[.\\-년]\\s*\\d{1,2}\\s*[.\\-월]\\s*\\d{1,2}",
+        "action": "양식 견본에 원래 있던 날짜입니다. 이 품의 건의 날짜로 고치거나 지우세요."
+      },
+      {
+        "name": "금액",
+        "pattern": "\\d{1,3}(?:,\\d{3})+\\s*원?",
+        "action": "이 품의 건에 없는 금액입니다. 견본의 예시 금액이면 지우세요."
+      },
+      {
+        "name": "금액",
+        "pattern": "금\\s*[일이삼사오육칠팔구십백천만억]+원",
+        "action": "이 품의 건에 없는 금액입니다. 견본의 예시 금액이면 지우세요."
+      }
+    ],
+    "body": "본문",
+    "label_max_chars": 12
+  },
+  "inline_blanks": {
+    "_comment": "문장 안 빈자리 채우기. rules마다 pattern에 맞고 context 낱말(비어 있으면 조건 없음)이 같은 문단에 있을 때만 채운다('접수 (   )' 같은 칸은 그대로). value에 쓸 수 있는 값: {item_summary}(첫 품목 외 N건), {draft_dot}(기안일, 예: 2026. 11. 5.). \\g<1>은 pattern의 첫 괄호(앞 공백 유지). strip_markers는 채운 양식에서 지울 예시 표시.",
+    "item_summary": "{first_item}{more}",
+    "draft_dot": "{y}. {m}. {d}.",
+    "rules": [
+      {
+        "pattern": "\\(\\s{3,}\\)",
+        "context": [
+          "물품",
+          "구매",
+          "구입"
+        ],
+        "value": "({item_summary})"
+      },
+      {
+        "pattern": "^(\\s*)20\\d{2}\\.(?:\\s*\\.){1,2}\\s*$",
+        "context": [],
+        "value": "\\g<1>{draft_dot}"
+      }
+    ],
+    "strip_markers": [
+      "[예시]"
+    ]
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "vendor_name": "대일기획인쇄",
+  "vendor_representative": "류상철",
+  "quote_date": "2026-10-27",
+  "supply_amount": 4402500,
+  "vat_amount": 440250,
+  "total_amount": 4842750,
+  "review_flags": [],
+  "items": [
+    {
+      "expense_category": "홍보비",
+      "description": "성과보고서 인쇄 (A472쪽)",
+      "quantity": 500,
+      "unit_price": 5950,
+      "estimated_amount": 2975000,
+      "calculation_basis": "5,950원*500권",
+      "note": ""
+    },
+    {
+      "expense_category": "홍보비",
+      "description": "기관 소개 리플릿 (3단접지)",
+      "quantity": 2000,
+      "unit_price": 390,
+      "estimated_amount": 780000,
+      "calculation_basis": "390원*2,000부",
+      "note": ""
+    },
+    {
+      "expense_category": "홍보비",
+      "description": "행사용 현수막 (5×0.9m)",
+      "quantity": 4,
+      "unit_price": 44500,
+      "estimated_amount": 178000,
+      "calculation_basis": "44,500원*4개",
+      "note": ""
+    },
+    {
+      "expense_category": "홍보비",
+      "description": "X배너 (60×160)",
+      "quantity": 6,
+      "unit_price": 34500,
+      "estimated_amount": 207000,
+      "calculation_basis": "34,500원*6EA",
+      "note": ""
+    },
+    {
+      "expense_category": "홍보비",
+      "description": "명찰(줄 포함) (PVC)",
+      "quantity": 150,
+      "unit_price": 1750,
+      "estimated_amount": 262500,
+      "calculation_basis": "1,750원*150EA",
+      "note": ""
+    }
+  ],
+  "studio": {
+    "category": "견적서",
+    "review": "계산: 품목별: [성과보고서 인쇄 (A472쪽): 5,950 × 500 = 2,975,000 (2,975,000), 기관 소개 리플릿 (3단접지): 390 × 2,000 = 780,000 (780,000), 행사용 현수막 (5×0.9m): 44,500 × 4 = 178,000 (178,000), X배너 (60×160): 34,500 × 6 = 207,000 (207,000), 명찰(줄 포함) (PVC): 1,750 × 150 = 262,500 (262,500)], 품목 금액 합계: 4,402,500, 공급가액: 4,402,500, 부가세 10%: 440,250, 부가세: 440,250, 공급가액 + 부가세: 4,842,750, 합계: 4,842,750, issues: [], 요약: 모든 품목 계산과 합계, 부가세, 공급가액이 견적서와 일치함.",
+    "decision": "작성 가능",
+    "branch": "품의 내용 작성",
+    "note": "{\n  \"제목\": \"성과보고서 인쇄 (A472쪽) 외 4건 구매의 건\",\n  \"품목 요약\": \"성과보고서 인쇄 (A472쪽) 외 4건\",\n  \"업체\": \"대일기획인쇄\",\n  \"합계\": 4842750,\n  \"품의 요지\": \"아래와 같이 물품을 구매하고자 합니다.\"\n}",
+    "job_id": "job_DNSZUM2sUxxs6sqq7b2yPF"
+  }
+}

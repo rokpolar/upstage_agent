@@ -1,0 +1,55 @@
+{
+  "vendor_name": "(주)넥스트웹솔루션",
+  "vendor_representative": "윤동혁",
+  "quote_date": "2026-10-23",
+  "supply_amount": 25366000,
+  "vat_amount": 2536600,
+  "total_amount": 27902600,
+  "review_flags": [],
+  "items": [
+    {
+      "expense_category": "용역비",
+      "description": "홈페이지 유지관리 정기점검 포함",
+      "quantity": 12,
+      "unit_price": 1065000,
+      "estimated_amount": 12780000,
+      "calculation_basis": "1,065,000원*12월",
+      "note": ""
+    },
+    {
+      "expense_category": "용역비",
+      "description": "서버 모니터링 24x7",
+      "quantity": 12,
+      "unit_price": 624000,
+      "estimated_amount": 7488000,
+      "calculation_basis": "624,000원*12월",
+      "note": ""
+    },
+    {
+      "expense_category": "용역비",
+      "description": "적용 분기 1회",
+      "quantity": 4,
+      "unit_price": 811000,
+      "estimated_amount": 3244000,
+      "calculation_basis": "811,000원*4회",
+      "note": ""
+    },
+    {
+      "expense_category": "용역비",
+      "description": "지원 긴급 출동",
+      "quantity": 6,
+      "unit_price": 309000,
+      "estimated_amount": 1854000,
+      "calculation_basis": "309,000원*6건",
+      "note": ""
+    }
+  ],
+  "studio": {
+    "category": "견적서",
+    "review": "{",
+    "decision": "작성 가능",
+    "branch": "품의 내용 작성",
+    "note": "제목: 홈페이지 유지관리 외 3건 구매의 건",
+    "job_id": "job_cgHy9zAdc6SrcewHG5yp8y"
+  }
+}

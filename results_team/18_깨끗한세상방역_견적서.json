@@ -1,0 +1,47 @@
+{
+  "vendor_name": "깨끗한세상방역",
+  "vendor_representative": "홍석진",
+  "quote_date": "2026-10-30",
+  "supply_amount": 3210000,
+  "vat_amount": 321000,
+  "total_amount": 3531000,
+  "review_flags": [],
+  "items": [
+    {
+      "expense_category": "용역비",
+      "description": "전 구역 연막 소독 용역",
+      "quantity": 6,
+      "unit_price": 280000,
+      "estimated_amount": 1680000,
+      "calculation_basis": "280,000원*6회",
+      "note": ""
+    },
+    {
+      "expense_category": "용역비",
+      "description": "트랩 설치를 포함한 쥐·해충 방제 용역",
+      "quantity": 1,
+      "unit_price": 540000,
+      "estimated_amount": 540000,
+      "calculation_basis": "540,000원*1식",
+      "note": ""
+    },
+    {
+      "expense_category": "용역비",
+      "description": "6개소 공기질 측정 용역",
+      "quantity": 2,
+      "unit_price": 420000,
+      "estimated_amount": 840000,
+      "calculation_basis": "420,000원*2회",
+      "note": ""
+    },
+    {
+      "expense_category": "기타",
+      "description": "일괄 약제 및 소모품",
+      "quantity": 1,
+      "unit_price": 150000,
+      "estimated_amount": 150000,
+      "calculation_basis": "150,000원*1식",
+      "note": ""
+    }
+  ]
+}

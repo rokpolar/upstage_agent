@@ -1,0 +1,46 @@
+{
+  "vendor_name": "맑은샘렌탈",
+  "vendor_representative": "장은영",
+  "quote_date": "2026-10-16",
+  "supply_amount": 2020000,
+  "vat_amount": 202000,
+  "total_amount": 2222000,
+  "review_flags": [],
+  "items": [
+    {
+      "expense_category": "임차료",
+      "description": "직수 냉온정수기 임대 (월 렌탈료)",
+      "quantity": 20,
+      "unit_price": 34000,
+      "estimated_amount": 680000,
+      "calculation_basis": "34,000원*20대",
+      "note": ""
+    },
+    {
+      "expense_category": "용역비",
+      "description": "정기 필터 교체 (방문)",
+      "quantity": 20,
+      "unit_price": 40500,
+      "estimated_amount": 810000,
+      "calculation_basis": "40,500원*20회",
+      "note": ""
+    },
+    {
+      "expense_category": "기타",
+      "description": "설치비 (1회성)",
+      "quantity": 20,
+      "unit_price": 26500,
+      "estimated_amount": 530000,
+      "calculation_basis": "26,500원*20대",
+      "note": ""
+    }
+  ],
+  "studio": {
+    "category": "견적서",
+    "review": "{",
+    "decision": "작성 가능",
+    "branch": "품의 내용 작성",
+    "note": "제목: 직수 냉온정수기 임대 (월 렌탈료) 외 2건 구매의 건",
+    "job_id": "job_EhYSh79P2coTtzgJhdKjTX"
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "vendor_name": "(주)안전제일소방",
+  "vendor_representative": "강서연",
+  "quote_date": "2026-10-28",
+  "supply_amount": 6563500,
+  "vat_amount": 656350,
+  "total_amount": 7219850,
+  "review_flags": [],
+  "items": [
+    {
+      "expense_category": "용역비",
+      "description": "소방 종합점검 연면적 3200m²",
+      "quantity": 1,
+      "unit_price": 4075000,
+      "estimated_amount": 4075000,
+      "calculation_basis": "4,075,000원*1식",
+      "note": ""
+    },
+    {
+      "expense_category": "기타",
+      "description": "소화기(3.3kg) 교체 분말 ABC",
+      "quantity": 40,
+      "unit_price": 21500,
+      "estimated_amount": 860000,
+      "calculation_basis": "21,500원*40EA",
+      "note": ""
+    },
+    {
+      "expense_category": "기타",
+      "description": "유도등 교체 LED/중형",
+      "quantity": 25,
+      "unit_price": 38500,
+      "estimated_amount": 962500,
+      "calculation_basis": "38,500원*25EA",
+      "note": ""
+    },
+    {
+      "expense_category": "용역비",
+      "description": "자탐설비 수리 수신기 포함",
+      "quantity": 1,
+      "unit_price": 666000,
+      "estimated_amount": 666000,
+      "calculation_basis": "666,000원*1식",
+      "note": ""
+    }
+  ],
+  "studio": {
+    "category": "견적서",
+    "review": "계산: 품목별: [\"소방 종합점검: 4,075,000 × 1 = 4,075,000 (견적서 금액: 4,075,000)\", \"소화기(3.3kg) 교체: 21,500 × 40 = 860,000 (견적서 금액: 860,000)\", \"유도등 교체: 38,500 × 25 = 962,500 (견적서 금액: 962,500)\", \"자탐설비 수리: 666,000 × 1 = 666,000 (견적서 금액: 666,000)\"], 품목 금액 합계: 6,563,500, 공급가액: 6,563,500, 부가세 10%: 656,350, 부가세: 656,350, 공급가액 + 부가세: 7,219,850, 합계: 7,219,850",
+    "decision": "작성 가능",
+    "branch": "품의 내용 작성",
+    "note": "제목: 소방 종합점검 연면적 3200m² 외 3건 구매의 건",
+    "job_id": "job_8ABSE4njsgtRsJWsP8qkaL"
+  }
+}

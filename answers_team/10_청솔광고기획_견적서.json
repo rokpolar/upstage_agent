@@ -1,0 +1,35 @@
+{
+  "vendor_name": "청솔광고기획",
+  "vendor_representative": "문성진",
+  "quote_date": "2026-11-03",
+  "items": [
+    {
+      "quantity": 1,
+      "unit_price": 2400000,
+      "estimated_amount": 2400000,
+      "calculation_basis": "2,400,000원*1식"
+    },
+    {
+      "quantity": 12,
+      "unit_price": 45000,
+      "estimated_amount": 540000,
+      "calculation_basis": "45,000원*12㎡"
+    },
+    {
+      "quantity": 30,
+      "unit_price": 32000,
+      "estimated_amount": 960000,
+      "calculation_basis": "32,000원*30EA"
+    },
+    {
+      "quantity": 4,
+      "unit_price": 65000,
+      "estimated_amount": 260000,
+      "calculation_basis": "65,000원*4EA"
+    }
+  ],
+  "supply_amount": 4160000,
+  "vat_amount": 416000,
+  "total_amount": 4576000,
+  "review_flags": []
+}

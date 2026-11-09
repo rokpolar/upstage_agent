@@ -1,0 +1,64 @@
+{
+  "vendor_name": "우일모터스",
+  "vendor_representative": "최우일",
+  "quote_date": "2026-10-30",
+  "supply_amount": 4004000,
+  "vat_amount": 400400,
+  "total_amount": 4404400,
+  "review_flags": [],
+  "items": [
+    {
+      "expense_category": "기타",
+      "description": "엔진오일 교환 5W-30 합성",
+      "quantity": 8,
+      "unit_price": 78000,
+      "estimated_amount": 624000,
+      "calculation_basis": "78,000원*8회",
+      "note": ""
+    },
+    {
+      "expense_category": "기타",
+      "description": "타이어 교체 235/55R18",
+      "quantity": 16,
+      "unit_price": 152000,
+      "estimated_amount": 2432000,
+      "calculation_basis": "152,000원*16EA",
+      "note": ""
+    },
+    {
+      "expense_category": "기타",
+      "description": "브레이크 패드 전륜",
+      "quantity": 4,
+      "unit_price": 96000,
+      "estimated_amount": 384000,
+      "calculation_basis": "96,000원*4SET",
+      "note": ""
+    },
+    {
+      "expense_category": "기타",
+      "description": "와이퍼 블레이드 전차종",
+      "quantity": 8,
+      "unit_price": 18000,
+      "estimated_amount": 144000,
+      "calculation_basis": "18,000원*8SET",
+      "note": ""
+    },
+    {
+      "expense_category": "용역비",
+      "description": "공임비 일괄",
+      "quantity": 1,
+      "unit_price": 420000,
+      "estimated_amount": 420000,
+      "calculation_basis": "420,000원*1식",
+      "note": ""
+    }
+  ],
+  "studio": {
+    "category": "견적서",
+    "review": "{",
+    "decision": "작성 가능",
+    "branch": "품의 내용 작성",
+    "note": "제목: 엔진오일 교환 5W-30 합성 외 4건 구매의 건",
+    "job_id": "job_YkD3Ab9sgxCdX9GHgcwRs9"
+  }
+}

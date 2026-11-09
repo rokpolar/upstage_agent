@@ -1,0 +1,64 @@
+{
+  "vendor_name": "(주)카앤드라이브",
+  "vendor_representative": "류현우",
+  "quote_date": "2026-10-30",
+  "supply_amount": 3653000,
+  "vat_amount": 365300,
+  "total_amount": 4018300,
+  "review_flags": [],
+  "items": [
+    {
+      "expense_category": "기타",
+      "description": "엔진오일 교환 5W-30 합성",
+      "quantity": 8,
+      "unit_price": 72500,
+      "estimated_amount": 580000,
+      "calculation_basis": "72,500원*8회",
+      "note": ""
+    },
+    {
+      "expense_category": "기타",
+      "description": "타이어 교환 235/55R18 4본 기준",
+      "quantity": 16,
+      "unit_price": 137000,
+      "estimated_amount": 2192000,
+      "calculation_basis": "137,000원*16본",
+      "note": ""
+    },
+    {
+      "expense_category": "기타",
+      "description": "브레이크패드 교환 앞바퀴용",
+      "quantity": 4,
+      "unit_price": 89000,
+      "estimated_amount": 356000,
+      "calculation_basis": "89,000원*4세트",
+      "note": ""
+    },
+    {
+      "expense_category": "기타",
+      "description": "와이퍼 블레이드 범용",
+      "quantity": 8,
+      "unit_price": 16000,
+      "estimated_amount": 128000,
+      "calculation_basis": "16,000원*8SET",
+      "note": ""
+    },
+    {
+      "expense_category": "기타",
+      "description": "공임비 일괄",
+      "quantity": 1,
+      "unit_price": 397000,
+      "estimated_amount": 397000,
+      "calculation_basis": "397,000원*1식",
+      "note": ""
+    }
+  ],
+  "studio": {
+    "category": "견적서",
+    "review": "{",
+    "decision": "작성 가능",
+    "branch": "품의 내용 작성",
+    "note": "제목: 엔진오일 교환 5W-30 합성 외 4건 구매의 건",
+    "job_id": "job_9BTP8VHy5qRGypp3Z26FXt"
+  }
+}

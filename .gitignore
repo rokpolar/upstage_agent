@@ -1,0 +1,13 @@
+# 비밀 값: 각자 .env.example을 복사해 만든다
+.env
+
+# 실행하면 생기는 파일
+__pycache__/
+*.pyc
+out/
+score_report.csv
+*.preview.html
+data_upload/*
+results_upload/*
+!data_upload/.gitkeep
+!results_upload/.gitkeep

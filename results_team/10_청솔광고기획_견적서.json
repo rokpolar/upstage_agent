@@ -1,0 +1,55 @@
+{
+  "vendor_name": "청솔광고기획",
+  "vendor_representative": "문성진",
+  "quote_date": "2026-11-03",
+  "supply_amount": 4160000,
+  "vat_amount": 416000,
+  "total_amount": 4576000,
+  "review_flags": [],
+  "items": [
+    {
+      "expense_category": "홍보비",
+      "description": "채널 간판 LED/3m",
+      "quantity": 1,
+      "unit_price": 2400000,
+      "estimated_amount": 2400000,
+      "calculation_basis": "2,400,000원*1식",
+      "note": ""
+    },
+    {
+      "expense_category": "홍보비",
+      "description": "실사 출력물 포맥스 5T",
+      "quantity": 12,
+      "unit_price": 45000,
+      "estimated_amount": 540000,
+      "calculation_basis": "45,000원*12m²",
+      "note": ""
+    },
+    {
+      "expense_category": "홍보비",
+      "description": "안내 사인물 아크릴",
+      "quantity": 30,
+      "unit_price": 32000,
+      "estimated_amount": 960000,
+      "calculation_basis": "32,000원*30EA",
+      "note": ""
+    },
+    {
+      "expense_category": "홍보비",
+      "description": "현수막 거치대 고정형",
+      "quantity": 4,
+      "unit_price": 65000,
+      "estimated_amount": 260000,
+      "calculation_basis": "65,000원*4EA",
+      "note": ""
+    }
+  ],
+  "studio": {
+    "category": "견적서",
+    "review": "{",
+    "decision": "작성 가능",
+    "branch": "품의 내용 작성",
+    "note": "{\n  \"제목\": \"채널 간판 LED/3m 외 3건 구매의 건\",\n  \"품목 요약\": \"채널 간판 LED/3m 외 3건\",\n  \"업체\": \"청솔광고기획\",\n  \"합계\": 4576000,\n  \"품의 요지\": \"아래와 같이 물품을 구매하고자 합니다.\"\n}",
+    "job_id": "job_Ju6CfKXPDrHt4yaDncbC26"
+  }
+}

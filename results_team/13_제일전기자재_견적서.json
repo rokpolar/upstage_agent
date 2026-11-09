@@ -1,0 +1,64 @@
+{
+  "vendor_name": "제일전기자재",
+  "vendor_representative": "송민철",
+  "quote_date": "2026-10-22",
+  "supply_amount": 5087000,
+  "vat_amount": 508700,
+  "total_amount": 5595700,
+  "review_flags": [],
+  "items": [
+    {
+      "expense_category": "기타",
+      "description": "LED 평판등(50W/6500K)",
+      "quantity": 200,
+      "unit_price": 16500,
+      "estimated_amount": 3300000,
+      "calculation_basis": "16,500원*200EA",
+      "note": ""
+    },
+    {
+      "expense_category": "기타",
+      "description": "전선(HIV)(2.5SQ/100m)",
+      "quantity": 15,
+      "unit_price": 58000,
+      "estimated_amount": 870000,
+      "calculation_basis": "58,000원*15롤",
+      "note": ""
+    },
+    {
+      "expense_category": "기타",
+      "description": "차단기(2P 20A)",
+      "quantity": 40,
+      "unit_price": 6800,
+      "estimated_amount": 272000,
+      "calculation_basis": "6,800원*40EA",
+      "note": ""
+    },
+    {
+      "expense_category": "기타",
+      "description": "콘센트 매립형(2구/접지)",
+      "quantity": 100,
+      "unit_price": 2100,
+      "estimated_amount": 210000,
+      "calculation_basis": "2,100원*100EA",
+      "note": ""
+    },
+    {
+      "expense_category": "기타",
+      "description": "전선관(16C/3.6m)",
+      "quantity": 300,
+      "unit_price": 1450,
+      "estimated_amount": 435000,
+      "calculation_basis": "1,450원*300본",
+      "note": ""
+    }
+  ],
+  "studio": {
+    "category": "견적서",
+    "review": "계산\n품목별\nLED 평판등: 16,500 × 200 = 3,300,000 (견적서 금액: 3,300,000)\n전선(HIV): 58,000 × 15 = 870,000 (견적서 금액: 870,000)\n차단기: 6,800 × 40 = 272,000 (견적서 금액: 272,000)\n콘센트 매립형: 2,100 × 100 = 210,000 (견적서 금액: 210,000)\n전선관: 1,450 × 300 = 435,000 (견적서 금액: 435,000)\n품목 금액 합계: 5,087,000\n공급가액: 5,087,000\n부가세 10%: 508,700\n부가세: 508,700\n공급가액 + 부가세: 5,595,700\n합계: 5,595,700\n\nissues: []\n\n요약: 모든 계산 값이 견적서 값과 일치하여 문제가 없다.",
+    "decision": "작성 가능",
+    "branch": "품의 내용 작성",
+    "note": "제목: LED 평판등(50W/6500K) 외 4건 구매의 건",
+    "job_id": "job_3Ebmmckg2iewg7XqcmjeM2"
+  }
+}

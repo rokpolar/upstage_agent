@@ -1,0 +1,38 @@
+{
+  "vendor_name": "오피스플러스 주식회사",
+  "vendor_representative": "김사무",
+  "quote_date": "2026-10-28",
+  "supply_amount": 370000,
+  "vat_amount": 37000,
+  "total_amount": 407000,
+  "review_flags": [],
+  "items": [
+    {
+      "expense_category": "사무용품비",
+      "description": "사무용 A4 복사용지(80g, 2500매/박스) 구입",
+      "quantity": 5,
+      "unit_price": 28000,
+      "estimated_amount": 140000,
+      "calculation_basis": "28,000원*5박스",
+      "note": ""
+    },
+    {
+      "expense_category": "사무용품비",
+      "description": "사무용 볼펜(0.7mm, 12입) 구입",
+      "quantity": 10,
+      "unit_price": 6000,
+      "estimated_amount": 60000,
+      "calculation_basis": "6,000원*10갑",
+      "note": ""
+    },
+    {
+      "expense_category": "사무용품비",
+      "description": "프린터용 토너 카트리지(TN-2480) 구입",
+      "quantity": 2,
+      "unit_price": 85000,
+      "estimated_amount": 170000,
+      "calculation_basis": "85,000원*2개",
+      "note": ""
+    }
+  ]
+}

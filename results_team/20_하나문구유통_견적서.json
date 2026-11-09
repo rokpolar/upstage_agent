@@ -1,0 +1,56 @@
+{
+  "vendor_name": "하나문구유통",
+  "vendor_representative": "백승기",
+  "quote_date": "2026-11-03",
+  "supply_amount": 1106000,
+  "vat_amount": 110600,
+  "total_amount": 1216600,
+  "review_flags": [],
+  "items": [
+    {
+      "expense_category": "사무용품비",
+      "description": "문구 도매 구매를 위한 A4 파일(40매/투명) 구매",
+      "quantity": 600,
+      "unit_price": 520,
+      "estimated_amount": 312000,
+      "calculation_basis": "520원*600EA",
+      "note": ""
+    },
+    {
+      "expense_category": "사무용품비",
+      "description": "문구 도매 구매를 위한 포스트잇(76×76 4색) 구매",
+      "quantity": 100,
+      "unit_price": 2800,
+      "estimated_amount": 280000,
+      "calculation_basis": "2,800원*100팩",
+      "note": ""
+    },
+    {
+      "expense_category": "사무용품비",
+      "description": "문구 도매 구매를 위한 스프링노트(B5/100매) 구매",
+      "quantity": 200,
+      "unit_price": 1500,
+      "estimated_amount": 300000,
+      "calculation_basis": "1,500원*200EA",
+      "note": ""
+    },
+    {
+      "expense_category": "사무용품비",
+      "description": "문구 도매 구매를 위한 유성매직(중/흑색) 구매",
+      "quantity": 20,
+      "unit_price": 6500,
+      "estimated_amount": 130000,
+      "calculation_basis": "6,500원*20DZ",
+      "note": ""
+    },
+    {
+      "expense_category": "사무용품비",
+      "description": "문구 도매 구매를 위한 클립(중형/100P) 구매",
+      "quantity": 200,
+      "unit_price": 420,
+      "estimated_amount": 84000,
+      "calculation_basis": "420원*200BOX",
+      "note": ""
+    }
+  ]
+}

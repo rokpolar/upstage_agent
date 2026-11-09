@@ -1,0 +1,73 @@
+{
+  "vendor_name": "한빛사무기기(주)",
+  "vendor_representative": "김정수",
+  "quote_date": "2026-10-19",
+  "supply_amount": 1564000,
+  "vat_amount": 156400,
+  "total_amount": 1720400,
+  "review_flags": [],
+  "items": [
+    {
+      "expense_category": "사무용품비",
+      "description": "A4 복사용지(80g)2500매/박스",
+      "quantity": 40,
+      "unit_price": 23500,
+      "estimated_amount": 940000,
+      "calculation_basis": "23,500원*40BOX",
+      "note": ""
+    },
+    {
+      "expense_category": "사무용품비",
+      "description": "문서보관상자A4/백색",
+      "quantity": 120,
+      "unit_price": 1850,
+      "estimated_amount": 222000,
+      "calculation_basis": "1,850원*120EA",
+      "note": ""
+    },
+    {
+      "expense_category": "사무용품비",
+      "description": "3색 볼펜0.7mm",
+      "quantity": 30,
+      "unit_price": 6200,
+      "estimated_amount": 186000,
+      "calculation_basis": "6,200원*30DZ",
+      "note": ""
+    },
+    {
+      "expense_category": "사무용품비",
+      "description": "스테이플러 침NO.10",
+      "quantity": 100,
+      "unit_price": 380,
+      "estimated_amount": 38000,
+      "calculation_basis": "380원*100BOX",
+      "note": ""
+    },
+    {
+      "expense_category": "사무용품비",
+      "description": "화이트보드 마카흑·청·적",
+      "quantity": 25,
+      "unit_price": 4800,
+      "estimated_amount": 120000,
+      "calculation_basis": "4,800원*25SET",
+      "note": ""
+    },
+    {
+      "expense_category": "사무용품비",
+      "description": "결재판A4/PVC",
+      "quantity": 20,
+      "unit_price": 2900,
+      "estimated_amount": 58000,
+      "calculation_basis": "2,900원*20EA",
+      "note": ""
+    }
+  ],
+  "studio": {
+    "category": "견적서",
+    "review": "{",
+    "decision": "작성 가능",
+    "branch": "품의 내용 작성",
+    "note": "{\n  \"제목\": \"A4 복사용지(80g)2500매/박스 외 5건 구매의 건\",\n  \"품목 요약\": \"A4 복사용지(80g)2500매/박스 외 5건\",\n  \"업체\": \"한빛사무기기(주)\",\n  \"합계\": 1720400,\n  \"품의 요지\": \"아래와 같이 물품을 구매하고자 합니다.\"\n}",
+    "job_id": "job_eJZMuTiiTPctePPbhFkFMj"
+  }
+}

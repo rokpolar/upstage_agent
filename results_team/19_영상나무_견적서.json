@@ -1,0 +1,49 @@
+{
+  "vendor_name": "영상나무",
+  "vendor_representative": "남지호",
+  "quote_date": "2026-11-02",
+  "supply_amount": 8200000,
+  "vat_amount": 820000,
+  "total_amount": 9020000,
+  "review_flags": [
+    "공급가액과 부가세의 합이 합계와 불일치"
+  ],
+  "items": [
+    {
+      "expense_category": "용역비",
+      "description": "기관 홍보영상 제작을 위한 3분/4K 영상 제작 용역",
+      "quantity": 1,
+      "unit_price": 6500000,
+      "estimated_amount": 6500000,
+      "calculation_basis": "6,500,000원*1편",
+      "note": ""
+    },
+    {
+      "expense_category": "용역비",
+      "description": "현장 2회 사진 촬영 용역",
+      "quantity": 2,
+      "unit_price": 450000,
+      "estimated_amount": 900000,
+      "calculation_basis": "450,000원*2회",
+      "note": ""
+    },
+    {
+      "expense_category": "용역비",
+      "description": "한국어 성우 녹음 용역",
+      "quantity": 1,
+      "unit_price": 300000,
+      "estimated_amount": 300000,
+      "calculation_basis": "300,000원*1편",
+      "note": ""
+    },
+    {
+      "expense_category": "용역비",
+      "description": "영문 병기 자막·번역 용역",
+      "quantity": 1,
+      "unit_price": 500000,
+      "estimated_amount": 500000,
+      "calculation_basis": "500,000원*1편",
+      "note": ""
+    }
+  ]
+}

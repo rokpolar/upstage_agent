@@ -1,0 +1,64 @@
+{
+  "vendor_name": "세종인쇄커뮤니케이션",
+  "vendor_representative": "서민규",
+  "quote_date": "2026-10-26",
+  "supply_amount": 4945000,
+  "vat_amount": 494500,
+  "total_amount": 5439500,
+  "review_flags": [],
+  "items": [
+    {
+      "expense_category": "홍보비",
+      "description": "경영성과 보고서 A4/72p",
+      "quantity": 500,
+      "unit_price": 6800,
+      "estimated_amount": 3400000,
+      "calculation_basis": "6,800원*500부",
+      "note": ""
+    },
+    {
+      "expense_category": "홍보비",
+      "description": "기관 소개 리플릿 3단접지",
+      "quantity": 2000,
+      "unit_price": 420,
+      "estimated_amount": 840000,
+      "calculation_basis": "420원*2,000부",
+      "note": ""
+    },
+    {
+      "expense_category": "홍보비",
+      "description": "현수막 5m×0.9m",
+      "quantity": 4,
+      "unit_price": 48000,
+      "estimated_amount": 192000,
+      "calculation_basis": "48,000원*4장",
+      "note": ""
+    },
+    {
+      "expense_category": "홍보비",
+      "description": "X배너 60×160",
+      "quantity": 6,
+      "unit_price": 38000,
+      "estimated_amount": 228000,
+      "calculation_basis": "38,000원*6EA",
+      "note": ""
+    },
+    {
+      "expense_category": "홍보비",
+      "description": "명찰·목걸이줄 PVC",
+      "quantity": 150,
+      "unit_price": 1900,
+      "estimated_amount": 285000,
+      "calculation_basis": "1,900원*150EA",
+      "note": ""
+    }
+  ],
+  "studio": {
+    "category": "견적서",
+    "review": "계산 결과 및 비교 분석",
+    "decision": "작성 가능",
+    "branch": "품의 내용 작성",
+    "note": "{\n  \"제목\": \"경영성과 보고서 A4/72p 외 4건 구매의 건\",\n  \"품목 요약\": \"경영성과 보고서 A4/72p 외 4건\",\n  \"업체\": \"세종인쇄커뮤니케이션\",\n  \"합계\": 5439500,\n  \"품의 요지\": \"아래와 같이 물품을 구매하고자 합니다.\"\n}",
+    "job_id": "job_AmQ5LRUa8QRK3MZcjRxFWz"
+  }
+}

@@ -1,0 +1,387 @@
+{
+  "kind": "studio.workflow-config-draft",
+  "schemaVersion": 4,
+  "exportedAt": "2026-11-05T08:00:53.723Z",
+  "exportedFrom": {
+    "workflowId": "agt_95GnPJwPPiKTfBVzSLa5yk",
+    "workflowName": "품의 Agent (노드)",
+    "configId": "cfg_ZF4gMCRUkparLf6ThLNDWe",
+    "configVer": 2
+  },
+  "workflowConfig": {
+    "workflow_name": "품의 Agent (노드)",
+    "pipelineType": "instruct",
+    "documentParseConfiguration": {
+      "modelName": "document-parse",
+      "mode": "standard",
+      "ocrMode": "force",
+      "lang": "",
+      "chartRecognition": false,
+      "coordinates": true,
+      "mergeMultipageTables": false,
+      "outputFormats": [
+        "html",
+        "text"
+      ],
+      "base64Encoding": [
+        "figure"
+      ]
+    },
+    "documentClassifyConfiguration": {
+      "modelName": "",
+      "schema": {
+        "type": "json_schema",
+        "json_schema": {
+          "name": "document-classify",
+          "schema": {
+            "type": "string",
+            "oneOf": [
+              {
+                "const": "견적서",
+                "description": "업체가 구매 전에 보낸 견적서. 품목, 수량, 단가, 금액, 견적일이 적혀 있다."
+              },
+              {
+                "const": "거래명세서",
+                "description": "물품을 납품하면서 보낸 거래명세서나 영수증. 이미 거래가 끝난 문서라 품의 대상이 아니다."
+              }
+            ]
+          }
+        }
+      },
+      "customName": "문서 분류"
+    },
+    "informationExtractConfiguration": {
+      "modelName": "",
+      "schemas": [
+        {
+          "type": "json_schema",
+          "json_schema": {
+            "name": "quote",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "vendor_name": {
+                  "type": "string",
+                  "description": "견적서를 발행한 업체(공급자)의 상호. ㈜, (주) 등 법인 표기는 원문 그대로 둔다. 찾을 수 없으면 '검토 필요'."
+                },
+                "vendor_representative": {
+                  "type": "string",
+                  "description": "공급자 대표자 성명. 없으면 빈 문자열."
+                },
+                "quote_date": {
+                  "type": "string",
+                  "description": "견적일자. YYYY-MM-DD 형식. 없으면 빈 문자열."
+                },
+                "supply_amount": {
+                  "type": "number",
+                  "description": "공급가액 합계(원, 부가세 제외). 쉼표 없이 정수."
+                },
+                "vat_amount": {
+                  "type": "number",
+                  "description": "부가세(원). 견적서에 부가세(세액, VAT) 표기가 없으면 0으로 두고 review_flags에 '부가세 표기 없음'을 넣는다."
+                },
+                "total_amount": {
+                  "type": "number",
+                  "description": "부가세를 포함한 합계 금액(원). 지출품의서의 '지출 추정금액'이 된다. 쉼표 없이 정수. 주의: 견적서 상단의 '합계금액' 옆에 'VAT 별도'라고 적혀 있으면 그 값은 공급가액이므로 쓰지 말고, 표 아래의 총 합계(공급가액+세액)를 쓴다."
+                },
+                "review_flags": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "description": "사람이 확인해야 할 사유 한 줄. 금액은 견적서에 적힌 값을 그대로 추출하고, 맞지 않으면 사유를 적는다. 사용할 문구: '품목 금액 합계와 공급가액 불일치', '공급가액과 부가세의 합이 합계와 불일치', '부가세 표기 없음', '업체명 판독 불가', '금액 판독 불가'. 문제가 없으면 아무것도 넣지 않는다(빈 목록)."
+                  },
+                  "description": ""
+                },
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "expense_category": {
+                        "type": "string",
+                        "description": "비목. 다음 중 하나만 고른다: 사무용품비(종이·필기구·토너 등 소모성 사무용품), 홍보비(포스터·현수막·리플렛 등 홍보물 제작), 장비구입비(노트북·모니터·마우스 등 기기 구입), 용역비(촬영·편집·디자인 등 사람이 하는 작업), 임차료(장비·장소 대여), 기타. 판단이 어려우면 '검토 필요'."
+                      },
+                      "description": {
+                        "type": "string",
+                        "description": "적요(품명). 견적서의 품명과 규격을 그대로 쓴다. 예: 'A4 파일(40매/투명)'. 목적이나 '구매' 같은 말은 붙이지 않는다."
+                      },
+                      "quantity": {
+                        "type": "number",
+                        "description": "수량. 숫자만."
+                      },
+                      "unit_price": {
+                        "type": "number",
+                        "description": "단가(원). 쉼표와 '원' 없이 정수."
+                      },
+                      "estimated_amount": {
+                        "type": "number",
+                        "description": "추정금액(원) = 해당 품목의 금액. 견적서에 적힌 품목 금액을 쓰고 쉼표 없이 정수."
+                      },
+                      "calculation_basis": {
+                        "type": "string",
+                        "description": "산출근거. '단가원*수량단위' 형식, 단가에는 천 단위 쉼표, 공백 없음. 예: '4,000원*100장', '300,000원*1식'."
+                      },
+                      "note": {
+                        "type": "string",
+                        "description": "비고. 품목 행에 따로 적힌 특이사항만. 없으면 빈 문자열."
+                      }
+                    }
+                  },
+                  "description": "지출품의서 '내역' 표의 행. 견적서의 품목 한 줄당 한 행."
+                }
+              }
+            }
+          },
+          "mode": "standard",
+          "modelName": "",
+          "schemaLayout": {
+            "version": 1,
+            "columns": [
+              {
+                "name": "vendor_name",
+                "source": "root"
+              },
+              {
+                "name": "vendor_representative",
+                "source": "root"
+              },
+              {
+                "name": "quote_date",
+                "source": "root"
+              },
+              {
+                "name": "supply_amount",
+                "source": "root"
+              },
+              {
+                "name": "vat_amount",
+                "source": "root"
+              },
+              {
+                "name": "total_amount",
+                "source": "root"
+              },
+              {
+                "name": "review_flags",
+                "source": "root"
+              },
+              {
+                "name": "expense_category",
+                "source": "group_table",
+                "groupTableKey": "items"
+              },
+              {
+                "name": "description",
+                "source": "group_table",
+                "groupTableKey": "items"
+              },
+              {
+                "name": "quantity",
+                "source": "group_table",
+                "groupTableKey": "items"
+              },
+              {
+                "name": "unit_price",
+                "source": "group_table",
+                "groupTableKey": "items"
+              },
+              {
+                "name": "estimated_amount",
+                "source": "group_table",
+                "groupTableKey": "items"
+              },
+              {
+                "name": "calculation_basis",
+                "source": "group_table",
+                "groupTableKey": "items"
+              },
+              {
+                "name": "note",
+                "source": "group_table",
+                "groupTableKey": "items"
+              }
+            ]
+          },
+          "manyRows": true,
+          "manyRowsThreshold": 50,
+          "manyRowsMaxRowsPerBatch": 400,
+          "manyRowsMaxConcurrent": 5
+        }
+      ],
+      "categorySchemaMapping": {
+        "견적서": "quote"
+      }
+    },
+    "instructConfiguration": {
+      "nodes": [
+        {
+          "name": "견적 검토",
+          "modelName": "solar-pro4",
+          "prompt": "다음은 업체 견적서에서 추출한 값이다.\n업체명: {{vendor_name}}\n대표자: {{vendor_representative}}\n견적일: {{quote_date}}\n공급가액: {{supply_amount}}\n부가세: {{vat_amount}}\n합계: {{total_amount}}\n품목: {{items}}\n\n아래 순서대로 직접 계산하고 견적서 값과 비교한다.\n1. 품목마다 단가 × 수량을 계산해 견적서 금액과 비교한다.\n2. 품목 금액을 하나씩 더해 공급가액과 비교한다. 1원이라도 다르면 문제로 적는다.\n3. 공급가액의 10%를 부가세와 비교한다(면세라고 적혀 있으면 예외).\n4. 공급가액 + 부가세를 합계와 비교한다.\n5. 업체명, 견적일, 합계가 비어 있으면 문제로 적는다.\n값이 없으면 지어내지 말고 '없음'이라고 적는다.\n\n아래 형식의 일반 텍스트로만 답한다. 중괄호({ }), JSON, 제목, 머리말은 쓰지 않고 '계산:'부터 바로 쓴다.\n계산:\n- 품명: 단가 × 수량 = 계산 금액 (견적서 금액)\n- 품목 금액 합계: 숫자 (공급가액 숫자)\n- 공급가액의 10%: 숫자 (부가세 숫자)\n- 공급가액 + 부가세: 숫자 (합계 숫자)\n문제:\n- 항목: 무엇이 어떻게 다른지 한 문장 (견적서 값 / 계산 값)\n요약: 한 줄\n문제가 하나도 없을 때만 '문제:' 아래에 '- 없음' 한 줄을 쓴다.\n근거 표시(【†1】 같은 표시)와 코드 블록(```)은 쓰지 않는다."
+        },
+        {
+          "name": "후속 처리 판정",
+          "modelName": "solar-pro4",
+          "prompt": "앞 단계 견적 검토 결과를 보고 다음 처리 방법 하나를 고른다.\n- 작성 가능: '문제:' 아래가 '- 없음'이다.\n- 담당자 확인 필요: 부가세 별도 표기, 표기 방식 차이처럼 담당자가 답하면 진행할 수 있는 문제만 있다.\n- 재견적 필요: 단가 × 수량이나 합계 계산이 틀려 업체가 고쳐야 한다.\n- 작성 중지: 업체명이나 합계를 읽지 못해 품의서를 만들 수 없다.\n판단은 앞 단계 '문제:' 아래 내용만 보고 한다.\n근거 표시(【†1】 같은 표시)와 코드 블록(```)은 쓰지 않는다.",
+          "enumEnabled": true,
+          "enumValues": [
+            "작성 가능",
+            "담당자 확인 필요",
+            "재견적 필요",
+            "작성 중지"
+          ]
+        },
+        {
+          "name": "품의 내용 작성",
+          "modelName": "solar-pro4",
+          "prompt": "견적 내용으로 품의서에 들어갈 문장을 만든다.\n업체명: {{vendor_name}}\n대표자: {{vendor_representative}}\n견적일: {{quote_date}}\n공급가액: {{supply_amount}}\n부가세: {{vat_amount}}\n합계: {{total_amount}}\n품목: {{items}}\n\n아래 다섯 줄 형식의 일반 텍스트로만 답한다. 중괄호({ }), JSON, 머리말은 쓰지 않고 '제목:'부터 바로 쓴다.\n제목: {첫 품목 이름} 외 N건 구매의 건\n품목 요약: {첫 품목 이름} 외 N건\n업체: 업체명\n합계: 합계 숫자\n품의 요지: 아래와 같이 물품을 구매하고자 합니다.\n품목 이름은 견적서의 품명과 규격만 쓰고 \"구매\", \"~를 위한\" 같은 말은 붙이지 않는다. 숫자는 견적서 값을 그대로 쓰고 새로 계산하지 않는다.\n근거 표시(【†1】 같은 표시)와 코드 블록(```)은 쓰지 않는다."
+        },
+        {
+          "name": "담당자 질문 작성",
+          "modelName": "solar-pro4",
+          "prompt": "담당자에게 확인할 질문을 만든다. 견적서 값은 아래와 같다.\n업체명: {{vendor_name}}\n견적일: {{quote_date}}\n공급가액: {{supply_amount}}\n부가세: {{vat_amount}}\n합계: {{total_amount}}\n품목: {{items}}\n먼저 직접 계산한다: 품목마다 단가 × 수량, 품목 금액 합계와 공급가액, 공급가액의 10%와 부가세, 공급가액 + 부가세와 합계. 계산이 다른 곳만 문제로 본다.\n부가세 표기가 없거나 면세 여부가 불분명한 것처럼 담당자가 정해야 하는 것만 질문으로 만든다. 계산이 맞는 항목은 질문하지 않는다. 같은 문제는 질문 하나로 묶는다. 정할 것이 없으면 '질문 없음'이라고만 쓴다.\n질문마다 아래 두 줄로 쓴다. 제목이나 머리말 없이 질문부터 바로 쓴다.\n질문: 무엇이 어떻게 다른지 한 문장(합니다체)\n선택지: 값 + 적용 / 값 + 유지 / 보류(업체 확인)\n근거 표시(【†1】 같은 표시)와 코드 블록(```)은 쓰지 않는다."
+        },
+        {
+          "name": "재견적 요청 작성",
+          "modelName": "solar-pro4",
+          "prompt": "업체에 보낼 재견적 요청 문안을 쓴다. 견적서 값은 아래와 같다.\n업체명: {{vendor_name}}\n견적일: {{quote_date}}\n공급가액: {{supply_amount}}\n부가세: {{vat_amount}}\n합계: {{total_amount}}\n품목: {{items}}\n먼저 직접 계산한다: 품목마다 단가 × 수량, 품목 금액 합계와 공급가액, 공급가액의 10%와 부가세, 공급가액 + 부가세와 합계. 계산이 다른 곳만 문제로 본다.\n문안은 합니다체 세 문장 이내로, 틀린 항목, 견적서 값, 올바른 계산 값을 숫자로 적고 고친 견적서를 다시 보내 달라고 요청한다. 계산이 맞는 항목은 언급하지 않는다.\n근거 표시(【†1】 같은 표시)와 코드 블록(```)은 쓰지 않는다."
+        },
+        {
+          "name": "작성 중지 사유",
+          "modelName": "solar-pro4",
+          "prompt": "품의서를 만들 수 없는 이유를 한 문장, 담당자가 할 일을 한 문장으로 쓴다. 합니다체로 쓴다.\n근거 표시(【†1】 같은 표시)와 코드 블록(```)은 쓰지 않는다."
+        }
+      ],
+      "connectionMapping": {
+        "견적 검토": {
+          "targetType": "extract",
+          "schemaName": "quote"
+        },
+        "후속 처리 판정": {
+          "targetType": "instruct",
+          "instructNodeName": "견적 검토"
+        },
+        "품의 내용 작성": {
+          "targetType": "instruct",
+          "instructNodeName": "후속 처리 판정"
+        },
+        "담당자 질문 작성": {
+          "targetType": "instruct",
+          "instructNodeName": "후속 처리 판정"
+        },
+        "재견적 요청 작성": {
+          "targetType": "instruct",
+          "instructNodeName": "후속 처리 판정"
+        },
+        "작성 중지 사유": {
+          "targetType": "instruct",
+          "instructNodeName": "후속 처리 판정"
+        }
+      }
+    },
+    "pipelineEdges": [
+      {
+        "id": "e0",
+        "source": {
+          "nodeType": "parse"
+        },
+        "target": {
+          "nodeType": "classify",
+          "name": "문서 분류"
+        }
+      },
+      {
+        "id": "e1",
+        "source": {
+          "nodeType": "classify",
+          "name": "문서 분류"
+        },
+        "target": {
+          "nodeType": "extract",
+          "name": "quote"
+        },
+        "condition": {
+          "conditionName": "견적서"
+        }
+      },
+      {
+        "id": "e2",
+        "source": {
+          "nodeType": "extract",
+          "name": "quote"
+        },
+        "target": {
+          "nodeType": "instruct",
+          "name": "견적 검토"
+        }
+      },
+      {
+        "id": "e3",
+        "source": {
+          "nodeType": "instruct",
+          "name": "견적 검토"
+        },
+        "target": {
+          "nodeType": "instruct",
+          "name": "후속 처리 판정"
+        }
+      },
+      {
+        "id": "e4",
+        "source": {
+          "nodeType": "instruct",
+          "name": "후속 처리 판정"
+        },
+        "target": {
+          "nodeType": "instruct",
+          "name": "품의 내용 작성"
+        },
+        "condition": {
+          "conditionName": "작성 가능"
+        }
+      },
+      {
+        "id": "e5",
+        "source": {
+          "nodeType": "instruct",
+          "name": "후속 처리 판정"
+        },
+        "target": {
+          "nodeType": "instruct",
+          "name": "담당자 질문 작성"
+        },
+        "condition": {
+          "conditionName": "담당자 확인 필요"
+        }
+      },
+      {
+        "id": "e6",
+        "source": {
+          "nodeType": "instruct",
+          "name": "후속 처리 판정"
+        },
+        "target": {
+          "nodeType": "instruct",
+          "name": "재견적 요청 작성"
+        },
+        "condition": {
+          "conditionName": "재견적 필요"
+        }
+      },
+      {
+        "id": "e7",
+        "source": {
+          "nodeType": "instruct",
+          "name": "후속 처리 판정"
+        },
+        "target": {
+          "nodeType": "instruct",
+          "name": "작성 중지 사유"
+        },
+        "condition": {
+          "conditionName": "작성 중지"
+        }
+      }
+    ]
+  }
+}

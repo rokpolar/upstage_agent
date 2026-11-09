@@ -1,0 +1,41 @@
+{
+  "vendor_name": "우일모터스",
+  "vendor_representative": "최우일",
+  "quote_date": "2026-10-30",
+  "items": [
+    {
+      "quantity": 8,
+      "unit_price": 78000,
+      "estimated_amount": 624000,
+      "calculation_basis": "78,000원*8회"
+    },
+    {
+      "quantity": 16,
+      "unit_price": 152000,
+      "estimated_amount": 2432000,
+      "calculation_basis": "152,000원*16EA"
+    },
+    {
+      "quantity": 4,
+      "unit_price": 96000,
+      "estimated_amount": 384000,
+      "calculation_basis": "96,000원*4SET"
+    },
+    {
+      "quantity": 8,
+      "unit_price": 18000,
+      "estimated_amount": 144000,
+      "calculation_basis": "18,000원*8SET"
+    },
+    {
+      "quantity": 1,
+      "unit_price": 420000,
+      "estimated_amount": 420000,
+      "calculation_basis": "420,000원*1식"
+    }
+  ],
+  "supply_amount": 4004000,
+  "vat_amount": 400400,
+  "total_amount": 4404400,
+  "review_flags": []
+}

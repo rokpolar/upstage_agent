@@ -1,0 +1,64 @@
+{
+  "vendor_name": "대한포장(주)",
+  "vendor_representative": "윤재석",
+  "quote_date": "2026-10-28",
+  "supply_amount": 3374000,
+  "vat_amount": 337400,
+  "total_amount": 3711400,
+  "review_flags": [],
+  "items": [
+    {
+      "expense_category": "기타",
+      "description": "택배박스 3호(5겹/무지)",
+      "quantity": 3000,
+      "unit_price": 520,
+      "estimated_amount": 1560000,
+      "calculation_basis": "520원*3000EA",
+      "note": ""
+    },
+    {
+      "expense_category": "기타",
+      "description": "에어캡(1m×50m)",
+      "quantity": 40,
+      "unit_price": 14500,
+      "estimated_amount": 580000,
+      "calculation_basis": "14,500원*40롤",
+      "note": ""
+    },
+    {
+      "expense_category": "기타",
+      "description": "PP밴드(15mm)",
+      "quantity": 30,
+      "unit_price": 9800,
+      "estimated_amount": 294000,
+      "calculation_basis": "9,800원*30롤",
+      "note": ""
+    },
+    {
+      "expense_category": "기타",
+      "description": "박스테이프(48mm×50m)",
+      "quantity": 500,
+      "unit_price": 780,
+      "estimated_amount": 390000,
+      "calculation_basis": "780원*500EA",
+      "note": ""
+    },
+    {
+      "expense_category": "기타",
+      "description": "완충재(발포)",
+      "quantity": 25,
+      "unit_price": 22000,
+      "estimated_amount": 550000,
+      "calculation_basis": "22,000원*25박스",
+      "note": ""
+    }
+  ],
+  "studio": {
+    "category": "견적서",
+    "review": "계산: 품목별: 택배박스 3호: 520 × 3000 = 1,560,000 (견적서 금액 1,560,000), 에어캡: 14,500 × 40 = 580,000 (견적서 금액 580,000), PP밴드: 9,800 × 30 = 294,000 (견적서 금액 294,000), 박스테이프: 780 × 500 = 390,000 (견적서 금액 390,000), 완충재: 22,000 × 25 = 550,000 (견적서 금액 550,000), 품목 금액 합계: 3,374,000, 공급가액: 3,374,000, 부가세 10%: 337,400, 부가세: 337,400, 공급가액 + 부가세: 3,711,400, 합계: 3,711,400, issues: [], 요약: 모든 품목 계산 금액과 견적서 금액이 일치하며, 공급가액과 부가세, 합계 모두 정확히 일치한다.",
+    "decision": "작성 가능",
+    "branch": "품의 내용 작성",
+    "note": "제목: 택배박스 3호(5겹/무지) 외 4건 구매의 건",
+    "job_id": "job_Z6ixnDmQ3Jbe6vegExmBqA"
+  }
+}

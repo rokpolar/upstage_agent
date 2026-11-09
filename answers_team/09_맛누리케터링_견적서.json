@@ -1,0 +1,35 @@
+{
+  "vendor_name": "맛누리케터링",
+  "vendor_representative": "오미선",
+  "quote_date": "2026-11-02",
+  "items": [
+    {
+      "quantity": 120,
+      "unit_price": 11000,
+      "estimated_amount": 1320000,
+      "calculation_basis": "11,000원*120개"
+    },
+    {
+      "quantity": 40,
+      "unit_price": 8500,
+      "estimated_amount": 340000,
+      "calculation_basis": "8,500원*40세트"
+    },
+    {
+      "quantity": 8,
+      "unit_price": 38000,
+      "estimated_amount": 304000,
+      "calculation_basis": "38,000원*8세트"
+    },
+    {
+      "quantity": 200,
+      "unit_price": 1000,
+      "estimated_amount": 200000,
+      "calculation_basis": "1,000원*200EA"
+    }
+  ],
+  "supply_amount": 2164000,
+  "vat_amount": 216400,
+  "total_amount": 2380400,
+  "review_flags": []
+}

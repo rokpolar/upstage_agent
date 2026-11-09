@@ -1,0 +1,29 @@
+{
+  "vendor_name": "테크마트㈜",
+  "vendor_representative": "정기기",
+  "quote_date": "2026-10-30",
+  "items": [
+    {
+      "expense_category": "장비구입비",
+      "description": "업무용 노트북 구입(15.6형, i5, 16GB, 512GB)",
+      "quantity": 1,
+      "unit_price": 1200000,
+      "estimated_amount": 1200000,
+      "calculation_basis": "1,200,000원*1대",
+      "note": ""
+    },
+    {
+      "expense_category": "장비구입비",
+      "description": "업무용 무선 마우스 구입",
+      "quantity": 1,
+      "unit_price": 25000,
+      "estimated_amount": 25000,
+      "calculation_basis": "25,000원*1개",
+      "note": ""
+    }
+  ],
+  "supply_amount": 1225000,
+  "vat_amount": 122500,
+  "total_amount": 1347500,
+  "review_flags": []
+}

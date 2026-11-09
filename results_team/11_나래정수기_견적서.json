@@ -1,0 +1,46 @@
+{
+  "vendor_name": "나래정수기(주)",
+  "vendor_representative": "임채원",
+  "quote_date": "2026-10-19",
+  "supply_amount": 1798000,
+  "vat_amount": 179800,
+  "total_amount": 1977800,
+  "review_flags": [],
+  "items": [
+    {
+      "expense_category": "임차료",
+      "description": "냉온정수기 렌탈 직수형",
+      "quantity": 20,
+      "unit_price": 29900,
+      "estimated_amount": 598000,
+      "calculation_basis": "29,900원*20대",
+      "note": ""
+    },
+    {
+      "expense_category": "용역비",
+      "description": "필터 교체 정기 방문",
+      "quantity": 20,
+      "unit_price": 35000,
+      "estimated_amount": 700000,
+      "calculation_basis": "35,000원*20회",
+      "note": ""
+    },
+    {
+      "expense_category": "기타",
+      "description": "설치비 1회성",
+      "quantity": 20,
+      "unit_price": 25000,
+      "estimated_amount": 500000,
+      "calculation_basis": "25,000원*20대",
+      "note": ""
+    }
+  ],
+  "studio": {
+    "category": "견적서",
+    "review": "계산 결과:\n- 냉온정수기 렌탈: 29,900 × 20 = 598,000 (견적서 금액 598,000) 일치\n- 필터 교체: 35,000 × 20 = 700,000 (견적서 금액 700,000) 일치\n- 설치비: 25,000 × 20 = 500,000 (견적서 금액 500,000) 일치\n품목 금액 합계: 1,798,000\n공급가액: 1,798,000\n부가세 10%: 179,800\n부가세: 179,800\n공급가액 + 부가세: 1,977,800\n합계: 1,977,800\n\n모든 계산이 견적서 금액과 일치하며, 공급가액과 부가세, 합계 모두 정확히 맞아떨어집니다. 업체명, 견적일, 합계 모두 기재되어 있어 문제가 없습니다.\n\n따라서 issues는 빈 배열이며, 요약은 \"모든 계산이 견적서와 일치하여 문제가 없음\"입니다.",
+    "decision": "작성 가능",
+    "branch": "품의 내용 작성",
+    "note": "제목: 냉온정수기 렌탈 직수형 외 2건 구매의 건",
+    "job_id": "job_2NZ8pLSz9H7XuEXr3DhDS5"
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "vendor_name": "맛누리케터링",
+  "vendor_representative": "오미선",
+  "quote_date": "2026-11-02",
+  "supply_amount": 2164000,
+  "vat_amount": 216400,
+  "total_amount": 2380400,
+  "review_flags": [],
+  "items": [
+    {
+      "expense_category": "기타",
+      "description": "도시락(한식 5찬) 국 포함",
+      "quantity": 120,
+      "unit_price": 11000,
+      "estimated_amount": 1320000,
+      "calculation_basis": "11,000원*120개",
+      "note": ""
+    },
+    {
+      "expense_category": "기타",
+      "description": "샌드위치 세트 음료 포함",
+      "quantity": 40,
+      "unit_price": 8500,
+      "estimated_amount": 340000,
+      "calculation_basis": "8,500원*40세트",
+      "note": ""
+    },
+    {
+      "expense_category": "기타",
+      "description": "다과 세트 10인분",
+      "quantity": 8,
+      "unit_price": 38000,
+      "estimated_amount": 304000,
+      "calculation_basis": "38,000원*8세트",
+      "note": ""
+    },
+    {
+      "expense_category": "기타",
+      "description": "생수 500ml 박스 단위",
+      "quantity": 200,
+      "unit_price": 1000,
+      "estimated_amount": 200000,
+      "calculation_basis": "1,000원*200EA",
+      "note": ""
+    }
+  ],
+  "studio": {
+    "category": "견적서",
+    "review": "{",
+    "decision": "작성 가능",
+    "branch": "품의 내용 작성",
+    "note": "제목: 도시락(한식 5찬) 외 3건 구매의 건",
+    "job_id": "job_jQ6fyj2cCJY7pwtE9wzTCP"
+  }
+}

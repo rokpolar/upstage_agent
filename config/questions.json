@@ -1,0 +1,118 @@
+{
+  "_comment": "하네스가 담당자에게 보여주는 확인 항목 문구. {이름}은 코드가 채운다. options의 키(use_calc 등)는 코드가 값을 붙이는 이름이라 바꾸지 말고 문구만 고친다. 문구 규칙: 메시지는 '무엇이 어떻게 다른지'를 합니다체 한 문장으로, 선택지는 '값 + 동작'(적용/유지/보류)으로.",
+  "where": {
+    "source": "견적서",
+    "edited": "현재"
+  },
+  "hold_flag": "보류: 재견적 또는 업체 확인 필요",
+  "evidence_prefix": "원문: ",
+  "cli": {
+    "question": "[확인] {message}",
+    "choose": "번호> ",
+    "input": "값> ",
+    "retry": "번호를 다시 선택하세요.",
+    "status_ok": "결재 가능",
+    "status_hold": "보류",
+    "status_left": "확인 필요 {n}건",
+    "summary": "{status}, 처리 {answered}건, 저장: {path}"
+  },
+  "vendor_select": {
+    "title": "비교견적 {count}건",
+    "row": "{no}) {vendor:<16} 합계 {total:>12}원  견적일 {quote_date}  {status}{mark}",
+    "recommended_mark": "  [추천]",
+    "status_ok": "정상",
+    "status_issues": "확인 필요 {n}건: {issues}",
+    "excluded": "(추천 제외: {why})",
+    "recommendation": "추천: {vendor} ({reason})",
+    "choose": "업체 번호 (Enter: 추천 업체)> ",
+    "reason_prompt": "선정 사유 (Enter: '{auto}')> ",
+    "reason_required": "추천 업체가 아니므로 선정 사유를 입력하세요> ",
+    "reason_missing": "추천 업체가 아닌 경우 선정 사유를 입력해야 합니다."
+  },
+  "missing_vendor": {
+    "message": "업체명을 인식하지 못했습니다.",
+    "options": {
+      "input": "직접 입력"
+    }
+  },
+  "missing_items": {
+    "message": "품목을 인식하지 못했습니다. 견적서 파일을 확인하세요.",
+    "options": {
+      "hold": "보류(파일 재업로드)"
+    }
+  },
+  "missing_amount": {
+    "message": "공급가액 또는 합계금액을 인식하지 못했습니다.",
+    "options": {
+      "input": "합계금액 직접 입력",
+      "hold": "보류"
+    }
+  },
+  "item_calc": {
+    "message": "{no}번 품목 금액 불일치: 단가 {price}원 × 수량 {qty} = {calc}원, 견적서 {amount}원",
+    "options": {
+      "use_calc": "계산값 {calc}원 적용",
+      "keep": "견적서 값 {amount}원 유지",
+      "hold": "보류(재견적 요청)"
+    }
+  },
+  "supply_sum": {
+    "message": "공급가액 불일치: 품목 합계 {item_sum}원, {where} 공급가액 {supply}원",
+    "options": {
+      "use_calc": "품목 합계 {item_sum}원 적용",
+      "keep": "{where} 값 {supply}원 유지",
+      "hold": "보류(재견적 요청)"
+    }
+  },
+  "vat_missing": {
+    "message": "부가세 표기가 없습니다.",
+    "options": {
+      "keep": "부가세 없음(면세, 간이과세)",
+      "use_calc": "부가세 {rate}% 별도 적용({vat_calc}원)",
+      "hold": "보류(업체 확인)"
+    }
+  },
+  "vat_rate": {
+    "message": "부가세가 공급가액의 {ratio}입니다(기준 {rate}%).",
+    "options": {
+      "keep": "견적서 값 {vat}원 유지",
+      "use_calc": "{rate}% 적용({vat_calc}원)",
+      "hold": "보류(업체 확인)"
+    }
+  },
+  "vat_excluded_total": {
+    "why_cover": "견적서 합계금액이 부가세 별도 금액입니다.",
+    "why_equal": "합계금액이 공급가액과 같습니다(부가세 누락).",
+    "message": "{why} 부가세 포함 합계: {supply} + {vat} = {total_calc}원",
+    "options": {
+      "use_calc": "{total_calc}원 적용",
+      "input": "직접 입력"
+    }
+  },
+  "total_sum": {
+    "message": "합계금액 불일치: 공급가액 {supply} + 부가세 {vat} = {total_calc}원, {where} 합계 {total}원",
+    "options": {
+      "use_calc": "계산값 {total_calc}원 적용",
+      "keep": "{where} 값 {total}원 유지",
+      "hold": "보류(재견적 요청)"
+    }
+  },
+  "category": {
+    "message": "{no}번 품목({name}) 비목 선택 (인식값: {current})",
+    "none": "없음"
+  },
+  "evidence": {
+    "message": "{field} {value}원이 견적서 원문에서 확인되지 않습니다.",
+    "options": {
+      "keep": "인식값 유지",
+      "input": "직접 입력"
+    }
+  },
+  "expired": {
+    "message": "견적 유효기간({until})이 기안일({draft})보다 이릅니다.",
+    "options": {
+      "keep": "업체 확인 후 진행",
+      "hold": "보류(재견적 요청)"
+    }
+  }
+}

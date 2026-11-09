@@ -1,0 +1,19 @@
+{
+  "case_id": "CASE-2026-0101",
+  "approval_version": 1,
+  "doc_no": "경영지원-2026-0101",
+  "draft_date": "2026-11-05",
+  "drafter": "홍길동",
+  "department": "경영지원처",
+  "funding_source": "자부담",
+  "project_name": "2026 하반기 사무환경 개선",
+  "project_period": "2026.11.10 ~ 2026.12.31",
+  "expected_date": "2026-11-12",
+  "purpose": "부서 공용 사무용품 보충",
+  "payment_method": "계좌이체",
+  "related_plan": "2026 사무용품 구매계획서",
+  "org_name": "가상기관 경영지원처",
+  "accountant": "홍길동",
+  "approvers": ["담당", "팀장", "처장"],
+  "source_quote_file": "01_한빛사무기기_견적서.pdf"
+}

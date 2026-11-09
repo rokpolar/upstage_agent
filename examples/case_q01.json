@@ -1,0 +1,13 @@
+{
+  "case_id": "CASE-2026-0001",
+  "approval_version": 1,
+  "funding_source": "보조금",
+  "project_name": "2026 대울경 AI 해커톤 홍보",
+  "project_period": "2026.11.10 ~ 2026.11.13",
+  "related_plan": "2026 해커톤 홍보 추진계획서",
+  "org_name": "가상기관 운영지원팀",
+  "accountant": "홍길동",
+  "approvers": ["담당", "팀장", "기관장"],
+  "draft_date": "2026-11-05",
+  "source_quote_file": "q01.pdf"
+}

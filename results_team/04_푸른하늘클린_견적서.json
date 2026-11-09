@@ -1,0 +1,55 @@
+{
+  "vendor_name": "푸른하늘클린",
+  "vendor_representative": "신혜진",
+  "quote_date": "2026-10-26",
+  "supply_amount": 41480000,
+  "vat_amount": 4148000,
+  "total_amount": 45628000,
+  "review_flags": [],
+  "items": [
+    {
+      "expense_category": "용역비",
+      "description": "사무실 정기 환경미화 주 5회 방문",
+      "quantity": 12,
+      "unit_price": 2665000,
+      "estimated_amount": 31980000,
+      "calculation_basis": "2,665,000원*12월",
+      "note": ""
+    },
+    {
+      "expense_category": "용역비",
+      "description": "화장실 특수관리 주 2회",
+      "quantity": 12,
+      "unit_price": 395000,
+      "estimated_amount": 4740000,
+      "calculation_basis": "395,000원*12월",
+      "note": ""
+    },
+    {
+      "expense_category": "용역비",
+      "description": "유리창·외벽 세척 분기별 1회",
+      "quantity": 4,
+      "unit_price": 725000,
+      "estimated_amount": 2900000,
+      "calculation_basis": "725,000원*4회",
+      "note": ""
+    },
+    {
+      "expense_category": "용역비",
+      "description": "해충 방제 월 1회",
+      "quantity": 12,
+      "unit_price": 155000,
+      "estimated_amount": 1860000,
+      "calculation_basis": "155,000원*12회",
+      "note": ""
+    }
+  ],
+  "studio": {
+    "category": "견적서",
+    "review": "계산: 품목별: 사무실 정기 환경미화: 2,665,000 × 12 = 31,980,000 (견적서 금액 31,980,000), 화장실 특수관리: 395,000 × 12 = 4,740,000 (견적서 금액 4,740,000), 유리창·외벽 세척: 725,000 × 4 = 2,900,000 (견적서 금액 2,900,000), 해충 방제: 155,000 × 12 = 1,860,000 (견적서 금액 1,860,000). 품목 금액 합계: 41,480,000. 공급가액: 41,480,000. 부가세 10%: 4,148,000. 부가세: 4,148,000. 공급가액 + 부가세: 45,628,000. 합계: 45,628,000. issues: []. 요약: 모든 품목 계산 금액이 견적서 금액과 일치하고, 품목 금액 합계와 공급가액이 일치하며, 공급가액의 10%가 부가세와 일치하고, 공급가액+부가세가 합계와 일치하여 문제가 없다.",
+    "decision": "작성 가능",
+    "branch": "품의 내용 작성",
+    "note": "{\n  \"제목\": \"사무실 정기 환경미화 주 5회 방문 외 3건 구매의 건\",\n  \"품목 요약\": \"사무실 정기 환경미화 주 5회 방문 외 3건\",\n  \"업체\": \"푸른하늘클린\",\n  \"합계\": 45628000,\n  \"품의 요지\": \"아래와 같이 물품을 구매하고자 합니다.\"\n}",
+    "job_id": "job_Z7wbAkUTfn47QHeyMpbHwR"
+  }
+}

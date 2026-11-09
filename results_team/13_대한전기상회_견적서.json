@@ -1,0 +1,64 @@
+{
+  "vendor_name": "대한전기상회",
+  "vendor_representative": "김성호",
+  "quote_date": "2026-10-23",
+  "supply_amount": 4814500,
+  "vat_amount": 481450,
+  "total_amount": 5295950,
+  "review_flags": [],
+  "items": [
+    {
+      "expense_category": "기타",
+      "description": "LED 평판등(50W/6500K)",
+      "quantity": 200,
+      "unit_price": 15500,
+      "estimated_amount": 3100000,
+      "calculation_basis": "15,500원*200EA",
+      "note": ""
+    },
+    {
+      "expense_category": "기타",
+      "description": "전선(HIV)(2.5SQ/100m)",
+      "quantity": 15,
+      "unit_price": 55500,
+      "estimated_amount": 832500,
+      "calculation_basis": "55,500원*15롤",
+      "note": ""
+    },
+    {
+      "expense_category": "기타",
+      "description": "배선용 차단기(2극 20A)",
+      "quantity": 40,
+      "unit_price": 6300,
+      "estimated_amount": 252000,
+      "calculation_basis": "6,300원*40개",
+      "note": ""
+    },
+    {
+      "expense_category": "기타",
+      "description": "매입 콘센트(접지 2구)",
+      "quantity": 100,
+      "unit_price": 2100,
+      "estimated_amount": 210000,
+      "calculation_basis": "2,100원*100개",
+      "note": ""
+    },
+    {
+      "expense_category": "기타",
+      "description": "PVC 전선관(16C)",
+      "quantity": 300,
+      "unit_price": 1400,
+      "estimated_amount": 420000,
+      "calculation_basis": "1,400원*300본",
+      "note": ""
+    }
+  ],
+  "studio": {
+    "category": "견적서",
+    "review": "{",
+    "decision": "작성 가능",
+    "branch": "품의 내용 작성",
+    "note": "제목: LED 평판등(50W/6500K) 외 4건 구매의 건",
+    "job_id": "job_iLyFyfxjn4LeHMmZToCMAF"
+  }
+}

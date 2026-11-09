@@ -1,0 +1,31 @@
+{
+  "vendor_name": "대구렌탈",
+  "vendor_representative": "최대여",
+  "quote_date": "2026-11-01",
+  "items": [
+    {
+      "expense_category": "임차료",
+      "description": "행사 발표용 빔프로젝터 대여(1일)",
+      "quantity": 2,
+      "unit_price": 70000,
+      "estimated_amount": 140000,
+      "calculation_basis": "70,000원*2대",
+      "note": ""
+    },
+    {
+      "expense_category": "임차료",
+      "description": "행사 발표용 스크린 대여(100인치, 1일)",
+      "quantity": 2,
+      "unit_price": 30000,
+      "estimated_amount": 60000,
+      "calculation_basis": "30,000원*2대",
+      "note": ""
+    }
+  ],
+  "supply_amount": 200000,
+  "vat_amount": 0,
+  "total_amount": 200000,
+  "review_flags": [
+    "부가세 표기 없음"
+  ]
+}

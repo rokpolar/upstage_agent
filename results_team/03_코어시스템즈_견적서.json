@@ -1,0 +1,55 @@
+{
+  "vendor_name": "(주)코어시스템즈",
+  "vendor_representative": "한도윤 인",
+  "quote_date": "2026-10-22",
+  "supply_amount": 27900000,
+  "vat_amount": 2790000,
+  "total_amount": 30690000,
+  "review_flags": [],
+  "items": [
+    {
+      "expense_category": "용역비",
+      "description": "홈페이지 유지보수 월 정기점검",
+      "quantity": 12,
+      "unit_price": 1200000,
+      "estimated_amount": 14400000,
+      "calculation_basis": "1,200,000원*12월",
+      "note": ""
+    },
+    {
+      "expense_category": "용역비",
+      "description": "서버 모니터링 24x7",
+      "quantity": 12,
+      "unit_price": 650000,
+      "estimated_amount": 7800000,
+      "calculation_basis": "650,000원*12월",
+      "note": ""
+    },
+    {
+      "expense_category": "용역비",
+      "description": "보안패치 적용 분기 1회",
+      "quantity": 4,
+      "unit_price": 900000,
+      "estimated_amount": 3600000,
+      "calculation_basis": "900,000원*4회",
+      "note": ""
+    },
+    {
+      "expense_category": "용역비",
+      "description": "장애 대응 지원 긴급출동",
+      "quantity": 6,
+      "unit_price": 350000,
+      "estimated_amount": 2100000,
+      "calculation_basis": "350,000원*6회",
+      "note": ""
+    }
+  ],
+  "studio": {
+    "category": "견적서",
+    "review": "계산: 홈페이지 유지보수 1,200,000 × 12 = 14,400,000 (견적서 금액 14,400,000) 일치, 서버 모니터링 650,000 × 12 = 7,800,000 (견적서 금액 7,800,000) 일치, 보안패치 적용 900,000 × 4 = 3,600,000 (견적서 금액 3,600,000) 일치, 장애 대응 지원 350,000 × 6 = 2,100,000 (견적서 금액 2,100,000) 일치. 품목 금액 합계 27,900,000, 공급가액 27,900,000, 부가세 10% 2,790,000, 부가세 2,790,000, 공급가액 + 부가세 30,690,000, 합계 30,690,000. 모든 값이 일치하여 issues는 빈 배열. 업체명 (주)코어시스템즈, 견적일 2026-10-22, 합계 30,690,000 모두 기재됨. 요약: 모든 계산 값이 견적서와 정확히 일치함.",
+    "decision": "작성 가능",
+    "branch": "품의 내용 작성",
+    "note": "제목: 홈페이지 유지보수 월 정기점검 외 3건 구매의 건",
+    "job_id": "job_27KX9WQeA6JUqWCMkXcx6F"
+  }
+}

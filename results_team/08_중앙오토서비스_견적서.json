@@ -1,0 +1,64 @@
+{
+  "vendor_name": "중앙오토서비스",
+  "vendor_representative": "송태준",
+  "quote_date": "2026-10-30",
+  "supply_amount": 4381000,
+  "vat_amount": 438100,
+  "total_amount": 4819100,
+  "review_flags": [],
+  "items": [
+    {
+      "expense_category": "기타",
+      "description": "엔진오일 및 필터 교환 5W30 풀합성",
+      "quantity": 8,
+      "unit_price": 82000,
+      "estimated_amount": 656000,
+      "calculation_basis": "82,000원*8대",
+      "note": ""
+    },
+    {
+      "expense_category": "기타",
+      "description": "승용 타이어 235/55 R18",
+      "quantity": 16,
+      "unit_price": 170000,
+      "estimated_amount": 2720000,
+      "calculation_basis": "170,000원*16EA",
+      "note": ""
+    },
+    {
+      "expense_category": "기타",
+      "description": "브레이크패드 교환 앞바퀴용",
+      "quantity": 4,
+      "unit_price": 101000,
+      "estimated_amount": 404000,
+      "calculation_basis": "101,000원*4세트",
+      "note": ""
+    },
+    {
+      "expense_category": "기타",
+      "description": "와이퍼 교체 차종별 적용",
+      "quantity": 8,
+      "unit_price": 19000,
+      "estimated_amount": 152000,
+      "calculation_basis": "19,000원*8세트",
+      "note": ""
+    },
+    {
+      "expense_category": "용역비",
+      "description": "정비 공임 일괄 산정",
+      "quantity": 1,
+      "unit_price": 449000,
+      "estimated_amount": 449000,
+      "calculation_basis": "449,000원*1식",
+      "note": ""
+    }
+  ],
+  "studio": {
+    "category": "견적서",
+    "review": "{",
+    "decision": "작성 가능",
+    "branch": "품의 내용 작성",
+    "note": "{\n  \"제목\": \"엔진오일 및 필터 교환 5W30 풀합성 외 4건 구매의 건\",\n  \"품목 요약\": \"엔진오일 및 필터 교환 5W30 풀합성 외 4건\",\n  \"업체\": \"중앙오토서비스\",\n  \"합계\": 4819100,\n  \"품의 요지\": \"아래와 같이 물품을 구매하고자 합니다.\"\n}",
+    "job_id": "job_Q8SbvgEWvHo9Uk4ygsevJU"
+  }
+}

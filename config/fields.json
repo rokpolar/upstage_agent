@@ -1,0 +1,22 @@
+{
+  "_comment": "역할 → 실제 키 이름. Studio 스키마(품의서_extract_schema.json)의 키를 바꾸면 여기만 맞추면 된다. 정답지·결의 인계 JSON도 이 키를 쓴다.",
+  "vendor_name": "vendor_name",
+  "vendor_representative": "vendor_representative",
+  "quote_date": "quote_date",
+  "items": "items",
+  "supply": "supply_amount",
+  "vat": "vat_amount",
+  "total": "total_amount",
+  "flags": "review_flags",
+  "item": {
+    "category": "expense_category",
+    "description": "description",
+    "quantity": "quantity",
+    "unit_price": "unit_price",
+    "amount": "estimated_amount",
+    "basis": "calculation_basis",
+    "note": "note"
+  },
+  "free_text": ["description", "note"],
+  "_free_text_comment": "자유 문장이라 채점에서 빼고 유사도만 기록하는 품목 키"
+}

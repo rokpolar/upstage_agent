@@ -1,0 +1,64 @@
+{
+  "vendor_name": "대구박스유통",
+  "vendor_representative": "오도현",
+  "quote_date": "2026-10-28",
+  "supply_amount": 3206500,
+  "vat_amount": 320650,
+  "total_amount": 3527150,
+  "review_flags": [],
+  "items": [
+    {
+      "expense_category": "기타",
+      "description": "택배박스 3호 (5겹/무지)",
+      "quantity": 3000,
+      "unit_price": 500,
+      "estimated_amount": 1500000,
+      "calculation_basis": "500원*3000EA",
+      "note": ""
+    },
+    {
+      "expense_category": "기타",
+      "description": "뽁뽁이(에어캡) (1m×50m)",
+      "quantity": 40,
+      "unit_price": 14000,
+      "estimated_amount": 560000,
+      "calculation_basis": "14,000원*40롤",
+      "note": ""
+    },
+    {
+      "expense_category": "기타",
+      "description": "PP밴드 (15mm)",
+      "quantity": 30,
+      "unit_price": 9050,
+      "estimated_amount": 271500,
+      "calculation_basis": "9,050원*30롤",
+      "note": ""
+    },
+    {
+      "expense_category": "기타",
+      "description": "박스테이프 (48mm×50m)",
+      "quantity": 500,
+      "unit_price": 700,
+      "estimated_amount": 350000,
+      "calculation_basis": "700원*500EA",
+      "note": ""
+    },
+    {
+      "expense_category": "기타",
+      "description": "스티로폼 완충재 (발포)",
+      "quantity": 25,
+      "unit_price": 21000,
+      "estimated_amount": 525000,
+      "calculation_basis": "21,000원*25BOX",
+      "note": ""
+    }
+  ],
+  "studio": {
+    "category": "견적서",
+    "review": "{",
+    "decision": "작성 가능",
+    "branch": "품의 내용 작성",
+    "note": "제목: 택배박스 3호 (5겹/무지) 외 4건 구매의 건",
+    "job_id": "job_c6qHPLLRFVZLKMRpHRx7yU"
+  }
+}

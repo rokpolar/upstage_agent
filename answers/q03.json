@@ -1,0 +1,31 @@
+{
+  "vendor_name": "㈜ab미디어",
+  "vendor_representative": "박기획",
+  "quote_date": "2026-11-03",
+  "items": [
+    {
+      "expense_category": "용역비",
+      "description": "행사 기록을 위한 사진 촬영 용역(4시간, 보정 포함)",
+      "quantity": 1,
+      "unit_price": 300000,
+      "estimated_amount": 300000,
+      "calculation_basis": "300,000원*1식",
+      "note": ""
+    },
+    {
+      "expense_category": "용역비",
+      "description": "행사 홍보용 하이라이트 영상 편집 용역(3분)",
+      "quantity": 1,
+      "unit_price": 250000,
+      "estimated_amount": 250000,
+      "calculation_basis": "250,000원*1식",
+      "note": ""
+    }
+  ],
+  "supply_amount": 600000,
+  "vat_amount": 60000,
+  "total_amount": 660000,
+  "review_flags": [
+    "품목 금액 합계와 공급가액 불일치"
+  ]
+}
