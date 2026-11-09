@@ -13,16 +13,24 @@
   {"category": 분류, "review": 견적 검토, "decision": 후속 처리 판정, "branch": 분기 노드 이름, "note": 분기 노드 결과}
 견적서가 아니라고 분류되면 NotQuote 오류를 낸다.
 
-스타터 코드(run_agent.py)와 같은 API를 표준 라이브러리만으로 호출한다.
+Upstage Studio Agent API(OpenAI 호환)를 표준 라이브러리만으로 호출한다.
   1) POST /v2/files          문서 업로드 → file_id
   2) POST /v2/responses      Agent 실행(job 생성) → job_id
-  3) GET  /v2/responses/{id} 완료될 때까지 조회 → output_text(JSON)
-API 키·Agent ID는 품의agent/.env 에서 읽는다(키는 화면에 출력하지 않는다).
-API 주소·조회 간격·제한 시간은 .env(UPSTAGE_BASE_URL) 또는 config/rules.json runtime에서 읽는다.
+  3) GET  /v2/responses/{id} completed/failed까지 조회 → output_text(JSON)
+모든 요청에 Authorization: Bearer <UPSTAGE_API_KEY>, Agent가 프로젝트에 속하면 x-project-id를 보낸다
+(헤더 없이 올린 파일은 프로젝트 밖에 저장되어 그 Agent가 쓰지 못한다).
+
+설정은 워크플로마다 따로 둔다. 환경변수 > .env > config/rules.json 순으로 쓴다(키는 화면에 출력하지 않는다).
+  품의  PUMUI_AGENT_ID(또는 AGENT_ID)  PUMUI_CONFIG_ID(또는 CONFIG_ID)  PUMUI_PROJECT_ID   PUMUI_API_KEY
+  결의  GYEOLUI_AGENT_ID               GYEOLUI_CONFIG_ID               GYEOLUI_PROJECT_ID GYEOLUI_API_KEY
+  공통  UPSTAGE_API_KEY(필수), UPSTAGE_PROJECT_ID(워크플로별 값이 없을 때), UPSTAGE_BASE_URL
+CONFIG_ID를 latest로 두면 config_id를 보내지 않아 최신 설정으로 돈다.
+입력 제한(형식·500 MB·1,000쪽)은 올리기 전에 검사하고, 429·5xx는 잠깐 기다렸다 다시 보낸다(rules.json runtime.retry).
 """
 import argparse
 import json
 import mimetypes
+import os
 import re
 import subprocess
 import sys
@@ -35,11 +43,42 @@ from pathlib import Path
 
 from common import ROOT, fields, rules
 
-DOC_EXT = {".pdf", ".png", ".jpg", ".jpeg", ".docx", ".pptx", ".xlsx", ".hwp", ".hwpx"}
-BASE = None  # main()에서 .env 또는 rules.json으로 정한다
+BASE = None  # settings()에서 환경변수·.env 또는 rules.json으로 정한다
+
+
+def limits():
+    """API 입력 제한(rules.json runtime.limits): 지원 형식, 파일 크기, 쪽 수."""
+    return rules()["runtime"]["limits"]
+
+
+DOC_EXT = set(limits()["formats"])  # 폴더를 돌릴 때 고르는 확장자 = API 지원 형식
+
+
+class InputError(ValueError):
+    """올리기 전에 API 입력 제한(형식·크기·쪽 수)에 걸렸다."""
+
+
+def check_input(path):
+    """API 명세의 입력 제한을 미리 검사한다. 걸리면 InputError(화면에 그대로 보여 줄 문장)."""
+    lim, path = limits(), Path(path)
+    msg = lim["messages"]
+    if path.suffix.lower() not in lim["formats"]:
+        raise InputError(msg["format"].format(ext=path.suffix or "?", formats=", ".join(sorted(lim["formats"]))))
+    size = path.stat().st_size
+    if size > lim["max_file_bytes"]:
+        raise InputError(msg["size"].format(mb=size // 1_000_000, max_mb=lim["max_file_bytes"] // 1_000_000))
+    if path.suffix.lower() == ".pdf":
+        try:
+            from pypdf import PdfReader
+            pages = len(PdfReader(str(path)).pages)
+        except Exception:  # 쪽 수를 못 세면 Studio에 맡긴다
+            pages = 0
+        if pages > lim["max_pages"]:
+            raise InputError(msg["pages"].format(pages=pages, max_pages=lim["max_pages"]))
 
 
 def load_env():
+    """.env를 읽고, 같은 이름의 환경변수가 있으면 그 값을 쓴다(빈 값은 없는 것으로 본다)."""
     env = {}
     p = ROOT / ".env"
     if p.exists():
@@ -48,11 +87,12 @@ def load_env():
             if line and not line.startswith("#") and "=" in line:
                 k, v = line.split("=", 1)
                 env[k.strip()] = v.strip().strip('"').strip("'")
-    return env
+    env.update({k: v for k, v in os.environ.items() if v and (k.startswith(("UPSTAGE_", "PUMUI_", "GYEOLUI_"))
+                                                               or k in ("AGENT_ID", "CONFIG_ID"))})
+    return {k: v for k, v in env.items() if v}
 
 
 PROFILES = {"pumui": "studio", "gyeolui": "gyeolui_studio"}  # 워크플로 종류 → rules.json runtime 칸
-DEFAULT_ENV = {"key": "UPSTAGE_API_KEY", "agent_id": "AGENT_ID", "config_id": "CONFIG_ID"}
 
 
 def profile(kind="pumui"):
@@ -60,23 +100,22 @@ def profile(kind="pumui"):
 
 
 def settings(kind="pumui"):
-    """(.env, rules.json)에서 API 주소·키·Agent ID·Config ID를 읽는다. 빠진 값 이름 목록도 돌려준다.
+    """워크플로(kind)의 API 키·Agent ID·Config ID·Project ID를 정한다. 빠진 값 이름 목록도 돌려준다.
 
-    품의(kind=pumui): UPSTAGE_API_KEY, AGENT_ID, CONFIG_ID
-    결의(kind=gyeolui): GYEOLUI_API_KEY(비면 UPSTAGE_API_KEY), GYEOLUI_AGENT_ID, GYEOLUI_CONFIG_ID
-    둘 다 rules.json에 agent_id가 있으면 그것을 먼저 쓴다.
+    워크플로마다 환경변수(rules.json runtime.<워크플로>.env의 이름) > .env > rules.json 기본값 순으로 쓴다.
+    품의와 결의는 Agent가 다르므로 AGENT_ID 하나를 같이 쓰지 않는다.
     """
     global BASE
     env = load_env()
     BASE = env.get("UPSTAGE_BASE_URL") or rules()["runtime"]["api_base_url"]
     st = profile(kind)
-    names = {**DEFAULT_ENV, **(st.get("env") or {})}
-    key = env.get(names["key"]) or env.get(DEFAULT_ENV["key"])
-    if st.get("agent_id"):  # 노드 워크플로가 정해져 있으면 그것을 쓴다
-        s = {"key": key, "agent_id": st["agent_id"], "config_id": st.get("config_id")}
-    else:
-        s = {"key": key, "agent_id": env.get(names["agent_id"]), "config_id": env.get(names["config_id"], "1")}
-    missing = [n for n, k in ((DEFAULT_ENV["key"], "key"), (names["agent_id"], "agent_id")) if not s[k]]
+    names = st["env"]
+    first = lambda field: next((env[n] for n in names[field] if env.get(n)), None)
+    config_id = first("config_id") or st.get("config_id")
+    s = {"key": first("key"), "agent_id": first("agent_id") or st.get("agent_id"),
+         "config_id": None if str(config_id).lower() in ("latest", "none", "") else str(config_id),
+         "project_id": first("project_id") or st.get("project_id")}
+    missing = ([names["key"][-1]] if not s["key"] else []) + ([names["agent_id"][0]] if not s["agent_id"] else [])
     return s, missing
 
 
@@ -86,7 +125,7 @@ def run_file(path, out_dir, progress=None, kind="pumui", on_job=None):
     s, missing = settings(kind)
     if missing:
         raise RuntimeError(f"{ROOT / '.env'}에 {', '.join(missing)} 값이 없어요.")
-    result, job_id = run_one(Path(path), s["key"], s["agent_id"], s["config_id"], progress, kind, on_job)
+    result, job_id = run_one(Path(path), s["key"], s["agent_id"], s["config_id"], progress, kind, on_job, s["project_id"])
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
     (out / f"{Path(path).stem}.json").write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -94,31 +133,52 @@ def run_file(path, out_dir, progress=None, kind="pumui", on_job=None):
 
 
 class StudioError(RuntimeError):
-    """Studio API가 오류 코드를 돌려줬다. code=HTTP 상태, kind=분류(not_found/bad_key/quota/other)."""
+    """Studio API가 오류 코드를 돌려줬다. code=HTTP 상태,
+    kind=분류(bad_key 401 / quota 403 사용량 / project_forbidden 403 프로젝트 권한 / not_found 404 / too_large 413 / rate_limit 429 / server 5xx / other)."""
 
     def __init__(self, code, detail, message):
         super().__init__(message)
         self.code, self.detail = code, detail
         low = detail.lower()
         self.kind = ("quota" if code == 403 and "usage_limit" in low else
+                     "project_forbidden" if code == 403 and "project" in low else
                      "bad_key" if code == 401 else
-                     "not_found" if code == 404 else "other")
+                     "not_found" if code == 404 else
+                     "too_large" if code == 413 else
+                     "rate_limit" if code == 429 else
+                     "server" if code >= 500 else "other")
 
 
-def call(method, path, key, body=None, headers=None):
-    req = urllib.request.Request(BASE + path, data=body, method=method)
-    req.add_header("Authorization", f"Bearer {key}")
-    for k, v in (headers or {}).items():
-        req.add_header(k, v)
-    try:
-        with urllib.request.urlopen(req, timeout=120) as res:
-            return json.loads(res.read().decode("utf-8"))
-    except urllib.error.HTTPError as e:
-        detail = e.read().decode("utf-8", "replace")[:300]
-        raise StudioError(e.code, detail, f"{method} {path} → HTTP {e.code}: {detail}") from None
+def call(method, path, key, body=None, headers=None, project=None):
+    """API 한 번 호출. 429·5xx는 rules.json runtime.retry대로 기다렸다 다시 보낸다(429는 Retry-After를 따른다).
+    조회(GET)는 연결 오류도 다시 시도한다. 실행 생성(POST)의 연결 오류는 이미 접수됐을 수 있어 다시 보내지 않는다."""
+    rt = rules()["runtime"]["retry"]
+    for attempt in range(rt["attempts"]):
+        req = urllib.request.Request(BASE + path, data=body, method=method)
+        req.add_header("Authorization", f"Bearer {key}")
+        if project:
+            req.add_header("x-project-id", project)
+        for k, v in (headers or {}).items():
+            req.add_header(k, v)
+        last = attempt == rt["attempts"] - 1
+        wait = min(rt["max_seconds"], rt["base_seconds"] * 2 ** attempt)
+        try:
+            with urllib.request.urlopen(req, timeout=120) as res:
+                return json.loads(res.read().decode("utf-8"))
+        except urllib.error.HTTPError as e:
+            detail = e.read().decode("utf-8", "replace")[:300]
+            if last or not (e.code == 429 or e.code >= 500):
+                raise StudioError(e.code, detail, f"{method} {path} → HTTP {e.code}: {detail}") from None
+            after = e.headers.get("Retry-After") if e.headers else None
+            if after and after.isdigit():
+                wait = max(wait, min(rt["max_seconds"], int(after)))
+        except (urllib.error.URLError, TimeoutError):
+            if last or method != "GET":
+                raise
+        time.sleep(wait)
 
 
-def upload(path, key):
+def upload(path, key, project=None):
     boundary = uuid.uuid4().hex
     ctype = mimetypes.guess_type(path.name)[0] or "application/octet-stream"
     parts = [
@@ -128,7 +188,7 @@ def upload(path, key):
         f"--{boundary}--\r\n".encode(),
     ]
     res = call("POST", "/files", key, b"".join(parts),
-               {"Content-Type": f"multipart/form-data; boundary={boundary}"})
+               {"Content-Type": f"multipart/form-data; boundary={boundary}"}, project)
     return res["id"]
 
 
@@ -201,20 +261,22 @@ def partial(job, st):
     return sorted(done, key=order.index), found
 
 
-def run_one(path, key, agent_id, config_id, progress=None, kind="pumui", on_job=None):
-    """progress(done, found, finished)를 주면 단계가 끝날 때마다 알려 준다(화면 진행 표시용)."""
+def run_one(path, key, agent_id, config_id, progress=None, kind="pumui", on_job=None, project=None):
+    """progress(done, found, finished)를 주면 단계가 끝날 때마다 알려 준다(화면 진행 표시용).
+    project가 있으면 업로드·실행·조회 모두에 x-project-id를 보낸다."""
+    check_input(path)
     st = profile(kind)
     include = st.get("include") or ["last"]
     poll_include = st.get("poll_include") or include
     tell = progress or (lambda *a: None)
     tell([], {}, False)
-    file_id = upload(path, key)
+    file_id = upload(path, key, project)
     tell(["upload"], {}, False)
     req = {"model": agent_id, "include": include,
            "input": [{"role": "user", "content": [{"type": "input_file", "file_id": file_id}]}]}
     if config_id:
         req["config_id"] = config_id
-    job = call("POST", "/responses", key, json.dumps(req).encode(), {"Content-Type": "application/json"})
+    job = call("POST", "/responses", key, json.dumps(req).encode(), {"Content-Type": "application/json"}, project)
     job_id = job["id"]
     if on_job:
         on_job(job_id)
@@ -226,14 +288,14 @@ def run_one(path, key, agent_id, config_id, progress=None, kind="pumui", on_job=
         if time.time() - started > timeout:
             raise RuntimeError(f"{job_id}: {timeout}초 넘게 끝나지 않음")
         time.sleep(rt["api_poll_seconds"])
-        job = call("GET", f"/responses/{job_id}?{query(poll_include)}", key)
+        job = call("GET", f"/responses/{job_id}?{query(poll_include)}", key, project=project)
         if progress:  # 품의 견적서 업로드 화면만 단계별 진행을 보여 준다
             done, found = partial(job, st)
             tell(["upload"] + done, found, False)
     if job.get("status") != "completed":
-        raise RuntimeError(f"{job_id}: status={job.get('status')}")
+        raise RuntimeError(f"{job_id}: status={job.get('status')} (failed면 Studio에서 Agent 설정 확인)")
     if poll_include != include:  # 끝난 뒤 단계별 결과를 한 번만 받는다
-        job = call("GET", f"/responses/{job_id}?{query(include)}", key)
+        job = call("GET", f"/responses/{job_id}?{query(include)}", key, project=project)
     steps = [o for o in job.get("output") or [] if o.get("step_type")]
     if progress:
         done, found = partial(job, st)
@@ -305,13 +367,13 @@ def main():
     s, missing = settings(a.kind)
     if missing:
         sys.exit(f"{ROOT / '.env'}에 {', '.join(missing)} 값을 넣어 주세요.")
-    key, agent_id, config_id = s["key"], s["agent_id"], s["config_id"]
+    key, agent_id, config_id, project = s["key"], s["agent_id"], s["config_id"], s["project_id"]
 
     target = Path(a.target)
     files = sorted(p for p in target.iterdir() if p.suffix.lower() in DOC_EXT) if target.is_dir() else [target]
     out = Path(a.out)
     out.mkdir(parents=True, exist_ok=True)
-    print(f"Agent {agent_id} (config {config_id}) · 문서 {len(files)}건")
+    print(f"Agent {agent_id} (config {config_id or 'latest'}, project {project or '-'}) · 문서 {len(files)}건")
 
     if a.skip_existing:  # 노드 워크플로면 Studio 판정("studio")까지 있는 결과만 끝난 것으로 본다
         node = bool(profile(a.kind).get("agent_id"))
@@ -328,7 +390,7 @@ def main():
     def one(f):
         t = time.time()
         try:
-            result, job_id = run_one(f, key, agent_id, config_id, kind=a.kind)
+            result, job_id = run_one(f, key, agent_id, config_id, kind=a.kind, project=project)
         except NotQuote as e:
             return f, f"견적서 아님({e.category})", None
         except Exception as e:  # 한 건이 실패해도 나머지는 계속 돌린다

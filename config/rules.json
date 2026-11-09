@@ -128,6 +128,24 @@
       "/usr/bin/soffice"
     ],
     "api_base_url": "https://api.upstage.ai/v2",
+    "limits": {
+      "_comment": "Upstage Studio Agent API 입력 제한. 올리기 전에 tools/run_api.py check_input이 검사한다(영상 길이 10분은 Studio가 검사).",
+      "formats": [".pdf", ".jpg", ".jpeg", ".png", ".bmp", ".tif", ".tiff", ".heic", ".docx", ".pptx", ".xlsx",
+                  ".mp4", ".mov", ".m4v", ".avi", ".mkv", ".webm", ".wmv", ".flv", ".mpg", ".mpeg", ".3gp"],
+      "max_file_bytes": 500000000,
+      "max_pages": 1000,
+      "messages": {
+        "format": "{ext} 파일은 Studio에 보낼 수 없습니다. 지원 형식: {formats}",
+        "size": "파일이 {mb} MB입니다. Studio에는 {max_mb} MB까지 보낼 수 있습니다.",
+        "pages": "문서가 {pages}쪽입니다. Studio에는 {max_pages}쪽까지 보낼 수 있습니다. 나눠서 올리세요."
+      }
+    },
+    "retry": {
+      "_comment": "API 429(호출 제한)·5xx(서버 오류)는 base_seconds부터 두 배씩, 최대 max_seconds 기다렸다 attempts번까지 보낸다. 429에 Retry-After가 있으면 그만큼 기다린다.",
+      "attempts": 4,
+      "base_seconds": 2,
+      "max_seconds": 30
+    },
     "api_poll_seconds": 3,
     "api_timeout_seconds": 600,
     "pdf_browsers": [
@@ -139,9 +157,16 @@
       "/usr/bin/chromium"
     ],
     "studio": {
-      "_comment": "Studio 노드 워크플로(workflow/품의 Agent (노드).json). agent_id가 있으면 .env의 AGENT_ID보다 먼저 쓴다. config_id가 null이면 Studio의 기본(최근 저장) 설정으로 돈다. include all이면 단계별 결과가 온다.",
-      "agent_id": "agt_JtGMGCZtmRuXneFkpqFK4k",
+      "_comment": "품의 Studio 노드 워크플로(workflow/품의 Agent (노드).json). agent_id·config_id·project_id는 기본값이고, env에 적은 이름의 환경변수·.env 값이 있으면 그것을 먼저 쓴다(앞 이름 우선). config_id가 null이거나 latest면 최신 설정으로 돈다. project_id가 있으면 모든 요청에 x-project-id 헤더를 보낸다(Agent가 프로젝트에 속할 때 필수). include all이면 단계별 결과가 온다.",
+      "agent_id": "agt_jQdQGMLKPAN8U9gWTRFVqd",
       "config_id": "1",
+      "project_id": "proj_4X2vw6uBUJ7sLUWVudkEPg",
+      "env": {
+        "key": ["PUMUI_API_KEY", "UPSTAGE_API_KEY"],
+        "agent_id": ["PUMUI_AGENT_ID", "AGENT_ID"],
+        "config_id": ["PUMUI_CONFIG_ID", "CONFIG_ID"],
+        "project_id": ["PUMUI_PROJECT_ID", "UPSTAGE_PROJECT_ID"]
+      },
       "include": [
         "all"
       ],
@@ -157,13 +182,15 @@
       "workers": 5
     },
     "gyeolui_studio": {
-      "_comment": "Studio 결의 워크플로(품의서 + 영수증·거래명세서 + 회사 결제 규정 + 지출결의서 양식을 한 파일로 받는다). 품의와 같은 규칙: agent_id가 있으면 .env의 GYEOLUI_AGENT_ID보다 먼저 쓴다. 키는 .env의 GYEOLUI_API_KEY, 비어 있으면 UPSTAGE_API_KEY. 실행 중에는 include last로 가볍게 조회하고, 끝나면 include all로 단계별 결과를 한 번 받는다.",
-      "agent_id": "agt_DZ7PKvHBwhcqqZxrz5rE25",
-      "config_id": "5",
+      "_comment": "결의 Studio 워크플로(품의서 + 영수증·거래명세서 + 회사 결제 규정 + 지출결의서 양식을 한 파일로 받는다). 설정 읽는 순서는 품의와 같다(env 이름의 환경변수·.env > 여기 기본값). 실행 중에는 include last로 가볍게 조회하고, 끝나면 include all로 단계별 결과를 한 번 받는다.",
+      "agent_id": "agt_ARNdKWSYMv7hx5FvvDrgHJ",
+      "config_id": "1",
+      "project_id": "proj_4X2vw6uBUJ7sLUWVudkEPg",
       "env": {
-        "key": "GYEOLUI_API_KEY",
-        "agent_id": "GYEOLUI_AGENT_ID",
-        "config_id": "GYEOLUI_CONFIG_ID"
+        "key": ["GYEOLUI_API_KEY", "UPSTAGE_API_KEY"],
+        "agent_id": ["GYEOLUI_AGENT_ID"],
+        "config_id": ["GYEOLUI_CONFIG_ID"],
+        "project_id": ["GYEOLUI_PROJECT_ID", "UPSTAGE_PROJECT_ID"]
       },
       "include": [
         "all"

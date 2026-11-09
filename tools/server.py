@@ -260,6 +260,17 @@ def image_pdf(img, dst):
     return dst
 
 
+def checked(bundle):
+    """API 입력 제한(형식·500 MB·1,000쪽)에 걸리면 묶음을 지우고 화면에 이유를 보여 준다."""
+    from run_api import check_input
+    try:
+        check_input(bundle)
+    except ValueError:
+        bundle.unlink(missing_ok=True)
+        raise
+    return bundle
+
+
 def build_bundle(files, with_pumui, dst_dir):
     """올린 파일들(+ 작성한 품의서 PDF)을 증빙 묶음 파일 하나로 만든다. 결의 워크플로는 파일 하나를 받는다."""
     t = g_text()
@@ -290,7 +301,7 @@ def build_bundle(files, with_pumui, dst_dir):
         if len(parts) == 1:  # 파일 하나면 그대로 보낸다(사진도 Studio가 읽는다)
             dst = dst_dir / f"{name}{parts[0].suffix}"
             shutil.copyfile(parts[0], dst)
-            return dst
+            return checked(dst)
         from pypdf import PdfWriter
         w = PdfWriter()
         for p in parts:
@@ -298,7 +309,7 @@ def build_bundle(files, with_pumui, dst_dir):
         dst = dst_dir / f"{name}.pdf"
         with open(dst, "wb") as fh:
             w.write(fh)
-        return dst
+        return checked(dst)
     finally:
         shutil.rmtree(work, ignore_errors=True)
 

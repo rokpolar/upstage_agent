@@ -59,12 +59,18 @@
 cp .env.example .env
 ```
 
-`.env`에 [Upstage Console](https://console.upstage.ai)의 키를 넣습니다. `.env`는 GitHub에 올라가지 않습니다.
+`.env`에 [Upstage Console](https://console.upstage.ai/api-keys)의 키를 넣습니다. `.env`는 GitHub에 올라가지 않으며, 같은 이름의 환경변수가 있으면 그 값을 먼저 씁니다.
 
-| 변수 | 설명 |
-|---|---|
-| `UPSTAGE_API_KEY` | 품의 워크플로가 있는 조직의 키 (필수) |
-| `GYEOLUI_API_KEY` | 결의 워크플로가 다른 조직에 있을 때만. 비우면 `UPSTAGE_API_KEY`를 씁니다. |
+품의와 결의는 Studio Agent가 따로라서 설정도 워크플로마다 따로 둡니다. 비운 값은 [`config/rules.json`](config/rules.json)의 기본값을 씁니다.
+
+| 변수 | 품의 | 결의 | 설명 |
+|---|---|---|---|
+| API 키 | `PUMUI_API_KEY` | `GYEOLUI_API_KEY` | 비우면 `UPSTAGE_API_KEY` (필수) |
+| Agent ID | `PUMUI_AGENT_ID` | `GYEOLUI_AGENT_ID` | `agt_...` |
+| Config ID | `PUMUI_CONFIG_ID` | `GYEOLUI_CONFIG_ID` | `latest`면 최신 설정 |
+| Project ID | `PUMUI_PROJECT_ID` | `GYEOLUI_PROJECT_ID` | 비우면 `UPSTAGE_PROJECT_ID`. Agent가 프로젝트에 속하면 필수 |
+
+Studio의 "API로 이용하기"에 `x-project-id`가 적혀 있으면 그 Agent는 프로젝트에 속한 것입니다. 이때는 Project ID를 꼭 넣고, API 키도 그 프로젝트가 있는 조직의 키를 씁니다.
 
 ### 2. 실행
 
@@ -106,6 +112,8 @@ docker compose up -d --build --wait
 |---|---|
 | 품의 | 문서 인식 → 견적서 분류 → 정보 추출 → 견적 검토 → 후속 처리 판정 |
 | 결의 | 문서 인식 → 분류·분할 → 추출(품의서/영수증/양식) → 품의서·영수증 비교 → 판정 → 회사 규정 검증 → 판정 → 결의서 기입 데이터 |
+
+Studio 호출은 [Agent API](https://console.upstage.ai/docs/studio-and-agents/agents/overview) 명세를 따릅니다: 파일 업로드 → 실행 → `completed`/`failed`까지 조회, 프로젝트 Agent면 모든 요청에 `x-project-id`, 429·5xx는 기다렸다 재시도, 올리기 전에 형식·500 MB·1,000쪽 제한 검사.
 
 설계 원칙: **모델은 읽기만, 계산과 규칙은 코드가, 애매한 건 사람이.** 규칙·문구·양식 칸 이름은 모두 [`config/`](config/)에 있고 코드에 하드코딩하지 않습니다.
 
@@ -175,7 +183,7 @@ docker compose up -d --force-recreate       # .env 바꾼 뒤
 APP_DOCKER_PORT=8767 docker compose up -d   # 포트 바꾸기
 ```
 
-- `.env`는 이미지에 넣지 않고 읽기 전용으로 붙입니다.
+- `.env`는 이미지에 넣지 않고 환경변수로 넘깁니다(`env_file`). `.env`를 고친 뒤에는 `--force-recreate`로 다시 띄워야 반영됩니다.
 - 올린 파일·결과·만든 문서는 호스트 폴더에 남습니다.
 - `run.sh`와 같은 폴더·포트(8766)를 쓰므로 둘을 동시에 켜지 마세요.
 </details>

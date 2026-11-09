@@ -66,20 +66,57 @@
       "failed": "인식 실패",
       "file": "{name} · {i}/{n}",
       "preview": "{name} 미리보기",
-      "stages": [["upload", "파일 전송"], ["parse", "문서 인식"], ["classify", "문서 분류"], ["extract", "정보 추출"], ["instruct", "검토·판정"]],
-      "found": {"category": "문서 종류", "kind": "품목 분류", "vendor": "업체명", "total": "합계금액", "items": "품목 수", "decision": "Studio 판정"},
+      "stages": [
+        [
+          "upload",
+          "파일 전송"
+        ],
+        [
+          "parse",
+          "문서 인식"
+        ],
+        [
+          "classify",
+          "문서 분류"
+        ],
+        [
+          "extract",
+          "정보 추출"
+        ],
+        [
+          "instruct",
+          "검토·판정"
+        ]
+      ],
+      "found": {
+        "category": "문서 종류",
+        "kind": "품목 분류",
+        "vendor": "업체명",
+        "total": "합계금액",
+        "items": "품목 수",
+        "decision": "Studio 판정"
+      },
       "items": "{n}건",
       "close": "닫기",
       "count": "{done}/{n}건 완료",
-      "row": {"wait": "대기", "now": "{stage} 중", "done": "{vendor} · {total}원", "fail": "실패"},
+      "row": {
+        "wait": "대기",
+        "now": "{stage} 중",
+        "done": "{vendor} · {total}원",
+        "fail": "실패"
+      },
       "drop": "여기에 놓으면 업로드합니다",
       "hold_ms": 3000
     },
     "studio_errors": {
-      "not_found": "Studio 워크플로를 찾지 못했습니다. .env 파일의 UPSTAGE_API_KEY가 워크플로가 있는 팀 조직의 키인지 확인하세요.",
+      "not_found": "Studio Agent를 찾지 못했습니다. .env의 Agent ID와, API 키·Project ID가 그 Agent가 있는 조직·프로젝트의 것인지 확인하세요.",
       "bad_key": "Upstage API 키가 맞지 않습니다. .env 파일의 UPSTAGE_API_KEY를 확인하세요.",
       "quota": "Upstage 사용량 한도를 넘었습니다. 팀 조직의 사용량을 확인하세요.",
-      "other": "Studio에서 견적서를 읽지 못했습니다(오류 {code}). 잠시 뒤 다시 올려 주세요."
+      "other": "Studio에서 견적서를 읽지 못했습니다(오류 {code}). 잠시 뒤 다시 올려 주세요.",
+      "too_large": "파일이 너무 큽니다. Studio에는 500 MB, 1,000쪽까지 보낼 수 있습니다.",
+      "rate_limit": "Studio 호출이 몰려 잠시 막혔습니다. 잠시 뒤 다시 올려 주세요.",
+      "server": "Studio 서버 오류가 계속됩니다(오류 {code}). 잠시 뒤 다시 올려 주세요.",
+      "project_forbidden": "API 키가 Studio 프로젝트에 접근할 수 없습니다. .env의 API 키가 Project ID(x-project-id)의 프로젝트가 있는 조직의 키인지 확인하세요."
     },
     "not_quote": "견적서가 아니라 '{category}'(으)로 분류되어 목록에 넣지 않았습니다."
   },

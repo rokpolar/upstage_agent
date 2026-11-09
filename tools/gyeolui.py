@@ -180,14 +180,21 @@ def from_steps(steps, st, job_id):
 
 def receipt_kind(rtype):
     kinds = gfields()["receipt_kinds"]
+    flat = re.sub(r"\s+", "", rtype or "")  # '거 래 명 세 서'처럼 띄어 읽힌 이름도 같게 본다
     for k in ("statement", "payment"):  # '거래명세서'를 먼저 본다('영수증'이 같이 적혀도 명세서)
-        if any(w in rtype for w in kinds[k]):
+        if any(w in flat for w in kinds[k]):
             return k
     return "other"
 
 
+def spaced(text):
+    """'거 래 명 세 서'처럼 한 글자씩 띄운 이름은 붙인다(양식 제목을 그대로 읽은 경우)."""
+    parts = (text or "").split()
+    return "".join(parts) if len(parts) > 1 and all(len(x) == 1 for x in parts) else (text or "").strip()
+
+
 def short_type(rtype, kind):
-    first = re.split(r"[,/(]", rtype or "")[0].strip()
+    first = spaced(re.split(r"[,/(]", rtype or "")[0])
     return first or config("questions")["g_source_names"][kind]
 
 

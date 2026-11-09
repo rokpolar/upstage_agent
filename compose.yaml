@@ -10,14 +10,13 @@ services:
     ports:
       # 호스트의 127.0.0.1에만 연다. 포트를 바꾸려면 APP_DOCKER_PORT=8767 docker compose up -d
       - "127.0.0.1:${APP_DOCKER_PORT:-8766}:8766"
+    # 키·Agent 설정은 이미지에 넣지 않고 .env를 환경변수로 넘긴다(앱은 환경변수를 먼저 읽는다).
+    # 파일 하나를 붙이면 편집기가 .env를 바꿔 쓸 때 컨테이너가 옛 파일을 잃으므로 env_file을 쓴다.
+    # .env를 고친 뒤에는 docker compose up -d --force-recreate
+    env_file:
+      - path: ./.env
+        required: true
     volumes:
-      # 키는 이미지에 넣지 않고 읽기 전용으로 붙인다
-      - type: bind
-        source: ./.env
-        target: /app/.env
-        read_only: true
-        bind:
-          create_host_path: false
       # 올린 견적서·증빙, Studio 결과, 올린 양식, 만든 품의서·결의서는 호스트 폴더에 남긴다(run.sh로 켜도 같은 폴더)
       - ./data_upload:/app/data_upload
       - ./results_upload:/app/results_upload
