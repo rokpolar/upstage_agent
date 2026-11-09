@@ -1,6 +1,7 @@
 """품의 agent 로컬 웹 화면 서버 (표준 라이브러리만 사용).
 
     python tools/server.py          # http://127.0.0.1:8765 (config/rules.json ui.host/port)
+    python tools/server.py --open   # 켜면서 브라우저도 연다
 
 화면(ui/)이 부르는 API로 기존 도구를 그대로 쓴다:
   견적 검사·질문 = harness.review/resolve, 업체 추천 = select_vendor.recommend/finalize,
@@ -262,8 +263,15 @@ def main():
     STATE["case"] = json.loads((ROOT / CFG["default_case"]).read_text(encoding="utf-8"))
     load_quotes()
     srv = ThreadingHTTPServer((CFG["host"], CFG["port"]), Handler)
-    print(f"품의 agent 화면: http://{CFG['host']}:{CFG['port']}  (견적 {len(STATE['quotes'])}건)")
-    srv.serve_forever()
+    url = f"http://{CFG['host']}:{CFG['port']}"
+    print(f"품의 agent 화면: {url}  (견적 {len(STATE['quotes'])}건)  끄려면 Ctrl+C")
+    if "--open" in sys.argv[1:]:
+        import webbrowser
+        webbrowser.open(url)
+    try:
+        srv.serve_forever()
+    except KeyboardInterrupt:
+        pass
 
 
 if __name__ == "__main__":
