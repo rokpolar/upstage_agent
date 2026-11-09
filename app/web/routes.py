@@ -8,7 +8,8 @@ import zipfile
 from app.adapters.files import decode_data, safe_name, unique_name
 from app.config import config, rules
 from app.domain.harness import ACK, HOLD
-from app.domain.select_vendor import recommend
+from app.domain.select_vendor import cross_checks, recommend
+from app.services.quotes import NotQuoteError
 
 
 def require(body, key, kind):
@@ -60,7 +61,9 @@ class Routes:
                         "handoff": a.handoff_summary(),
                         "accept": a.cfg["gyeolui_upload_ext"],
                         # 결의서 양식은 DOCX 하나로 고정(config/docx_gyeolui.json)
-                        "template": config("docx_gyeolui")["template"].rsplit("/", 1)[-1],
+                        "template": config("docx_gyeolui")["template"].rsplit("/", 1)[
+                            -1
+                        ],
                     },
                 }
             )
@@ -100,11 +103,17 @@ class Routes:
         a = self.app
         if not isinstance(body, dict):
             raise ValueError("JSON 객체가 필요합니다.")
+        if path == "/api/quotes/split":
+            name, data = require(body, "name", str), require(body, "data", str)
+            return {"pages": a.split_pages(name, data)}
         if path == "/api/quotes/upload":
             name, data = require(body, "name", str), require(body, "data", str)
             if "token" in body:
                 require(body, "token", str)
-            qid, job = a.studio_quote(name, data, body.get("token"))
+            try:
+                qid, job = a.studio_quote(name, data, body.get("token"))
+            except NotQuoteError as e:
+                return {"skipped": str(e), "category": e.category}
             with a.lock:
                 return copy.deepcopy(
                     {"quote": a.summary(qid), "job_id": job, "groups": a.groups()}
@@ -130,6 +139,7 @@ class Routes:
                     "recommended": rec["file"] if rec else None,
                     "auto_reason": auto,
                     "excluded": [q["file"] for q in excluded],
+                    "warnings": cross_checks(quotes),
                 }
         if path == "/api/answer":
             qid, key = require(body, "id", str), require(body, "key", str)

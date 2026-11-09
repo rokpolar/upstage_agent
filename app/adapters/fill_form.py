@@ -112,7 +112,7 @@ def build_values(result, case, selection, roles):
         {
             **{k: v for k, v in case.items() if isinstance(v, (str, int))},
             "project_name": case.get("project_name", ""),
-            "first_item": first_item.split("(")[0].strip(),
+            "first_item": title_item(first_item, cfg["templates"]),
             "more": more,
             "quote_count": (selection or {}).get("quote_count", 1),
         }
@@ -259,6 +259,51 @@ def find_item_table(table, roles):
     return None
 
 
+def title_item(name, tpl):
+    """제목에 넣을 첫 품목 이름: 괄호 앞까지, 그리고 규격 덩어리(i5-14500, 16GB, 2.4GHz, '/')가 나오기 전까지."""
+    name = name.split("(")[0].strip()
+    stop = re.compile(tpl.get("title_item_stop") or "$^")
+    words = []
+    for w in name.split():
+        if words and stop.fullmatch(w):
+            break
+        words.append(w)
+    return " ".join(words) or name
+
+
+def text_width(text, height, ratio, widths):
+    """글자 폭 어림(HWPUNIT). height는 1/100pt, 글자별 폭은 글자 높이에 대한 비율(form_roles item_table.fit.char_width)."""
+    em = height / 100 * 100  # 1pt = 100 HWPUNIT
+    return sum(em * widths.get(ch, widths["default"]) for ch in text) * ratio / 100
+
+
+def shrink_to_fit(cell, doc, fit):
+    """숫자가 칸 안쪽 폭보다 넓으면, 양식에 이미 있는 같은 글꼴·굵기의 더 작은 글자 모양으로 바꾼다."""
+    text, ref = cell.text, cell.char_ref()
+    styles = doc.char_styles() if hasattr(doc, "char_styles") else {}
+    cur = styles.get(ref)
+    room = cell.inner_width()
+    if (
+        not text
+        or not cur
+        or not room
+        or text_width(text, cur["height"], cur["ratio"], fit["char_width"]) <= room
+    ):
+        return
+    same = [
+        (i, s)
+        for i, s in styles.items()
+        if s["font"] == cur["font"]
+        and s["bold"] == cur["bold"]
+        and fit["min_char_height"] <= s["height"] < cur["height"]
+    ]
+    for i, s in sorted(same, key=lambda x: -x[1]["height"]):
+        if text_width(text, s["height"], s["ratio"], fit["char_width"]) <= room:
+            for run in cell.el.iter(q("run")):
+                run.set("charPrIDRef", i)
+            return
+
+
 def fill_item_table(table, info, rows, values, roles, report, written):
     msg = roles.cfg["report"]
     need = len(rows) - len(info["data_rows"])
@@ -289,6 +334,21 @@ def fill_item_table(table, info, rows, values, roles, report, written):
                 continue
             cell.set_text(row.get(role, "") if row else "", label_ref, align[role])
             written.add(row.get(role, "") if row else "")
+    fit = roles.cfg["item_table"].get("fit") or {}
+    # 양식의 큰 빈칸(자유 기재용) 한 줄을 품목마다 복사하면 줄이 지나치게 높아진다 → 머리줄 높이에 맞춘다
+    head_h = table.row_height(info["header_end"])
+    if head_h and fit.get("max_row_ratio"):
+        for rr in data[: len(rows)]:
+            if table.row_height(rr) > head_h * fit["max_row_ratio"]:
+                table.set_row_height(rr, head_h)
+    # 숫자 칸(수량·단가·금액)은 좌우 여백을 줄여 좁은 칸에서도 한 줄에 들어가게 한다
+    if fit.get("number_margin") is not None:
+        for role in fit.get("number_roles", []):
+            if role in cols:
+                for rr in data + info["total_rows"]:
+                    cell = table.at(rr, cols[role].col)
+                    if cell is not None and cell.row == rr:
+                        cell.set_side_margin(fit["number_margin"])
     total = values.get(
         roles.cfg["item_table"].get("total_role", "total")
     )  # 합계 줄에 넣을 금액 역할
@@ -297,6 +357,13 @@ def fill_item_table(table, info, rows, values, roles, report, written):
         if cell is not None and key(cell.text) not in roles.total_row:
             cell.set_text(won(int(total["raw"])) if total else "", label_ref)
             written.add(won(int(total["raw"])) if total else "")
+    if fit.get("shrink_numbers"):  # 합계 줄까지 다 쓴 뒤에 맞춘다
+        for role in fit.get("number_roles", []):
+            if role in cols:
+                for rr in data + info["total_rows"]:
+                    cell = table.at(rr, cols[role].col)
+                    if cell is not None and cell.row == rr:
+                        shrink_to_fit(cell, table.doc, fit)
     return info
 
 
@@ -454,11 +521,12 @@ def fill_inline_blanks(tables, result, case, roles, report, doc=None, values=Non
     msg = roles.cfg["report"]
     items = result.get(fields()["items"]) or []
     first = (
-        item_name(
-            items[0].get(fields()["item"]["description"]), roles.cfg["item_table"]
+        title_item(
+            item_name(
+                items[0].get(fields()["item"]["description"]), roles.cfg["item_table"]
+            ),
+            roles.cfg["templates"],
         )
-        .split("(")[0]
-        .strip()
         if items
         else ""
     )
@@ -478,6 +546,7 @@ def fill_inline_blanks(tables, result, case, roles, report, doc=None, values=Non
         "draft_dot": cfg["draft_dot"].format(y=d[1], m=int(d[2]), d=int(d[3]))
         if d
         else "",
+        "project_name": case.get("project_name", ""),
     }
     rules_ = [
         (re.compile(r["pattern"]), r["context"], r["value"]) for r in cfg["rules"]

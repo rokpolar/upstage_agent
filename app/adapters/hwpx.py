@@ -56,6 +56,26 @@ class Cell:
         """라벨 비교용: 공백·기호를 뺀 글자."""
         return re.sub(r"[\s:：·.\-()\[\]※*]", "", self.text)
 
+    def inner_width(self):
+        """칸 안쪽 폭(HWPUNIT) = 칸 폭 - 좌우 여백."""
+        sz, m = self.el.find("hp:cellSz", NS), self.el.find("hp:cellMargin", NS)
+        if sz is None:
+            return 0
+        side = (
+            (int(m.get("left", "0")) + int(m.get("right", "0"))) if m is not None else 0
+        )
+        return int(sz.get("width", "0")) - side
+
+    def set_side_margin(self, margin):
+        """칸 안쪽 좌우 여백(HWPUNIT)을 margin 이하로 줄인다(숫자가 좁은 칸에서 줄바꿈되지 않게)."""
+        m = self.el.find("hp:cellMargin", NS)
+        if m is None:
+            return
+        for side in ("left", "right"):
+            if int(m.get(side, "0")) > margin:
+                m.set(side, str(margin))
+        self.el.set("hasMargin", "1")
+
     def set_text(self, value, char_ref=None, para_ref=None):
         """칸 글자를 value로 바꾼다. 첫 문단의 첫 run만 남기고 나머지 문단·글자는 지운다.
 
@@ -211,6 +231,40 @@ class Table:
             sz.set("height", str(int(sz.get("height", "0")) + height))
         self.__init__(self.doc, self.el, self.index)
 
+    def row_height(self, row):
+        """row 줄의 높이(HWPUNIT): 그 줄에서 시작하고 한 줄만 차지하는 칸의 높이 중 가장 큰 값."""
+        hs = [
+            int(c.el.find("hp:cellSz", NS).get("height", "0"))
+            for c in self.cells
+            if c.row == row
+            and c.rowspan == 1
+            and c.el.find("hp:cellSz", NS) is not None
+        ]
+        return max(hs) if hs else 0
+
+    def set_row_height(self, row, height):
+        """row 줄 칸들의 높이를 height로 바꾸고 표 전체 높이도 그만큼 맞춘다(한글은 글자가 넘치면 알아서 늘린다)."""
+        old = self.row_height(row)
+        if not old or old <= height:
+            return
+        for c in self.cells:
+            if c.row == row and c.rowspan == 1:
+                sz = c.el.find("hp:cellSz", NS)
+                if sz is not None:
+                    sz.set("height", str(height))
+            elif (
+                c.rowspan > 1 and c.row <= row <= c.row + c.rowspan - 1
+            ):  # 이 줄을 걸치는 병합 칸
+                sz = c.el.find("hp:cellSz", NS)
+                if sz is not None:
+                    sz.set(
+                        "height",
+                        str(max(height, int(sz.get("height", "0")) - (old - height))),
+                    )
+        sz = self.el.find("hp:sz", NS)
+        if sz is not None:
+            sz.set("height", str(max(0, int(sz.get("height", "0")) - (old - height))))
+
 
 class Document:
     def __init__(self, path):
@@ -229,6 +283,25 @@ class Document:
                 e for root in self.sections.values() for e in root.iter(q("tbl"))
             )
         ]
+
+    def char_styles(self):
+        """header.xml의 글자 모양: {id: {"height": 1/100pt, "font": 한글 글꼴 번호, "bold": bool, "ratio": 장평}}."""
+        if getattr(self, "_chars", None) is None:
+            hdr = self.files.get("Contents/header.xml", b"").decode("utf-8", "replace")
+            self._chars = {}
+            for m in re.finditer(
+                r'<hh:charPr id="(\d+)" height="(\d+)".*?</hh:charPr>', hdr, re.S
+            ):
+                body = m.group(0)
+                font = re.search(r'<hh:fontRef hangul="(\d+)"', body)
+                ratio = re.search(r'<hh:ratio hangul="(\d+)"', body)
+                self._chars[m.group(1)] = {
+                    "height": int(m.group(2)),
+                    "font": font.group(1) if font else "",
+                    "bold": "<hh:bold/>" in body,
+                    "ratio": int(ratio.group(1)) if ratio else 100,
+                }
+        return self._chars
 
     def body_paragraphs(self):
         """표 밖 본문 문단 글자(양식 제목·안내문 찾기용)."""

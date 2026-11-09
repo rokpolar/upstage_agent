@@ -40,6 +40,7 @@ def load_quote(path, src, case):
     return {
         "file": str(path),
         "vendor": r.get(F["vendor_name"]),
+        "rep": r.get(F["vendor_representative"]) or "",
         "total": r.get(F["total"]) or 0,
         "quote_date": r.get(F["quote_date"]) or "",
         "issues": [q["kind"] for q in qs],

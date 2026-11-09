@@ -1,3 +1,4 @@
+import base64
 import json
 import re
 from pathlib import Path
@@ -11,7 +12,40 @@ from app.domain.grouping import group as group_quotes
 from app.domain.harness import coerce, normalize, recheck, resolve
 
 
+class NotQuoteError(ValueError):
+    def __init__(self, message, category):
+        super().__init__(message)
+        self.category = category
+
+
 class QuotesService:
+    def split_pages(self, name, data_b64):
+        """여러 쪽 PDF를 쪽마다 한 파일로 나눈다(한 파일에 업체 견적서 여러 장이 들어오는 경우). 한 쪽이면 그대로."""
+        raw = decode_data(data_b64)
+        if not self.cfg.get("split_pages") or Path(name).suffix.lower() != ".pdf":
+            return [{"name": name, "data": data_b64}]
+        import io
+
+        from pypdf import PdfReader, PdfWriter
+
+        reader = PdfReader(io.BytesIO(raw))
+        if len(reader.pages) < 2:
+            return [{"name": name, "data": data_b64}]
+        out = []
+        for n, page in enumerate(reader.pages, 1):
+            w = PdfWriter()
+            w.add_page(page)
+            buf = io.BytesIO()
+            w.write(buf)
+            out.append(
+                {
+                    "name": f"{Path(name).stem}_p{n}.pdf",
+                    "page": n,
+                    "data": base64.b64encode(buf.getvalue()).decode(),
+                }
+            )
+        return out
+
     def add_quote(self, n, p, src_dir):
         src = next(
             (
@@ -110,6 +144,10 @@ class QuotesService:
         return {
             "file": qid,
             "vendor": s["vendor"],
+            "rep": self.state["quotes"][qid]["state"]["result"].get(
+                fields()["vendor_representative"]
+            )
+            or "",
             "total": s["total"] or 0,
             "quote_date": s["quote_date"] or "",
             "issues": [x["kind"] for x in s["questions"]],
@@ -140,15 +178,22 @@ class QuotesService:
                     )
 
         try:
-            _, job_id = self.studio.run_file(src, self.root / res_dir, progress)
+            raw, job_id = self.studio.run_file(src, self.root / res_dir, progress)
+            result = unwrap(raw) or raw
+            if not (result.get(fields()["items"]) or result.get(fields()["total"])):
+                (self.root / res_dir / f"{src.stem}.json").unlink(missing_ok=True)
+                src.unlink(missing_ok=True)
+                msg = config("ui")["quotes"]
+                raise NotQuoteError(msg["not_quote_empty"], msg["empty_category"])
             qid = self.execute(
                 self.add_quote, 0, self.root / res_dir / f"{src.stem}.json", src_dir
             )
             return qid, job_id
         except NotQuote as e:
             src.unlink(missing_ok=True)
-            raise ValueError(
-                config("ui")["quotes"]["not_quote"].format(category=e.category)
+            raise NotQuoteError(
+                config("ui")["quotes"]["not_quote"].format(category=e.category),
+                e.category,
             ) from None
         except StudioError as e:
             src.unlink(missing_ok=True)

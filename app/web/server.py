@@ -33,10 +33,14 @@ class Handler(BaseHTTPRequestHandler):
         p = confined(base, unquote(relative))
         if not p.is_file():
             raise FileNotFoundError("not found")
-        ctype = {
-            ".hwpx": "application/hwp+zip",
-            ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        }.get(p.suffix.lower()) or mimetypes.guess_type(p.name)[0] or "application/octet-stream"
+        ctype = (
+            {
+                ".hwpx": "application/hwp+zip",
+                ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            }.get(p.suffix.lower())
+            or mimetypes.guess_type(p.name)[0]
+            or "application/octet-stream"
+        )
         self.send(
             200,
             p.read_bytes(),

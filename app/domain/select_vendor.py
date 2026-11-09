@@ -81,3 +81,45 @@ def finalize(quotes, rec, auto, chosen, reason, by_user):
             for q in quotes
         ],
     }
+
+
+def cross_checks(quotes):
+    """비교하는 견적끼리 맞춰 본다. 업체 이름은 다른데 대표자가 같으면 [{kind, rep, vendors, files}]로 알린다."""
+    import re
+
+    cfg = rules()["vendor_selection"].get("cross_checks") or {}
+    out = []
+    if cfg.get("same_representative"):
+        by = {}
+        for q in quotes:
+            key = re.sub(cfg.get("normalize") or "$^", "", q.get("rep") or "")
+            if key:
+                by.setdefault(key, []).append(q)
+        for key, qs in by.items():
+            names = {
+                re.sub(r"\s|\(주\)|주식회사|㈜", "", q["vendor"] or "") for q in qs
+            }
+            if len(names) > 1:
+                out.append(
+                    {
+                        "kind": "same_representative",
+                        "rep": qs[0]["rep"],
+                        "vendors": [q["vendor"] for q in qs],
+                        "files": [q["file"] for q in qs],
+                    }
+                )
+    if cfg.get(
+        "same_lowest_total"
+    ):  # 추천 대상 중 최저가가 같은 업체가 둘 이상이면 사람이 정한다
+        order, _ = rank(quotes)
+        low = [q for q in order if order and q["total"] == order[0]["total"]]
+        if len(low) > 1:
+            out.append(
+                {
+                    "kind": "same_lowest_total",
+                    "total": low[0]["total"],
+                    "vendors": [q["vendor"] for q in low],
+                    "files": [q["file"] for q in low],
+                }
+            )
+    return out

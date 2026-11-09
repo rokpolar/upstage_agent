@@ -102,7 +102,12 @@ class DocxForm:
         need = lambda tpl: re.findall(r"\{(\w+)\}", tpl)
         has_all = lambda tpl: all(ctx.get(k) not in (None, "") for k in need(tpl))
 
-        labels = {key(lab): role for role, c in cfg["cells"].items() if not role.startswith("_") for lab in c["labels"]}
+        labels = {
+            key(lab): role
+            for role, c in cfg["cells"].items()
+            if not role.startswith("_")
+            for lab in c["labels"]
+        }
         seen = set()
         for tr in self.body.iter(w("tr")):
             cells = tr.findall("w:tc", NS)
@@ -120,41 +125,69 @@ class DocxForm:
                         rpr.remove(b)
                 if has_all(tpl):
                     self.write_cell(cells[i + 1], tpl.format_map(ctx), rpr)
-                    report["filled"].append({"role": role, "label": names.get(role, role), "value": tpl.format_map(ctx)})
+                    report["filled"].append(
+                        {
+                            "role": role,
+                            "label": names.get(role, role),
+                            "value": tpl.format_map(ctx),
+                        }
+                    )
                 else:
                     self.write_cell(cells[i + 1], "", rpr)
-                    report["missing"].append({"role": role, "label": names.get(role, role)})
+                    report["missing"].append(
+                        {"role": role, "label": names.get(role, role)}
+                    )
         for role in labels.values():
-            if role not in seen and not any(m["role"] == role for m in report["missing"]):
-                report["notes"].append(f"양식에서 '{names.get(role, role)}' 칸을 찾지 못함")
+            if role not in seen and not any(
+                m["role"] == role for m in report["missing"]
+            ):
+                report["notes"].append(
+                    f"양식에서 '{names.get(role, role)}' 칸을 찾지 못함"
+                )
                 seen.add(role)
 
         for rule in cfg["paragraphs"]:
             pat = re.compile(rule["match"])
-            p = next((p for p in self.body.iter(w("p")) if pat.search(para_text(p))), None)
+            p = next(
+                (p for p in self.body.iter(w("p")) if pat.search(para_text(p))), None
+            )
             role = rule["role"]
             if p is None:
-                report["notes"].append(f"양식에서 '{names.get(role, role)}' 줄을 찾지 못함")
+                report["notes"].append(
+                    f"양식에서 '{names.get(role, role)}' 줄을 찾지 못함"
+                )
             elif has_all(rule["value"]):
                 self.write_para(p, rule["value"].format_map(ctx))
-                report["filled"].append({"role": role, "label": names.get(role, role), "value": rule["value"].format_map(ctx)})
+                report["filled"].append(
+                    {
+                        "role": role,
+                        "label": names.get(role, role),
+                        "value": rule["value"].format_map(ctx),
+                    }
+                )
             elif not any(m["role"] == role for m in report["missing"]):
                 report["missing"].append({"role": role, "label": names.get(role, role)})
         return report
 
     def save(self, path, drop=()):
         """채운 문서를 새 DOCX로 저장한다. drop의 부분(옛 미리보기 그림 등)은 빼고 관계 목록에서도 지운다."""
-        self.files["word/document.xml"] = etree.tostring(self.doc, xml_declaration=True, encoding="UTF-8", standalone=True)
+        self.files["word/document.xml"] = etree.tostring(
+            self.doc, xml_declaration=True, encoding="UTF-8", standalone=True
+        )
         drop = {d for d in drop if d in self.files}
         if drop and "_rels/.rels" in self.files:
             rels = etree.fromstring(self.files["_rels/.rels"])
             for rel in list(rels):
                 if rel.get("Target", "").lstrip("/") in drop:
                     rels.remove(rel)
-            self.files["_rels/.rels"] = etree.tostring(rels, xml_declaration=True, encoding="UTF-8", standalone=True)
+            self.files["_rels/.rels"] = etree.tostring(
+                rels, xml_declaration=True, encoding="UTF-8", standalone=True
+            )
         path = Path(path)
         with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as z:
-            for info in self.infos:  # [Content_Types].xml을 맨 앞에 두는 원래 순서를 지킨다
+            for (
+                info
+            ) in self.infos:  # [Content_Types].xml을 맨 앞에 두는 원래 순서를 지킨다
                 if info.filename not in drop:
                     z.writestr(info.filename, self.files[info.filename])
         return path
@@ -165,7 +198,11 @@ class DocxForm:
         """화면 미리보기용 HTML(표·문단·굵기·가운데 정렬·글자 크기만 흉내 낸다). 제출본은 DOCX다."""
 
         def run_html(r):
-            text = "".join((t.text or "") if t.tag == w("t") else "\n" for t in r if t.tag in (w("t"), w("br")))
+            text = "".join(
+                (t.text or "") if t.tag == w("t") else "\n"
+                for t in r
+                if t.tag in (w("t"), w("br"))
+            )
             if not text:
                 return ""
             rpr = r.find("w:rPr", NS)
@@ -180,7 +217,9 @@ class DocxForm:
 
         def para_html(p):
             jc = p.find("w:pPr/w:jc", NS)
-            align = {"center": "center", "right": "right", "both": "justify"}.get(jc.get(w("val")) if jc is not None else "", "left")
+            align = {"center": "center", "right": "right", "both": "justify"}.get(
+                jc.get(w("val")) if jc is not None else "", "left"
+            )
             inner = "".join(run_html(r) for r in p.iter(w("r")))
             return f'<p style="text-align:{align}">{inner or "&nbsp;"}</p>'
 
@@ -191,7 +230,9 @@ class DocxForm:
                 for tc in tr.findall("w:tc", NS):
                     span = tc.find("w:tcPr/w:gridSpan", NS)
                     cs = f' colspan="{span.get(w("val"))}"' if span is not None else ""
-                    tds.append(f"<td{cs}>{''.join(para_html(p) for p in tc.findall('w:p', NS))}</td>")
+                    tds.append(
+                        f"<td{cs}>{''.join(para_html(p) for p in tc.findall('w:p', NS))}</td>"
+                    )
                 rows.append(f"<tr>{''.join(tds)}</tr>")
             return f"<table>{''.join(rows)}</table>"
 
@@ -201,8 +242,10 @@ class DocxForm:
                 parts.append(para_html(el))
             elif el.tag == w("tbl"):
                 parts.append(table_html(el))
-        css = ("@page{size:A4;margin:18mm}body{font-family:'Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif;"
-               "font-size:11pt;color:#111;max-width:640px;margin:24px auto;line-height:1.5}"
-               "table{border-collapse:collapse;width:100%;margin:8px 0}td{border:1px solid #333;padding:6px 8px;vertical-align:middle}"
-               "td:first-child{width:28%}p{margin:4px 0;white-space:pre-wrap}")
+        css = (
+            "@page{size:A4;margin:18mm}body{font-family:'Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif;"
+            "font-size:11pt;color:#111;max-width:640px;margin:24px auto;line-height:1.5}"
+            "table{border-collapse:collapse;width:100%;margin:8px 0}td{border:1px solid #333;padding:6px 8px;vertical-align:middle}"
+            "td:first-child{width:28%}p{margin:4px 0;white-space:pre-wrap}"
+        )
         return f'<!doctype html><html lang="ko"><head><meta charset="utf-8"><style>{css}</style></head><body>{"".join(parts)}</body></html>'

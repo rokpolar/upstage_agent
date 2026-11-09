@@ -24,10 +24,14 @@ def docx_values(case):
     values = {k: v for k, v in case.items() if isinstance(v, (str, int))}
     amount = case.get("amount")
     if isinstance(amount, int):
-        values["amount_text"] = fmt["amount"].format(korean=korean_amount(amount), won=won(amount))
+        values["amount_text"] = fmt["amount"].format(
+            korean=korean_amount(amount), won=won(amount)
+        )
     m = re.match(r"(\d{4})-(\d{1,2})-(\d{1,2})", str(case.get("resolution_date") or ""))
     if m:
-        values["resolution_date_text"] = fmt["date"].format(y=m[1], m=int(m[2]), d=int(m[3]))
+        values["resolution_date_text"] = fmt["date"].format(
+            y=m[1], m=int(m[2]), d=int(m[3])
+        )
     return values
 
 
@@ -304,7 +308,9 @@ class ExpensesService:
         """고정 지출결의서 DOCX 양식 경로(config/docx_gyeolui.json template)."""
         path = self.root / config("docx_gyeolui")["template"]
         if not path.is_file():
-            raise FileNotFoundError(f"지출결의서 양식이 없습니다: {path.relative_to(self.root)}")
+            raise FileNotFoundError(
+                f"지출결의서 양식이 없습니다: {path.relative_to(self.root)}"
+            )
         return path
 
     def g_template_preview(self):
@@ -343,7 +349,11 @@ class ExpensesService:
             "unplaced": [],
             "unknown_labels": [],
             "leftover": [],
-            "files": {"docx": self.out_url(filled), "html": self.out_url(page), "name": name},
+            "files": {
+                "docx": self.out_url(filled),
+                "html": self.out_url(page),
+                "name": name,
+            },
         }
         record = {
             "report": report,
