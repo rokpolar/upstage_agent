@@ -223,7 +223,7 @@ def g_entry(n, name, src_dir):
     src = next((s for s in (ROOT / src_dir).glob(f"{name}.*") if s.suffix.lower() in CFG["gyeolui_upload_ext"]), None)
     return gid, {"id": gid, "set": n, "name": name, "status": "running", "error": None, "job_id": None,
                  "started": time.time(), "finished": None, "source": str(src) if src else None,
-                 "state": None, "link": None, "fill": None}
+                 "state": None, "link": None, "fill": None, "progress": {"done": [], "found": {}, "finished": False}}
 
 
 def g_load(n, p, src_dir):
@@ -319,7 +319,9 @@ def g_run(gid, bundle, res_dir, link):
     from run_api import StudioError, run_file
     e, t = STATE["g"][gid], g_text()
     try:
-        raw, job_id = run_file(bundle, ROOT / res_dir, kind="gyeolui", on_job=lambda j: e.update(job_id=j))
+        def progress(done, found, finished):  # Jobs API 조회마다 끝난 단계·읽어 낸 값을 남긴다(화면 진행 표시)
+            e["progress"] = {"done": done, "found": found, "finished": finished}
+        raw, job_id = run_file(bundle, ROOT / res_dir, progress, kind="gyeolui", on_job=lambda j: e.update(job_id=j))
         if link:
             (ROOT / res_dir / f"{bundle.stem}.link.json").write_text(json.dumps(link, ensure_ascii=False, indent=2), encoding="utf-8")
         e.update(status="done", job_id=job_id, finished=time.time(), state=gyeolui.new_state(raw, link, str(bundle)))
@@ -349,8 +351,9 @@ def g_upload(b):
 
 def g_summary(gid):
     e = STATE["g"][gid]
-    out = {k: e.get(k) for k in ("id", "set", "name", "status", "error", "job_id", "parts")}
+    out = {k: e.get(k) for k in ("id", "set", "name", "status", "error", "job_id", "parts", "progress")}
     out["has_source"] = bool(e["source"])
+    out["source_kind"] = "pdf" if (e["source"] or "").lower().endswith(".pdf") else "img"
     out["elapsed"] = int((e["finished"] or time.time()) - e["started"]) if e["started"] else None
     out["linked"] = bool(e["link"])
     st = e["state"]
@@ -437,6 +440,12 @@ class Handler(BaseHTTPRequestHandler):
                                 "accept": CFG["gyeolui_upload_ext"]}})
             if u.path == "/api/quotes/progress":
                 return self.send(200, PROGRESS.get(parse_qs(u.query).get("token", [""])[0]) or {"done": [], "found": {}})
+            if u.path == "/api/gyeolui/source":  # 증빙 묶음 미리보기(진행 화면 왼쪽)
+                e = STATE["g"].get(parse_qs(u.query).get("id", [""])[0])
+                if not e or not e["source"]:
+                    return self.send(404, {"error": "not found"})
+                src = Path(e["source"])
+                return self.file(src.parent, src.name)
             if u.path == "/api/gyeolui/status":
                 ids = parse_qs(u.query).get("id", [])
                 return self.send(200, {"items": [g_summary(i) for i in ids if i in STATE["g"]]})

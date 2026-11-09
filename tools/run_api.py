@@ -269,6 +269,12 @@ def run_one(path, key, agent_id, config_id, progress=None, kind="pumui", on_job=
     include = st.get("include") or ["last"]
     poll_include = st.get("poll_include") or include
     tell = progress or (lambda *a: None)
+    if kind == "gyeolui":  # 결의는 노드 구성이 달라 진행 해석도 따로 한다
+        from gyeolui import progress as parse_progress
+    else:
+        parse_progress = partial
+    if progress:  # 진행을 보여 줄 때는 실행 중에도 단계별 결과(include all)를 받는다
+        poll_include = include
     tell([], {}, False)
     file_id = upload(path, key, project)
     tell(["upload"], {}, False)
@@ -289,8 +295,8 @@ def run_one(path, key, agent_id, config_id, progress=None, kind="pumui", on_job=
             raise RuntimeError(f"{job_id}: {timeout}초 넘게 끝나지 않음")
         time.sleep(rt["api_poll_seconds"])
         job = call("GET", f"/responses/{job_id}?{query(poll_include)}", key, project=project)
-        if progress:  # 품의 견적서 업로드 화면만 단계별 진행을 보여 준다
-            done, found = partial(job, st)
+        if progress:  # Jobs API 조회 결과에서 끝난 단계와 읽어 낸 값을 화면에 넘긴다
+            done, found = parse_progress(job, st)
             tell(["upload"] + done, found, False)
     if job.get("status") != "completed":
         raise RuntimeError(f"{job_id}: status={job.get('status')} (failed면 Studio에서 Agent 설정 확인)")
@@ -298,7 +304,7 @@ def run_one(path, key, agent_id, config_id, progress=None, kind="pumui", on_job=
         job = call("GET", f"/responses/{job_id}?{query(include)}", key, project=project)
     steps = [o for o in job.get("output") or [] if o.get("step_type")]
     if progress:
-        done, found = partial(job, st)
+        done, found = parse_progress(job, st)
         tell(["upload"] + done, found, True)
     if kind == "gyeolui":
         from gyeolui import from_steps as gyeolui_steps

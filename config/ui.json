@@ -480,6 +480,61 @@
     "need_pdf": "사진을 다른 파일과 묶으려면 Edge 또는 Chrome이 필요합니다. 사진을 PDF로 바꿔 올리세요.",
     "no_pumui_pdf": "작성한 품의서 PDF를 찾지 못했습니다. 품의서 작성 단계에서 다시 작성하세요.",
     "run_failed": "결의 검토에 실패했습니다. {msg}",
-    "pumui_part": "작성한 품의서"
+    "pumui_part": "작성한 품의서",
+    "intake": {
+      "_comment": "결의 검토 진행 패널(품의 견적서 업로드 패널과 같은 모양). stages의 키는 tools/gyeolui.py STAGES와 같아야 한다.",
+      "reading": "결의 검토 중 · {sec}초",
+      "done": "검토 완료 · {sec}초",
+      "failed": "검토 실패",
+      "preview": "{name} 미리보기",
+      "stages": [
+        [
+          "upload",
+          "파일 전송"
+        ],
+        [
+          "parse",
+          "문서 인식"
+        ],
+        [
+          "classify",
+          "문서 분류·분할"
+        ],
+        [
+          "extract",
+          "품의서·영수증 추출"
+        ],
+        [
+          "compare",
+          "품의서·영수증 비교"
+        ],
+        [
+          "policy",
+          "회사 규정 검증"
+        ],
+        [
+          "draft",
+          "결의서 초안 작성"
+        ]
+      ],
+      "found": {
+        "docs": "문서 구성",
+        "request": "품의서",
+        "request_amount": "품의 금액",
+        "receipts": "지출 증빙",
+        "comparison": "비교 판정",
+        "policy": "규정 판정"
+      },
+      "docs": "{n}건: {list}",
+      "receipt": "{label} {amount}원",
+      "close": "닫기",
+      "count": "{done}/{n}건 완료",
+      "row": {
+        "now": "{stage} 중",
+        "done": "완료",
+        "fail": "실패"
+      },
+      "hold_ms": 4000
+    }
   }
 }
