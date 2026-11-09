@@ -1,4 +1,4 @@
-"""어떤 품의서 양식(HWP·HWPX·DOCX)이 와도 칸을 찾아 품의 agent 결과로 채운다.
+"""어떤 품의서 양식(HWPX·DOCX)이 와도 칸을 찾아 품의 agent 결과로 채운다.
 
     python tools/fill_form.py 양식.hwp <결과.json 또는 _resolved.json> <구매건.json> [--selection 선정.json] [--out out]
 
@@ -12,14 +12,23 @@
   6) 한글로 HWP·PDF와 첫 쪽 그림을 만든다.
 
 라벨·형식·자리표시 규칙은 전부 config/form_roles.json에 있다. 코드에는 칸을 찾고 쓰는 방법만 둔다.
+HWPX는 tools/hwpx.py, Word(.docx)는 tools/docx_form.py가 같은 모양(Document·Table·Cell)으로 읽고 쓴다.
 지출결의서는 같은 방법에 사전만 바꿔 쓴다(config/form_roles_gyeolui.json, fill(..., roles_name="form_roles_gyeolui")).
 """
 
 import re
+from pathlib import Path
 
-from app.adapters.hwpx import Cell, Document, q
+from app.adapters import docx_form, hwpx
+from app.adapters.hwpx import q
 from app.config import config, fields, rules
 from app.domain.money import korean_amount, to_int, won
+
+
+def open_form(path):
+    """양식 파일 확장자로 읽는 모듈을 고른다(.docx → docx_form, 그 밖 → hwpx)."""
+    return (docx_form if Path(path).suffix.lower() == ".docx" else hwpx).Document(path)
+
 
 KEY_STRIP = re.compile(r"[\s:：·.\-()\[\]※*〔〕「」]")
 
@@ -491,24 +500,19 @@ def fill_body_slots(doc, values, roles, report):
     if not (cfg.get("slot_pattern") and cfg.get("body")):
         return set()
     slot, done = re.compile(cfg["slot_pattern"]), set()
-    for root_el in doc.sections.values():
-        for p in root_el.iter(q("p")):
-            if any(a.tag == q("tc") for a in p.iterancestors()):
-                continue
-            line = Cell.para_text(p)
-            hits = [m[1] for m in slot.finditer(line) if m[1] in values]
-            if hits:
-                Cell.set_para_text(
-                    p,
-                    slot.sub(
-                        lambda m: values[m[1]]["value"] if m[1] in values else m[0],
-                        line,
-                    ),
-                )
-                done.update(hits)
-                report.setdefault("_written", []).extend(
-                    values[h]["value"] for h in hits
-                )
+    Cell = doc.cell_type
+    for p in doc.outside_paragraphs():
+        line = Cell.para_text(p)
+        hits = [m[1] for m in slot.finditer(line) if m[1] in values]
+        if hits:
+            Cell.set_para_text(
+                p,
+                slot.sub(
+                    lambda m: values[m[1]]["value"] if m[1] in values else m[0], line
+                ),
+            )
+            done.update(hits)
+            report.setdefault("_written", []).extend(values[h]["value"] for h in hits)
     return done
 
 
@@ -560,10 +564,8 @@ def fill_inline_blanks(tables, result, case, roles, report, doc=None, values=Non
     ]
     if cfg.get("body") and doc is not None:
         spots += [
-            (Cell.para_text, Cell.set_para_text, p)
-            for root_el in doc.sections.values()
-            for p in root_el.iter(q("p"))
-            if not any(a.tag == q("tc") for a in p.iterancestors())
+            (doc.cell_type.para_text, doc.cell_type.set_para_text, p)
+            for p in doc.outside_paragraphs()
         ]
     names = roles.cfg["free_text"]["names"]
 
@@ -651,15 +653,10 @@ def leftover_values(doc, written, roles, tables=None):
         for p in c.paragraphs()
     ]
     if tables is None:  # 표 밖 본문
-        spots += [
-            (None, p)
-            for root_el in doc.sections.values()
-            for p in root_el.iter(q("p"))
-            if not any(a.tag == q("tc") for a in p.iterancestors())
-        ]
+        spots += [(None, p) for p in doc.outside_paragraphs()]
     groups = {}
     for cell, p in spots:
-        text = Cell.para_text(p).strip()
+        text = doc.cell_type.para_text(p).strip()
         for name, pat, action in kinds:
             for m in pat.finditer(text):
                 v = m.group(0).strip()
@@ -751,7 +748,7 @@ def unknown_labels(tables, skip_rows, roles):
 def fill(form_hwpx, result, case, selection=None, roles_name="form_roles"):
     roles = Roles(roles_name)
     msg = roles.cfg["report"]
-    doc = Document(form_hwpx)
+    doc = open_form(form_hwpx)
     report = {
         "form": str(form_hwpx),
         "missing": [],

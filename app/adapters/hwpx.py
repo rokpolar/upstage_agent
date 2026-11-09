@@ -267,6 +267,8 @@ class Table:
 
 
 class Document:
+    cell_type = Cell
+
     def __init__(self, path):
         self.path = Path(path)
         with zipfile.ZipFile(self.path) as z:
@@ -303,16 +305,22 @@ class Document:
                 }
         return self._chars
 
+    def outside_paragraphs(self):
+        """표 밖 본문 문단."""
+        return [
+            p
+            for root in self.sections.values()
+            for p in root.iter(q("p"))
+            if not any(a.tag == q("tc") for a in p.iterancestors())
+        ]
+
     def body_paragraphs(self):
         """표 밖 본문 문단 글자(양식 제목·안내문 찾기용)."""
         out = []
-        for root in self.sections.values():
-            for p in root.iter(q("p")):
-                if any(a.tag == q("tc") for a in p.iterancestors()):
-                    continue
-                txt = "".join(t.text or "" for t in p.iter(q("t")))
-                if txt.strip():
-                    out.append(txt.strip())
+        for p in self.outside_paragraphs():
+            txt = "".join(t.text or "" for t in p.iter(q("t")))
+            if txt.strip():
+                out.append(txt.strip())
         return out
 
     def save(self, path):

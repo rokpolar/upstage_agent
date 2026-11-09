@@ -73,11 +73,11 @@ function intakeList() {
     const text = st === 'skip' || st === 'reject' ? fmt(t.row[st], { category: f.category || '' }) : st === 'done' ? fmt(t.row.done, { vendor: f.vendor || '', total: won(f.total || 0) })
       : st === 'now' ? fmt(t.row.now, { stage: nowStage(u)[1] }) : t.row[st];
     const mark = st === 'done' ? ICON.ok : st === 'fail' || st === 'reject' ? ICON.warn : st === 'now' ? '<span class="spin keep-motion" aria-hidden="true"></span>' : '<span class="dot" aria-hidden="true"></span>';
-    return `<li><button type="button" class="intake__row is-${st}" data-up="${u.id}" ${u === v ? 'aria-current="true"' : ''}>${mark}<span class="intake__name">${esc(u.name)}</span><span class="intake__state">${esc(text)}</span></button></li>`;
+    return `<li><button type="button" class="intake__row is-${st}" data-up="${u.id}" ${u === v ? 'aria-current="true"' : ''}>${mark}<span class="intake__name">${esc(u.label || u.name)}</span><span class="intake__state">${esc(text)}</span></button></li>`;
   }).join('');
 }
 function intakeDoc(u) {
-  const name = esc(fmt(S.ui.quotes.intake.preview, { name: u.name }));
+  const name = esc(fmt(S.ui.quotes.intake.preview, { name: u.label || u.name }));
   return u.kind === 'pdf' ? `<iframe src="${u.url}#toolbar=0&navpanes=0&view=FitH" title="${name}"></iframe>` : `<img src="${u.url}" alt="${name}">`;
 }
 function intake() {
@@ -88,7 +88,7 @@ function intake() {
     <div class="intake__doc keep-motion ${!u.finished && !u.error ? 'is-reading' : ''}" id="intake-doc" data-for="${u.id}">${intakeDoc(u)}</div>
     <div class="intake__info">
       <div class="intake__head"><div><p class="intake__title" id="intake-title">${esc(intakeTitle(u))}</p>
-        <p class="intake__file" id="intake-file">${esc(u.name)}</p></div>
+        <p class="intake__file" id="intake-file">${esc(u.label || u.name)}</p></div>
         ${busy ? '' : `<button type="button" class="key" id="intake-close">${esc(t.close)}</button>`}</div>
       <ol class="intake__list" id="intake-list">${intakeList()}</ol>
       <ol class="intake__steps" id="intake-steps">${intakeSteps(u)}</ol>
@@ -102,7 +102,7 @@ function updateIntake() {
   if (doc.dataset.for !== u.id) { doc.dataset.for = u.id; doc.innerHTML = intakeDoc(u); }
   doc.classList.toggle('is-reading', !u.finished && !u.error);
   setHTML('#intake-list', intakeList()); setHTML('#intake-steps', intakeSteps(u)); setHTML('#intake-found', intakeFound(u));
-  $('#intake-title').textContent = intakeTitle(u); $('#intake-file').textContent = u.name;
+  $('#intake-title').textContent = intakeTitle(u); $('#intake-file').textContent = u.label || u.name;
   $$('[data-up]').forEach((b) => (b.onclick = () => { S.upView = b.dataset.up; updateIntake(); }));
 }
 async function readOne(u) {
@@ -123,7 +123,7 @@ async function readOne(u) {
     const st = r.quote.studio || {};
     u.done = t.intake.stages.map(([key]) => key); u.finished = true;
     u.found = { category: st.category, kind: st.kind, vendor: r.quote.vendor, total: r.quote.total, items: r.quote.items.length, decision: st.decision };
-  } catch (e) { u.error = e.message; say('upload', fmt(S.ui.error, { msg: `${u.name}: ${e.message}` }), true); }
+  } catch (e) { u.error = e.message; say('upload', fmt(S.ui.error, { msg: `${u.label || u.name}: ${e.message}` }), true); }
   clearInterval(poll);
 }
 async function uploadQuotes(files) {
@@ -141,6 +141,7 @@ async function uploadQuotes(files) {
       r.pages.forEach((p) => {
         const pf = new File([Uint8Array.from(atob(p.data), (c) => c.charCodeAt(0))], p.name, { type: 'application/pdf' });
         pf.from = f.name;  // 어느 파일에서 나온 쪽인지(파일 전체가 견적서가 아니면 다시 올리기를 요청한다)
+        pf.label = fmt(t.page_name, { stem: f.name, n: p.page });  // 화면에는 '원래 파일 · n쪽'으로 보인다
         pages.push(pf);
       });
     } catch (e) { pages.push(f); }
@@ -148,7 +149,7 @@ async function uploadQuotes(files) {
   ok = pages;
   if (ok.length < fresh.length) say('upload', fmt(t.upload_bad_ext, { ext: exts.join(', ') }), true);
   if (!UP().some((u) => !u.finished && !u.error)) { UP().forEach((u) => URL.revokeObjectURL(u.url)); S.uploads = []; S.upView = null; }  // 새 묶음
-  const added = ok.map((f) => ({ id: (crypto.randomUUID && crypto.randomUUID()) || `${Date.now()}-${Math.random()}`, name: f.name, from: f.from || f.name, file: f,
+  const added = ok.map((f) => ({ id: (crypto.randomUUID && crypto.randomUUID()) || `${Date.now()}-${Math.random()}`, name: f.name, label: f.label || f.name, from: f.from || f.name, file: f,
     url: URL.createObjectURL(f), kind: /pdf$/i.test(f.type) || /\.pdf$/i.test(f.name) ? 'pdf' : 'img', done: [], found: {} }));
   UP().push(...added);
   if (!added.length) { render(); return; }
