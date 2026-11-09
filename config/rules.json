@@ -64,6 +64,8 @@
       ]
     ],
     "_upload_comment": "화면에서 올린 견적서는 quote_sets 첫 번째 줄의 PDF 폴더에 저장하고, Studio 품의 Agent 결과는 같은 줄의 결과 폴더에 저장한다.",
+    "upload_workers": 3,
+    "_upload_workers_comment": "여러 견적서를 올리면 동시에 읽는 개수",
     "quote_upload_ext": [
       ".pdf",
       ".png",
@@ -124,9 +126,18 @@
       },
       "quote_category": "견적서",
       "instruct_name_prefix": "Instruct - ",
-      "review_step": "견적 검토",
+      "review_step": "견적 검토", "kind_pattern": "^\\s*품목 분류\\s*[:：]\\s*(.+?)\\s*$",
       "citation_pattern": "【[^】]*】",
       "workers": 5
     }
+  },
+  "grouping": {
+    "_comment": "같은 물품 견적서 묶기(tools/grouping.py). 품목 이름 글자 bigram 코사인 유사도(+ Studio 품목 분류가 같으면 kind_bonus)가 threshold 이상이면 같은 묶음. 숫자·기호는 strip_pattern으로 지우고, min_len보다 짧은 덩어리와 stopwords는 뺀다.",
+    "threshold": 0.42,
+    "kind_bonus": 0.2,
+    "strip_pattern": "[^가-힣a-z ]+",
+    "min_len": 2,
+    "stopwords": ["구매", "구매를", "위한", "포함", "포함한", "및", "외", "건", "식", "개", "세트", "용역", "일괄", "제작을", "설치를", "set", "ea", "mm", "cm", "kg", "ml", "led"],
+    "label": "{first} 외 {more}건"
   }
 }

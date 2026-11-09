@@ -20,6 +20,7 @@ from urllib.parse import parse_qs, unquote, urlparse
 
 from common import ROOT, config, fields, rules
 from fill_form import fill
+from grouping import group as group_quotes
 from harness import ACK, HOLD, coerce, normalize, recheck, resolve, source_text
 from hwpx_preview import preview
 from score import unwrap
@@ -101,6 +102,14 @@ def text_of(q):
 def check(qid):
     q = STATE["quotes"][qid]
     recheck(q["state"], text_of(q), STATE["case"])
+
+
+def groups():
+    """지금 견적 목록을 같은 물품끼리 묶는다 → {id: {"group": 번호, "label": 이름}}."""
+    if not STATE["quotes"]:
+        return {}
+    of, names = group_quotes({qid: q["state"]["result"] for qid, q in STATE["quotes"].items()})
+    return {qid: {"group": n, "label": names[n]} for qid, n in of.items()}
 
 
 def summary(qid):
@@ -216,7 +225,8 @@ class Handler(BaseHTTPRequestHandler):
                     "funding_sources": rules()["form"]["funding_sources"],
                     "sets": [s[2] for s in CFG["quote_sets"]], "quotes": [summary(i) for i in STATE["quotes"]],
                     "forms": list_forms(), "selection": STATE["selection"], "special": {"keep": ACK, "hold": HOLD},
-                    "studio_ready": not studio_missing()})
+                    "studio_ready": not studio_missing(), "upload_workers": CFG.get("upload_workers", 1),
+                    "groups": groups()})
             if u.path == "/api/quotes/progress":
                 return self.send(200, PROGRESS.get(parse_qs(u.query).get("token", [""])[0]) or {"done": [], "found": {}})
             if u.path == "/api/form_preview":
@@ -237,7 +247,7 @@ class Handler(BaseHTTPRequestHandler):
                     return self.send(400, {"error": str(e)})
                 finally:
                     PROGRESS.pop(b.get("token"), None)
-                return self.send(200, {"quote": summary(qid), "job_id": job_id})
+                return self.send(200, {"quote": summary(qid), "job_id": job_id, "groups": groups()})
             if u.path == "/api/answer":
                 answer(b["id"], b["key"], b["value"], b.get("who") or STATE["case"].get("drafter", ""))
                 return self.send(200, summary(b["id"]))

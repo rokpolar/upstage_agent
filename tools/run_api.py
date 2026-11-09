@@ -137,6 +137,12 @@ def stage_of(step_type, st):
     return "parse" if "parse" in (step_type or "") else None
 
 
+def kind_of(text, st):
+    """견적 검토 결과에서 '품목 분류:' 줄을 꺼낸다(없으면 빈 문자열)."""
+    m = re.search(st.get("kind_pattern") or "$^", text or "", re.M)
+    return re.sub(st.get("citation_pattern") or "$^", "", m.group(1)).strip() if m else ""
+
+
 def partial(job, st):
     """진행 중인 작업에서 지금까지 끝난 단계와 읽어 낸 값을 뽑는다(화면 진행 표시용)."""
     steps = [o for o in job.get("output") or [] if o.get("step_type")]
@@ -144,9 +150,10 @@ def partial(job, st):
     types = st.get("step_types") or {}
     for o in steps:
         stage = stage_of(o["step_type"], st)
-        if not stage:
+        if not stage or o.get("status", "completed") != "completed":  # 진행 중인 단계는 아직 비어 있다
             continue
-        done.add(stage)
+        if stage != "instruct":  # 검토·판정은 Instruct 노드가 여러 개라 작업이 끝나야 끝난 것이다
+            done.add(stage)
         text = step_text(o)
         if stage == "classify" and text:
             found["category"] = text.strip()
@@ -159,10 +166,14 @@ def partial(job, st):
             except (json.JSONDecodeError, KeyError):
                 pass
         if stage == "instruct":
+            if (o.get("model") or "").removeprefix(st["instruct_name_prefix"]) == st["review_step"] and kind_of(text, st):
+                found["kind"] = kind_of(text, st)
             extra = (o.get("content") or [{}])[0].get("additional_values")
             extra = json.loads(extra) if isinstance(extra, str) and extra.startswith("{") else (extra or {})
             if extra.get("enum"):
                 found["decision"] = extra["enum"]
+    if job.get("status") == "completed":
+        done.add("instruct")
     order = ["parse", "classify", "extract", "instruct"]  # 뒤 단계가 끝났으면 앞 단계도 끝난 것이다
     for i, s in enumerate(order):
         if any(x in done for x in order[i + 1:]):
@@ -229,7 +240,7 @@ def from_steps(steps, st, job_id):
     if ext is None:
         raise NotQuote(category)
     result = json.loads(step_text(ext))
-    meta = {"category": category, "review": "", "decision": "", "branch": "", "note": ""}
+    meta = {"category": category, "review": "", "kind": "", "decision": "", "branch": "", "note": ""}
     for o in steps:
         if o["step_type"] != types["instruct"]:
             continue
@@ -241,6 +252,7 @@ def from_steps(steps, st, job_id):
             meta["decision"] = extra["enum"]
         elif name == st["review_step"]:
             meta["review"] = text
+            meta["kind"] = kind_of(text, st)
         else:
             meta["branch"], meta["note"] = name, text
     meta["job_id"] = job_id

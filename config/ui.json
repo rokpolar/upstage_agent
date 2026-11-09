@@ -55,6 +55,11 @@
     "issues_title": "{vendor}: 확인 필요 {n}건",
     "issues_help": "검토 단계에서 항목마다 처리 방법을 고르면 해결됩니다.",
     "issues_go": "검토로 이동",
+    "group_head": "{label} · {n}건",
+    "group_pick": "이 묶음 선택",
+    "mixed_title": "품목이 다른 견적이 함께 선택되어 있습니다",
+    "mixed_body": "업체 비교는 같은 품목끼리만 합니다. 비교할 묶음을 고르세요.",
+    "mixed_upload": "품목이 다른 견적이 섞여 있어 품목별로 나눴습니다. 비교할 묶음을 고르세요.",
     "intake": {
       "reading": "견적서 인식 중",
       "done": "인식 완료",
@@ -62,9 +67,12 @@
       "file": "{name} · {i}/{n}",
       "preview": "{name} 미리보기",
       "stages": [["upload", "파일 전송"], ["parse", "문서 인식"], ["classify", "문서 분류"], ["extract", "정보 추출"], ["instruct", "검토·판정"]],
-      "found": {"category": "문서 종류", "vendor": "업체명", "total": "합계금액", "items": "품목 수", "decision": "Studio 판정"},
+      "found": {"category": "문서 종류", "kind": "품목 분류", "vendor": "업체명", "total": "합계금액", "items": "품목 수", "decision": "Studio 판정"},
       "items": "{n}건",
       "close": "닫기",
+      "count": "{done}/{n}건 완료",
+      "row": {"wait": "대기", "now": "{stage} 중", "done": "{vendor} · {total}원", "fail": "실패"},
+      "drop": "여기에 놓으면 업로드합니다",
       "hold_ms": 3000
     },
     "studio_errors": {

@@ -77,10 +77,16 @@ function viewQuotes() {
   const stat = (q) => q.hold ? `<span class="status status--bad">${ICON.warn}${esc(t.hold)}</span>`
     : q.questions.length ? `<button type="button" class="status status--warn status--btn" data-issues="${esc(q.id)}">${ICON.warn}${esc(fmt(t.issues, { n: q.questions.length }))}</button>`
       : `<span class="status status--ok">${ICON.ok}${esc(t.ok)}</span>`;
-  const rows = list.map((q) => `<tr data-id="${esc(q.id)}" class="${S.picked.has(q.id) ? 'is-on' : ''}">
+  const row = (q) => `<tr data-id="${esc(q.id)}" class="${S.picked.has(q.id) ? 'is-on' : ''}">
       <td><input type="checkbox" aria-label="${esc(fmt(t.select, { vendor: q.vendor }))}" ${S.picked.has(q.id) ? 'checked' : ''}></td>
       <td class="vendor">${esc(q.vendor)}</td><td class="num">${won(q.total)}</td>
-      <td class="hide-sm">${esc(q.quote_date || '')}</td><td class="num hide-sm">${esc(fmt(t.items, { n: q.items.length }))}</td><td>${stat(q)}</td></tr>`).join('');
+      <td class="hide-sm">${esc(q.quote_date || '')}</td><td class="num hide-sm">${esc(fmt(t.items, { n: q.items.length }))}</td><td>${stat(q)}</td></tr>`;
+  // 같은 물품끼리 묶어서 보여 준다(묶음이 하나면 머리줄 없이)
+  const byGroup = new Map();
+  list.forEach((q) => { const g = groupOf(q.id); if (!byGroup.has(g.group)) byGroup.set(g.group, { label: g.label, items: [] }); byGroup.get(g.group).items.push(q); });
+  const rows = [...byGroup.entries()].sort((a, b) => a[0] - b[0]).map(([n, g]) => (byGroup.size > 1
+    ? `<tr class="grouphead"><th colspan="6"><span>${esc(fmt(t.group_head, { label: g.label || '-', n: g.items.length }))}</span><button type="button" class="linkish" data-group="${n}">${esc(t.group_pick)}</button></th></tr>`
+    : '') + g.items.map(row).join('')).join('');
   const table = list.length
     ? `<div class="ledger-wrap"><table class="ledger"><thead><tr><th><span class="visually-hidden">${esc(S.ui.select_col)}</span></th>${t.cols.map((c, i) => `<th class="${[1, 3].includes(i) ? 'num' : ''} ${[2, 3].includes(i) ? 'hide-sm' : ''}">${esc(c)}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div>`
     : `<div class="note"><p>${esc(t.empty)}</p><p class="muted">${esc(t.empty_action)}</p></div>`;
@@ -90,82 +96,136 @@ function viewQuotes() {
     <div class="actions"><p class="help">${S.picked.size ? esc(fmt(t.picked, { n: S.picked.size })) : ''}</p>
       <button type="button" class="key key--primary" id="next" ${S.picked.size ? '' : 'disabled'}>${esc(t.next)}</button></div>`;
 }
-// 올리는 견적서: 왼쪽 미리보기, 오른쪽 Studio 단계 진행과 읽어 낸 값
-function intakeSteps() {
-  const t = S.ui.quotes.intake, k = S.intake, done = new Set(k.done || []);
-  const now = t.stages.findIndex(([key]) => !done.has(key));
-  return t.stages.map(([key, label], i) => {
-    const st = done.has(key) ? 'done' : i === now && !k.finished ? (k.error ? 'fail' : 'now') : 'wait';
-    const mark = st === 'done' ? ICON.ok : st === 'fail' ? ICON.warn : st === 'now' ? '<span class="spin" aria-hidden="true"></span>' : '<span class="dot" aria-hidden="true"></span>';
+// 올리는 견적서: 왼쪽 미리보기, 오른쪽 Studio 단계 진행과 읽어 낸 값. 여러 장이면 동시에 읽고 목록으로 보여 준다.
+const groupOf = (id) => (S.init.groups && S.init.groups[id]) || { group: 0, label: '' };
+const UP = () => S.uploads || (S.uploads = []);
+const viewed = () => UP().find((u) => u.id === S.upView) || UP().find((u) => !u.finished && !u.error) || UP()[UP().length - 1];
+const upState = (u) => (u.error ? 'fail' : u.finished ? 'done' : u.started ? 'now' : 'wait');
+function nowStage(u) {
+  const st = S.ui.quotes.intake.stages, done = new Set(u.done || []);
+  return st.find(([key]) => !done.has(key)) || st[st.length - 1];
+}
+function intakeSteps(u) {
+  const t = S.ui.quotes.intake, done = new Set(u.done || []), now = nowStage(u)[0];
+  return t.stages.map(([key, label]) => {
+    const st = done.has(key) ? 'done' : key === now && u.started && !u.finished ? (u.error ? 'fail' : 'now') : 'wait';
+    const mark = st === 'done' ? ICON.ok : st === 'fail' ? ICON.warn : st === 'now' ? '<span class="spin keep-motion" aria-hidden="true"></span>' : '<span class="dot" aria-hidden="true"></span>';
     return `<li class="is-${st}">${mark}<span>${esc(label)}</span></li>`;
   }).join('');
 }
-function intakeFound() {
-  const t = S.ui.quotes.intake, f = S.intake.found || {};
-  const val = { category: f.category, vendor: f.vendor, total: f.total != null ? `${won(f.total)}원` : null,
+function intakeFound(u) {
+  const t = S.ui.quotes.intake, f = u.found || {};
+  const val = { category: f.category, kind: f.kind, vendor: f.vendor, total: f.total != null ? `${won(f.total)}원` : null,
     items: f.items != null ? fmt(t.items, { n: f.items }) : null, decision: f.decision };
   return Object.entries(t.found).filter(([k]) => val[k]).map(([k, label]) => `<div><dt>${esc(label)}</dt><dd>${esc(val[k])}</dd></div>`).join('');
 }
-function intakeTitle() {
-  const t = S.ui.quotes.intake, k = S.intake;
-  return k.error ? t.failed : k.finished ? t.done : t.reading;
+function intakeTitle(u) {
+  const t = S.ui.quotes.intake;
+  if (UP().length > 1) return fmt(t.count, { done: UP().filter((x) => x.finished).length, n: UP().length });
+  return u.error ? t.failed : u.finished ? t.done : t.reading;
+}
+function intakeList() {
+  const t = S.ui.quotes.intake, v = viewed();
+  if (UP().length < 2) return '';
+  return UP().map((u) => {
+    const st = upState(u), f = u.found || {};
+    const text = st === 'done' ? fmt(t.row.done, { vendor: f.vendor || '', total: won(f.total || 0) })
+      : st === 'now' ? fmt(t.row.now, { stage: nowStage(u)[1] }) : t.row[st];
+    const mark = st === 'done' ? ICON.ok : st === 'fail' ? ICON.warn : st === 'now' ? '<span class="spin keep-motion" aria-hidden="true"></span>' : '<span class="dot" aria-hidden="true"></span>';
+    return `<li><button type="button" class="intake__row is-${st}" data-up="${u.id}" ${u === v ? 'aria-current="true"' : ''}>${mark}<span class="intake__name">${esc(u.name)}</span><span class="intake__state">${esc(text)}</span></button></li>`;
+  }).join('');
+}
+function intakeDoc(u) {
+  const name = esc(fmt(S.ui.quotes.intake.preview, { name: u.name }));
+  return u.kind === 'pdf' ? `<iframe src="${u.url}#toolbar=0&navpanes=0&view=FitH" title="${name}"></iframe>` : `<img src="${u.url}" alt="${name}">`;
 }
 function intake() {
-  if (!S.intake) return '';
-  const t = S.ui.quotes.intake, k = S.intake, reading = !k.finished && !k.error;
-  const name = esc(fmt(t.preview, { name: k.name }));
-  const doc = k.kind === 'pdf'
-    ? `<iframe src="${k.url}#toolbar=0&navpanes=0&view=FitH" title="${name}"></iframe>`
-    : `<img src="${k.url}" alt="${name}">`;
+  const u = viewed();
+  if (!u) return '';
+  const t = S.ui.quotes.intake, busy = UP().some((x) => !x.finished && !x.error);
   return `<section class="intake" aria-live="polite">
-    <div class="intake__doc ${reading ? 'is-reading' : ''}" id="intake-doc">${doc}</div>
+    <div class="intake__doc keep-motion ${!u.finished && !u.error ? 'is-reading' : ''}" id="intake-doc" data-for="${u.id}">${intakeDoc(u)}</div>
     <div class="intake__info">
-      <div class="intake__head"><div><p class="intake__title" id="intake-title">${esc(intakeTitle())}</p>
-        <p class="intake__file">${esc(fmt(t.file, { name: k.name, i: k.i, n: k.n }))}</p></div>
-        ${S.busy.upload ? '' : `<button type="button" class="key" id="intake-close">${esc(t.close)}</button>`}</div>
-      <ol class="intake__steps" id="intake-steps">${intakeSteps()}</ol>
-      <dl class="intake__found" id="intake-found">${intakeFound()}</dl>
+      <div class="intake__head"><div><p class="intake__title" id="intake-title">${esc(intakeTitle(u))}</p>
+        <p class="intake__file" id="intake-file">${esc(u.name)}</p></div>
+        ${busy ? '' : `<button type="button" class="key" id="intake-close">${esc(t.close)}</button>`}</div>
+      <ol class="intake__list" id="intake-list">${intakeList()}</ol>
+      <ol class="intake__steps" id="intake-steps">${intakeSteps(u)}</ol>
+      <dl class="intake__found" id="intake-found">${intakeFound(u)}</dl>
     </div></section>`;
 }
-function updateIntake() {  // 미리보기(iframe)는 그대로 두고 단계와 값만 바꾼다
-  if (!S.intake || !$('#intake-steps')) return;
-  $('#intake-steps').innerHTML = intakeSteps(); $('#intake-found').innerHTML = intakeFound(); $('#intake-title').textContent = intakeTitle();
-  $('#intake-doc').classList.toggle('is-reading', !S.intake.finished && !S.intake.error);
+function setHTML(sel, html) { const el = $(sel); if (el && el.innerHTML !== html) el.innerHTML = html; }  // 같으면 그대로 둬야 도는 표시가 처음으로 돌아가지 않는다
+function updateIntake() {
+  const u = viewed();
+  if (!u || !$('#intake-steps')) return;
+  const doc = $('#intake-doc');
+  if (doc.dataset.for !== u.id) { doc.dataset.for = u.id; doc.innerHTML = intakeDoc(u); }
+  doc.classList.toggle('is-reading', !u.finished && !u.error);
+  setHTML('#intake-list', intakeList()); setHTML('#intake-steps', intakeSteps(u)); setHTML('#intake-found', intakeFound(u));
+  $('#intake-title').textContent = intakeTitle(u); $('#intake-file').textContent = u.name;
+  $$('[data-up]').forEach((b) => (b.onclick = () => { S.upView = b.dataset.up; updateIntake(); }));
 }
 const readB64 = (f) => new Promise((ok, no) => { const r = new FileReader(); r.onload = () => ok(r.result.split(',')[1]); r.onerror = no; r.readAsDataURL(f); });
-async function uploadQuotes(files) {
-  const t = S.ui.quotes; S.busy.upload = true;
-  for (const [i, f] of [...files].entries()) {
-    if (S.intake) URL.revokeObjectURL(S.intake.url);
-    const kind = /pdf$/i.test(f.type) || /\.pdf$/i.test(f.name) ? 'pdf' : 'img';
-    S.intake = { name: f.name, url: URL.createObjectURL(f), kind, i: i + 1, n: files.length, done: [], found: {} };
-    S.status.upload = null; render();
-    const token = (crypto.randomUUID && crypto.randomUUID()) || String(Date.now() + Math.random());
-    const poll = setInterval(async () => {
-      try {
-        const p = await api(`/api/quotes/progress?token=${encodeURIComponent(token)}`);
-        if (!S.intake.finished && !S.intake.error) { S.intake.done = p.done; S.intake.found = p.found; updateIntake(); }
-      } catch (e) { /* 다음 차례에 다시 묻는다 */ }
-    }, 600);
+async function readOne(u) {
+  const t = S.ui.quotes;
+  u.started = true; updateIntake();
+  const poll = setInterval(async () => {
     try {
-      const r = await api('/api/quotes/upload', { name: f.name, data: await readB64(f), token });
-      S.init.quotes = S.init.quotes.filter((q) => q.id !== r.quote.id).concat(r.quote);
-      S.picked.add(r.quote.id); S.set = r.quote.set; S.compare = null;
-      const st = r.quote.studio || {};
-      S.intake.done = t.intake.stages.map(([key]) => key); S.intake.finished = true;
-      S.intake.found = { category: st.category, vendor: r.quote.vendor, total: r.quote.total, items: r.quote.items.length, decision: st.decision };
-    } catch (e) { S.intake.error = e.message; say('upload', fmt(S.ui.error, { msg: e.message }), true); }
-    clearInterval(poll); render();
-  }
+      const p = await api(`/api/quotes/progress?token=${encodeURIComponent(u.id)}`);
+      if (!u.finished && !u.error) { u.done = p.done; u.found = p.found; updateIntake(); }
+    } catch (e) { /* 다음 차례에 다시 묻는다 */ }
+  }, 600);
+  try {
+    const r = await api('/api/quotes/upload', { name: u.name, data: await readB64(u.file), token: u.id });
+    S.init.quotes = S.init.quotes.filter((q) => q.id !== r.quote.id).concat(r.quote);
+    if (r.groups) S.init.groups = r.groups;
+    u.qid = r.quote.id; S.set = r.quote.set; S.compare = null;
+    const st = r.quote.studio || {};
+    u.done = t.intake.stages.map(([key]) => key); u.finished = true;
+    u.found = { category: st.category, kind: st.kind, vendor: r.quote.vendor, total: r.quote.total, items: r.quote.items.length, decision: st.decision };
+  } catch (e) { u.error = e.message; say('upload', fmt(S.ui.error, { msg: `${u.name}: ${e.message}` }), true); }
+  clearInterval(poll);
+}
+async function uploadQuotes(files) {
+  const t = S.ui.quotes, fresh = [...files];
+  if (!fresh.length) return;
+  const exts = S.init.upload_ext || ['.pdf', '.png', '.jpg', '.jpeg'];
+  const ok = fresh.filter((f) => exts.some((x) => f.name.toLowerCase().endsWith(x)));
+  if (ok.length < fresh.length) say('upload', fmt(t.upload_bad_ext, { ext: exts.join(', ') }), true);
+  if (!UP().some((u) => !u.finished && !u.error)) { UP().forEach((u) => URL.revokeObjectURL(u.url)); S.uploads = []; S.upView = null; }  // 새 묶음
+  const added = ok.map((f) => ({ id: (crypto.randomUUID && crypto.randomUUID()) || `${Date.now()}-${Math.random()}`, name: f.name, file: f,
+    url: URL.createObjectURL(f), kind: /pdf$/i.test(f.type) || /\.pdf$/i.test(f.name) ? 'pdf' : 'img', done: [], found: {} }));
+  UP().push(...added);
+  if (!added.length) { render(); return; }
+  if (S.busy.upload) { render(); return; }  // 이미 돌고 있는 일꾼이 이어서 읽는다
+  S.busy.upload = true; if (!S.status.upload || !S.status.upload.error) S.status.upload = null; render();
+  const next = () => UP().find((u) => !u.started);
+  const worker = async () => { for (let u = next(); u; u = next()) { await readOne(u); render(); } };
+  await Promise.all(Array.from({ length: Math.max(1, S.init.upload_workers || 1) }, worker));
+  // 이번에 올린 견적이 한 품목이면 그 묶음을 고르고, 여러 품목이면 고르지 않고 알려 준다
+  const got = UP().filter((u) => u.qid).map((u) => u.qid), gs = new Set(got.map((id) => groupOf(id).group));
+  if (gs.size === 1) S.picked = new Set(quotes().filter((q) => groupOf(q.id).group === [...gs][0]).map((q) => q.id));
+  else if (gs.size > 1) { S.picked = new Set(); say('upload', t.mixed_upload); }
   S.busy.upload = false; render();
-  // 다 읽었으면 잠시 결과를 보여 준 뒤 패널을 접어 목록이 보이게 한다
-  const shown = S.intake;
-  if (shown && shown.finished) setTimeout(() => { if (S.intake === shown && !S.busy.upload) { URL.revokeObjectURL(shown.url); S.intake = null; render(); } }, S.ui.quotes.intake.hold_ms);
+  // 모두 읽었으면 잠시 결과를 보여 준 뒤 패널을 접어 목록이 보이게 한다(실패가 있으면 그대로 둔다)
+  const batch = S.uploads;
+  if (batch.length && batch.every((u) => u.finished)) setTimeout(() => {
+    if (S.uploads === batch && !S.busy.upload) { batch.forEach((u) => URL.revokeObjectURL(u.url)); S.uploads = []; S.upView = null; render(); }
+  }, t.intake.hold_ms);
 }
 function bindQuotes() {
   $$('input[name="qset"]').forEach((el) => (el.onchange = () => { S.set = Number(el.value); render(); }));
   const up = $('#qupload'); if (up) up.onchange = (e) => uploadQuotes(e.target.files);
-  const ic = $('#intake-close'); if (ic) ic.onclick = () => { URL.revokeObjectURL(S.intake.url); S.intake = null; render(); };
+  const ic = $('#intake-close'); if (ic) ic.onclick = () => { UP().forEach((u) => URL.revokeObjectURL(u.url)); S.uploads = []; S.upView = null; render(); };
+  $$('[data-up]').forEach((b) => (b.onclick = () => { S.upView = b.dataset.up; updateIntake(); }));
+  // 파일을 화면에 끌어다 놓아도 올린다
+  const main = $('#main');
+  if (main && S.init.studio_ready && !main.dataset.drop) {
+    main.dataset.drop = '1';
+    main.addEventListener('dragover', (e) => { if (location.hash.slice(1) !== keys()[0] && location.hash) return; e.preventDefault(); main.classList.add('is-drop'); });
+    main.addEventListener('dragleave', (e) => { if (e.target === main) main.classList.remove('is-drop'); });
+    main.addEventListener('drop', (e) => { if (location.hash.slice(1) !== keys()[0] && location.hash) return; e.preventDefault(); main.classList.remove('is-drop'); uploadQuotes(e.dataTransfer.files); });
+  }
   $$('[data-issues]').forEach((b) => (b.onclick = (e) => {
     e.stopPropagation();  // 줄 선택은 바꾸지 않는다
     const t = S.ui.quotes, q = byId(b.dataset.issues);
@@ -173,11 +233,23 @@ function bindQuotes() {
       [{ list: q.questions.map((x) => x.message) }, { text: t.issues_help, muted: true }],
       [{ label: t.issues_go, primary: true, run: () => { S.picked.add(q.id); S.compare = null; go(1); } }]);
   }));
-  $$('.ledger tbody tr').forEach((tr) => (tr.onclick = (e) => {
+  $$('[data-group]').forEach((b) => (b.onclick = () => {
+    S.picked = new Set(quotes().filter((q) => q.set === S.set && groupOf(q.id).group === Number(b.dataset.group)).map((q) => q.id));
+    S.compare = null; S.chosen = null; render();
+  }));
+  $$('.ledger tbody tr[data-id]').forEach((tr) => (tr.onclick = (e) => {
     const id = tr.dataset.id; S.picked.has(id) ? S.picked.delete(id) : S.picked.add(id);
     S.compare = null; S.chosen = null; render(); if (e.target.matches('input')) $(`tr[data-id="${CSS.escape(id)}"] input`).focus();
   }));
-  $('#next').onclick = () => go(1);
+  $('#next').onclick = () => {  // 품목이 다른 견적이 섞여 있으면 비교할 묶음을 고르게 한다
+    const t = S.ui.quotes, gs = [...new Set(picked().map((q) => groupOf(q.id).group))];
+    if (gs.length < 2) return go(1);
+    popup(t.mixed_title, [{ text: t.mixed_body }], gs.map((n, i) => {
+      const ids = picked().filter((q) => groupOf(q.id).group === n).map((q) => q.id);
+      return { label: fmt(t.group_head, { label: groupOf(ids[0]).label || '-', n: ids.length }), primary: i === 0,
+        run: () => { S.picked = new Set(ids); S.compare = null; S.chosen = null; render(); go(1); } };
+    }));
+  };
 }
 
 // ---------------------------------------------------------------- 2. 검토
