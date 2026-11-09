@@ -86,27 +86,86 @@ function viewQuotes() {
     : `<div class="note"><p>${esc(t.empty)}</p><p class="muted">${esc(t.empty_action)}</p></div>`;
   return `${head(t)}<div class="row spread" style="margin-bottom:var(--space-md)">${sets}<div class="row">${upload}</div></div>
     ${S.init.studio_ready ? `<p class="help">${esc(t.upload_hint)}</p>` : `<p class="note">${esc(t.studio_off)}</p>`}
-    ${status('upload')}${table}
+    ${status('upload')}${intake()}${table}
     <div class="actions"><p class="help">${S.picked.size ? esc(fmt(t.picked, { n: S.picked.size })) : ''}</p>
       <button type="button" class="key key--primary" id="next" ${S.picked.size ? '' : 'disabled'}>${esc(t.next)}</button></div>`;
+}
+// 올리는 견적서: 왼쪽 미리보기, 오른쪽 Studio 단계 진행과 읽어 낸 값
+function intakeSteps() {
+  const t = S.ui.quotes.intake, k = S.intake, done = new Set(k.done || []);
+  const now = t.stages.findIndex(([key]) => !done.has(key));
+  return t.stages.map(([key, label], i) => {
+    const st = done.has(key) ? 'done' : i === now && !k.finished ? (k.error ? 'fail' : 'now') : 'wait';
+    const mark = st === 'done' ? ICON.ok : st === 'fail' ? ICON.warn : st === 'now' ? '<span class="spin" aria-hidden="true"></span>' : '<span class="dot" aria-hidden="true"></span>';
+    return `<li class="is-${st}">${mark}<span>${esc(label)}</span></li>`;
+  }).join('');
+}
+function intakeFound() {
+  const t = S.ui.quotes.intake, f = S.intake.found || {};
+  const val = { category: f.category, vendor: f.vendor, total: f.total != null ? `${won(f.total)}원` : null,
+    items: f.items != null ? fmt(t.items, { n: f.items }) : null, decision: f.decision };
+  return Object.entries(t.found).filter(([k]) => val[k]).map(([k, label]) => `<div><dt>${esc(label)}</dt><dd>${esc(val[k])}</dd></div>`).join('');
+}
+function intakeTitle() {
+  const t = S.ui.quotes.intake, k = S.intake;
+  return k.error ? t.failed : k.finished ? t.done : t.reading;
+}
+function intake() {
+  if (!S.intake) return '';
+  const t = S.ui.quotes.intake, k = S.intake, reading = !k.finished && !k.error;
+  const name = esc(fmt(t.preview, { name: k.name }));
+  const doc = k.kind === 'pdf'
+    ? `<iframe src="${k.url}#toolbar=0&navpanes=0&view=FitH" title="${name}"></iframe>`
+    : `<img src="${k.url}" alt="${name}">`;
+  return `<section class="intake" aria-live="polite">
+    <div class="intake__doc ${reading ? 'is-reading' : ''}" id="intake-doc">${doc}</div>
+    <div class="intake__info">
+      <div class="intake__head"><div><p class="intake__title" id="intake-title">${esc(intakeTitle())}</p>
+        <p class="intake__file">${esc(fmt(t.file, { name: k.name, i: k.i, n: k.n }))}</p></div>
+        ${S.busy.upload ? '' : `<button type="button" class="key" id="intake-close">${esc(t.close)}</button>`}</div>
+      <ol class="intake__steps" id="intake-steps">${intakeSteps()}</ol>
+      <dl class="intake__found" id="intake-found">${intakeFound()}</dl>
+    </div></section>`;
+}
+function updateIntake() {  // 미리보기(iframe)는 그대로 두고 단계와 값만 바꾼다
+  if (!S.intake || !$('#intake-steps')) return;
+  $('#intake-steps').innerHTML = intakeSteps(); $('#intake-found').innerHTML = intakeFound(); $('#intake-title').textContent = intakeTitle();
+  $('#intake-doc').classList.toggle('is-reading', !S.intake.finished && !S.intake.error);
 }
 const readB64 = (f) => new Promise((ok, no) => { const r = new FileReader(); r.onload = () => ok(r.result.split(',')[1]); r.onerror = no; r.readAsDataURL(f); });
 async function uploadQuotes(files) {
   const t = S.ui.quotes; S.busy.upload = true;
   for (const [i, f] of [...files].entries()) {
-    say('upload', fmt(t.reading, { name: f.name, i: i + 1, n: files.length })); render();
+    if (S.intake) URL.revokeObjectURL(S.intake.url);
+    const kind = /pdf$/i.test(f.type) || /\.pdf$/i.test(f.name) ? 'pdf' : 'img';
+    S.intake = { name: f.name, url: URL.createObjectURL(f), kind, i: i + 1, n: files.length, done: [], found: {} };
+    S.status.upload = null; render();
+    const token = (crypto.randomUUID && crypto.randomUUID()) || String(Date.now() + Math.random());
+    const poll = setInterval(async () => {
+      try {
+        const p = await api(`/api/quotes/progress?token=${encodeURIComponent(token)}`);
+        if (!S.intake.finished && !S.intake.error) { S.intake.done = p.done; S.intake.found = p.found; updateIntake(); }
+      } catch (e) { /* 다음 차례에 다시 묻는다 */ }
+    }, 600);
     try {
-      const r = await api('/api/quotes/upload', { name: f.name, data: await readB64(f) });
+      const r = await api('/api/quotes/upload', { name: f.name, data: await readB64(f), token });
       S.init.quotes = S.init.quotes.filter((q) => q.id !== r.quote.id).concat(r.quote);
       S.picked.add(r.quote.id); S.set = r.quote.set; S.compare = null;
-      say('upload', fmt(t.read_done, { name: f.name }));
-    } catch (e) { say('upload', fmt(S.ui.error, { msg: e.message }), true); }
+      const st = r.quote.studio || {};
+      S.intake.done = t.intake.stages.map(([key]) => key); S.intake.finished = true;
+      S.intake.found = { category: st.category, vendor: r.quote.vendor, total: r.quote.total, items: r.quote.items.length, decision: st.decision };
+    } catch (e) { S.intake.error = e.message; say('upload', fmt(S.ui.error, { msg: e.message }), true); }
+    clearInterval(poll); render();
   }
   S.busy.upload = false; render();
+  // 다 읽었으면 잠시 결과를 보여 준 뒤 패널을 접어 목록이 보이게 한다
+  const shown = S.intake;
+  if (shown && shown.finished) setTimeout(() => { if (S.intake === shown && !S.busy.upload) { URL.revokeObjectURL(shown.url); S.intake = null; render(); } }, S.ui.quotes.intake.hold_ms);
 }
 function bindQuotes() {
   $$('input[name="qset"]').forEach((el) => (el.onchange = () => { S.set = Number(el.value); render(); }));
   const up = $('#qupload'); if (up) up.onchange = (e) => uploadQuotes(e.target.files);
+  const ic = $('#intake-close'); if (ic) ic.onclick = () => { URL.revokeObjectURL(S.intake.url); S.intake = null; render(); };
   $$('[data-issues]').forEach((b) => (b.onclick = (e) => {
     e.stopPropagation();  // 줄 선택은 바꾸지 않는다
     const t = S.ui.quotes, q = byId(b.dataset.issues);

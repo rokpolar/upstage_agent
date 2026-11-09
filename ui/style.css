@@ -203,3 +203,41 @@ textarea.input { min-height: 72px; resize: vertical; line-height: 1.5; }
 @media (prefers-reduced-motion: reduce) {
   .key, .tab, .seg label, .ledger tbody tr, .formlist label, .tile { transition: none; }
 }
+
+/* 견적서 올리기: 미리보기 + Studio 단계 진행 */
+.intake { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: var(--space-lg); padding: var(--space-lg); margin-bottom: var(--space-md); background: var(--color-paper-2); border-radius: var(--radius-panel); }
+.intake__doc { position: relative; height: min(34vh, 320px); min-height: 200px; overflow: hidden; background: var(--color-paper); border: var(--rule-hair) solid var(--color-rule); border-radius: var(--radius-tile); }
+.intake__doc iframe, .intake__doc img { display: block; width: 100%; height: 100%; border: 0; object-fit: contain; }
+.intake__doc.is-reading::after { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 18%; pointer-events: none;
+  background: linear-gradient(to bottom, rgba(0, 113, 227, 0), rgba(0, 113, 227, 0.14) 70%, rgba(0, 113, 227, 0.45)); border-bottom: 2px solid var(--color-accent);
+  animation: intake-scan 2.2s var(--ease-in-out) infinite; }
+@keyframes intake-scan { from { transform: translateY(-100%); } to { transform: translateY(560%); } }
+.intake__info { display: flex; flex-direction: column; gap: var(--space-md); min-width: 0; }
+.intake__head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-sm); }
+.intake__title { font-size: var(--text-lg); font-weight: 700; letter-spacing: var(--tracking-display); }
+.intake__file { font-size: var(--text-sm); color: var(--color-muted); overflow-wrap: anywhere; }
+.intake__steps { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-xs); }
+.intake__steps li { display: flex; align-items: center; gap: var(--space-xs); font-size: var(--text-md); color: var(--color-disabled); transition: color var(--dur-short) var(--ease-out); }
+.intake__steps li svg, .intake__steps .spin, .intake__steps .dot { width: 16px; height: 16px; flex: none; }
+.intake__steps .is-done { color: var(--color-ink); }
+.intake__steps .is-done svg { color: var(--color-success); }
+.intake__steps .is-now { color: var(--color-accent); font-weight: 600; }
+.intake__steps .is-fail { color: var(--color-error); font-weight: 600; }
+.intake__steps .dot { display: inline-grid; place-items: center; }
+.intake__steps .dot::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.spin { display: inline-block; box-sizing: border-box; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.intake__found { display: grid; grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr)); gap: var(--space-sm) var(--space-md); margin: 0; }
+.intake__found div { animation: intake-in var(--dur-long) var(--ease-out); }
+.intake__found dt { font-size: var(--text-xs); color: var(--color-muted); }
+.intake__found dd { margin: 0; font-size: var(--text-md); font-weight: 600; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+@keyframes intake-in { from { opacity: 0; transform: translateY(4px); } }
+@media (max-width: 45rem) {
+  .intake { grid-template-columns: 1fr; padding: var(--space-md); }
+  .intake__doc { height: 36vh; }
+}
+@media (max-height: 44rem) { .intake__doc { height: 28vh; min-height: 160px; } }
+@media (prefers-reduced-motion: reduce) {
+  .intake__doc.is-reading::after, .intake__found div { animation: none; }
+  .spin { animation-duration: 2.4s; }
+}

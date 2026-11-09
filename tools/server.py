@@ -57,7 +57,10 @@ def studio_missing():
     return settings()[1]
 
 
-def studio_quote(name, data_b64):
+PROGRESS = {}  # 올리는 중인 견적서: token → {"done": [...], "found": {...}, "finished": bool}
+
+
+def studio_quote(name, data_b64, token=None):
     """올린 견적서를 Studio 품의 Agent(API)로 읽어 견적 목록에 더한다."""
     from run_api import ROOT as _root, run_file
     if studio_missing():  # 키가 없으면 파일을 남기기 전에 멈춘다
@@ -72,7 +75,10 @@ def studio_quote(name, data_b64):
     from run_api import NotQuote, StudioError
     msg = config("ui")["quotes"]
     try:
-        _, job_id = run_file(src, ROOT / res_dir)
+        def progress(done, found, finished):
+            if token:
+                PROGRESS[token] = {"done": done, "found": found, "finished": finished}
+        _, job_id = run_file(src, ROOT / res_dir, progress)
     except NotQuote as e:  # 견적서가 아니면 올린 파일을 남기지 않는다
         src.unlink(missing_ok=True)
         raise ValueError(msg["not_quote"].format(category=e.category)) from None
@@ -211,6 +217,8 @@ class Handler(BaseHTTPRequestHandler):
                     "sets": [s[2] for s in CFG["quote_sets"]], "quotes": [summary(i) for i in STATE["quotes"]],
                     "forms": list_forms(), "selection": STATE["selection"], "special": {"keep": ACK, "hold": HOLD},
                     "studio_ready": not studio_missing()})
+            if u.path == "/api/quotes/progress":
+                return self.send(200, PROGRESS.get(parse_qs(u.query).get("token", [""])[0]) or {"done": [], "found": {}})
             if u.path == "/api/form_preview":
                 return self.send(200, {"url": form_preview(parse_qs(u.query)["form"][0])})
             self.send(404, {"error": "not found"})
@@ -224,9 +232,11 @@ class Handler(BaseHTTPRequestHandler):
             b = self.body()
             if u.path == "/api/quotes/upload":
                 try:
-                    qid, job_id = studio_quote(b["name"], b["data"])
+                    qid, job_id = studio_quote(b["name"], b["data"], b.get("token"))
                 except (ValueError, RuntimeError) as e:
                     return self.send(400, {"error": str(e)})
+                finally:
+                    PROGRESS.pop(b.get("token"), None)
                 return self.send(200, {"quote": summary(qid), "job_id": job_id})
             if u.path == "/api/answer":
                 answer(b["id"], b["key"], b["value"], b.get("who") or STATE["case"].get("drafter", ""))

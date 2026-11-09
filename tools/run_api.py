@@ -29,7 +29,7 @@ import uuid
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
-from common import ROOT, rules
+from common import ROOT, fields, rules
 
 DOC_EXT = {".pdf", ".png", ".jpg", ".jpeg", ".docx", ".pptx", ".xlsx", ".hwp", ".hwpx"}
 BASE = None  # main()에서 .env 또는 rules.json으로 정한다
@@ -61,12 +61,12 @@ def settings():
     return s, missing
 
 
-def run_file(path, out_dir):
+def run_file(path, out_dir, progress=None):
     """견적서 하나를 Studio 품의 Agent로 돌려 out_dir/<이름>.json에 저장하고 (결과, job_id)를 돌려준다."""
     s, missing = settings()
     if missing:
         raise RuntimeError(f"{ROOT / '.env'}에 {', '.join(missing)} 값이 없어요.")
-    result, job_id = run_one(Path(path), s["key"], s["agent_id"], s["config_id"])
+    result, job_id = run_one(Path(path), s["key"], s["agent_id"], s["config_id"], progress)
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
     (out / f"{Path(path).stem}.json").write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -128,10 +128,56 @@ class NotQuote(RuntimeError):
         self.category = category
 
 
-def run_one(path, key, agent_id, config_id):
+def stage_of(step_type, st):
+    """Studio 단계 종류 → 화면 단계 이름(parse/classify/extract/instruct)."""
+    types = st.get("step_types") or {}
+    for stage, t in types.items():
+        if step_type == t:
+            return stage
+    return "parse" if "parse" in (step_type or "") else None
+
+
+def partial(job, st):
+    """진행 중인 작업에서 지금까지 끝난 단계와 읽어 낸 값을 뽑는다(화면 진행 표시용)."""
+    steps = [o for o in job.get("output") or [] if o.get("step_type")]
+    done, found = set(), {}
+    types = st.get("step_types") or {}
+    for o in steps:
+        stage = stage_of(o["step_type"], st)
+        if not stage:
+            continue
+        done.add(stage)
+        text = step_text(o)
+        if stage == "classify" and text:
+            found["category"] = text.strip()
+        if stage == "extract" and text:
+            try:
+                r = json.loads(text)
+                F = fields()
+                found.update({"vendor": r.get(F["vendor_name"]), "total": r.get(F["total"]),
+                              "items": len(r.get(F["items"]) or [])})
+            except (json.JSONDecodeError, KeyError):
+                pass
+        if stage == "instruct":
+            extra = (o.get("content") or [{}])[0].get("additional_values")
+            extra = json.loads(extra) if isinstance(extra, str) and extra.startswith("{") else (extra or {})
+            if extra.get("enum"):
+                found["decision"] = extra["enum"]
+    order = ["parse", "classify", "extract", "instruct"]  # 뒤 단계가 끝났으면 앞 단계도 끝난 것이다
+    for i, s in enumerate(order):
+        if any(x in done for x in order[i + 1:]):
+            done.add(s)
+    return sorted(done, key=order.index), found
+
+
+def run_one(path, key, agent_id, config_id, progress=None):
+    """progress(done, found, finished)를 주면 단계가 끝날 때마다 알려 준다(화면 진행 표시용)."""
     st = rules()["runtime"].get("studio") or {}
     include = st.get("include") or ["last"]
+    tell = progress or (lambda *a: None)
+    tell([], {}, False)
     file_id = upload(path, key)
+    tell(["upload"], {}, False)
     req = {"model": agent_id, "include": include,
            "input": [{"role": "user", "content": [{"type": "input_file", "file_id": file_id}]}]}
     if config_id:
@@ -146,9 +192,13 @@ def run_one(path, key, agent_id, config_id):
             raise RuntimeError(f"{job_id}: {rt['api_timeout_seconds']}초 넘게 끝나지 않음")
         time.sleep(rt["api_poll_seconds"])
         job = call("GET", f"/responses/{job_id}?{query}", key)
+        done, found = partial(job, st)
+        tell(["upload"] + done, found, False)
     if job.get("status") != "completed":
         raise RuntimeError(f"{job_id}: status={job.get('status')}")
     steps = [o for o in job.get("output") or [] if o.get("step_type")]
+    done, found = partial(job, st)
+    tell(["upload"] + done, found, True)
     if steps:
         return from_steps(steps, st, job_id), job_id
     text = output_text(job)
