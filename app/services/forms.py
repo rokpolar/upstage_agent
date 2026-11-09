@@ -7,7 +7,22 @@ from pathlib import Path
 
 from app.adapters.files import safe_name
 from app.adapters.fill_form import Roles, build_values, fill
-from app.adapters.hwpx_preview import preview
+from app.adapters.hwpx_preview import preview as hwpx_preview
+
+
+def preview(path, pdf=False):
+    """양식 미리보기(HTML). pdf=True면 PDF도 만든다(결의 쪽 증빙 묶음에 붙이는 용도).
+    Word는 tools/docx_pdf.py(rules.json preview.docx_pdf.order 순서), HWPX는 미리보기 인쇄."""
+    if Path(path).suffix.lower() != ".docx":
+        return hwpx_preview(path, pdf)
+    from app.adapters.docx_preview import preview as docx_html
+
+    html_file = docx_html(path)
+    if not pdf:
+        return html_file
+    from app.adapters.docx_pdf import to_pdf
+
+    return to_pdf(path)[0]
 from app.config import config
 from app.domain import gyeolui
 
@@ -22,8 +37,9 @@ class FormsService:
             else self.cfg["form_dirs"]
         )
         filters = self.cfg.get("gyeolui_form_filter", {}) if kind == "gyeolui" else {}
+        ext = self.cfg.get("gyeolui_form_ext" if kind == "gyeolui" else "form_ext", ".hwpx")
         for d in dirs:
-            for p in sorted((self.root / d).glob("**/*.hwpx")):
+            for p in sorted((self.root / d).glob(f"**/*{ext}")):
                 if ".form." in p.name or (
                     d in filters and not re.search(filters[d], p.stem)
                 ):
@@ -47,7 +63,7 @@ class FormsService:
         dst = (
             self.out
             / "forms"
-            / (hashlib.sha256(src.read_bytes()).hexdigest() + ".hwpx")
+            / (hashlib.sha256(src.read_bytes()).hexdigest() + src.suffix.lower())
         )
         dst.parent.mkdir(parents=True, exist_ok=True)
         if not dst.exists():
@@ -72,12 +88,15 @@ class FormsService:
         name = safe_name(
             f"{state['case'].get('case_id', 'case')}_{Path(form_rel).stem}"
         )
-        filled = doc.save(folder / f"{name}.hwpx")
-        pdf = preview(filled, pdf=True)
+        filled = doc.save(folder / f"{name}{form_path.suffix.lower()}")
+        pdf = preview(filled, pdf=True)  # 결의 쪽 증빙 묶음 앞에 붙일 품의서 PDF
+        if not filled.with_suffix(".preview.html").exists():
+            preview(filled)
         report["files"] = {
-            "hwpx": self.out_url(filled),
+            "doc": self.out_url(filled),
             "pdf": self.out_url(pdf),
             "html": self.out_url(filled.with_suffix(".preview.html")),
+            "ext": filled.suffix,
         }
         (folder / f"{name}.report.json").write_text(
             json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8"
@@ -94,7 +113,7 @@ class FormsService:
             st["result"],
             {**state["case"], "title": title or state["case"].get("title")},
             state["selection"],
-            {"pdf": str(pdf), "hwpx": str(filled), "form": form_rel},
+            {"pdf": str(pdf), "doc": str(filled), "form": form_rel},
         )
         (folder / f"{name}.handoff.json").write_text(
             json.dumps(state["handoff"], ensure_ascii=False, indent=2), encoding="utf-8"

@@ -315,6 +315,7 @@ function bindVendor() {
       S.init.selection = await api('/api/select', { ids: [...S.picked], pick: S.chosen, reason: S.reason });
       invalidatePumuiOutput();
       say('vendor', fmt(S.ui.vendor.chosen, { vendor: S.init.selection.vendor, reason: S.init.selection.reason }));
+      go(3); return;  // 선정이 저장되면 바로 품의 정보로 넘어간다
     } catch (err) { say('vendor', err.message, true); $('#reason').setAttribute('aria-invalid', 'true'); }
     render(); if (S.status.vendor && S.status.vendor.error) $('#reason').focus();
   };
@@ -373,6 +374,8 @@ MODES.pumui = {
   },
   // 업체 선정 단계는 비교 결과를 받아 온 뒤 다시 그린다
   after: async (at, redraw) => {
+    // 품의서 단계: 양식이 하나로 고정되어 있으면 바로 골라 미리보기를 띄운다
+    if (at === 4 && !S.form && S.init.forms.length === 1) { S.form = S.init.forms[0].path; await previewPanel(S, pumuiPanel()); return; }
     if (at !== 2 || S.compare) return;
     try { await loadCompare(); } catch (e) { say('vendor', fmt(S.ui.error, { msg: e.message }), true); S.compare = { quotes: [], excluded: [], recommended: null, auto_reason: '' }; }
     redraw();

@@ -5,6 +5,7 @@ import { render } from './shell.js';
 function formPanel(st, o) {
   const t = o.t, r = st.result;
   const groups = {}; o.forms().forEach((f) => (groups[f.group] = groups[f.group] || []).push(f));
+  const fixed = o.forms().length === 1;  // 양식이 하나로 고정되어 있으면 고르는 칸·업로드 없이 바로 쓴다
   const list = Object.entries(groups).map(([g, fs]) => fs.map((f, i) => `<input type="radio" name="form" id="fm-${esc(g)}-${i}" value="${esc(f.path)}" ${st.form === f.path ? 'checked' : ''}>
       <label for="fm-${esc(g)}-${i}"><span>${esc(f.name)}</span><span class="small muted">${esc(g)}</span></label>`).join('')).join('');
   let doc, side = '';
@@ -14,7 +15,7 @@ function formPanel(st, o) {
     // 묶음마다: 제목과 개수, 무엇을 하면 되는지 한 줄(help), 항목(html이면 그대로), 바로 갈 곳(action)
     const ul = (title, arr, open = true, help = '', action = '', raw = false) => arr.length ? `<details ${open ? 'open' : ''}><summary>${esc(title)} <span class="count">${arr.length}</span></summary>${help ? `<p class="help">${esc(help)}</p>` : ''}<ul>${arr.map((x) => `<li>${raw ? x : esc(x)}</li>`).join('')}</ul>${action}</details>` : '';
     const left = (rep.leftover || []).map((x, i) => `<button type="button" class="linkish" data-left="${i}">${esc(fmt(t.leftover_item, { where: x.where, values: x.values.join(', ') }))}</button>`);
-    doc = `<div class="doc__head"><h2>${esc(t.result)}</h2><a class="key key--primary" href="${rep.files.hwpx}" download>${esc(t.download_hwpx)}</a><a class="key" href="${rep.files.html}?print" target="_blank" rel="noopener">${esc(t.print)}</a></div><p class="help">${esc(t.print_help)}</p>
+    doc = `<div class="doc__head"><h2>${esc(t.result)}</h2><a class="key key--primary" href="${rep.files.doc || rep.files.hwpx}" download>${esc((S.ui.download || {})[rep.files.ext] || t.download_hwpx)}</a><a class="key" href="${rep.files.html}?print" target="_blank" rel="noopener">${esc(t.print)}</a></div><p class="help">${esc(t.print_help)}</p>
       <iframe title="${esc(t.result_title)}" src="${rep.files.html}"></iframe>`;
     side = `${o.extra ? o.extra(r) : ''}<div class="report">${ul(t.leftover, left, true, t.leftover_help, '', true)}${ul(t.missing, rep.missing.map((m) => m.label), true, t.missing_help, `<a class="key" href="${o.missingHref}">${esc(t.missing_action)}</a>`)}${ul(t.unplaced, rep.unplaced.map((u) => (u.value ? `${u.what}: ${u.value}` : `${u.what}, ${u.why}`)), true, t.unplaced_help)}${ul(t.unknown, rep.unknown_labels, true, t.unknown_help)}${ul(t.notes, rep.notes, false)}</div>`;
   } else if (r && !r.ok) {
@@ -27,9 +28,9 @@ function formPanel(st, o) {
     doc = `<div class="doc__empty">${esc(t.pick_first)}</div>`;
   }
   return `${head(t)}<div class="split"><div class="stack">
-      <fieldset class="seg" style="display:block"><legend>${esc(t.legend)}</legend><div class="formlist">${list}</div></fieldset>
+      ${fixed ? `<p class="help">${esc(fmt(t.fixed_form, { name: o.forms()[0].name }))}</p>` : `<fieldset class="seg" style="display:block"><legend>${esc(t.legend)}</legend><div class="formlist">${list}</div></fieldset>
       <label class="key key--file">${esc(t.upload)}<input type="file" id="fupload" accept=".hwpx"></label>
-      <p class="help">${esc(t.upload_hint)}</p>
+      <p class="help">${esc(t.upload_hint)}</p>`}
       ${status(o.statusKey)}
       <button type="button" class="key key--primary" id="fill" ${st.form ? '' : 'disabled aria-describedby="fill-why"'} ${st.busy.fill ? 'aria-busy="true"' : ''}>${esc(st.busy.fill ? t.filling : t.fill)}</button>
       ${st.form ? '' : `<p class="help" id="fill-why">${esc(t.fill_disabled)}</p>`}
@@ -49,7 +50,8 @@ function bindPanel(st, o) {
       [{ text: fmt(t.leftover_what, { kind: x.kind, values: x.values.join(', ') }) }, { text: x.action }, { text: t.leftover_note, muted: true }]);
   }));
   $$('input[name="form"]').forEach((el) => (el.onchange = () => { st.form = el.value; S.status[o.statusKey] = null; previewPanel(st, o); }));
-  $('#fupload').onchange = async (e) => {
+  const up = $('#fupload');
+  if (up) up.onchange = async (e) => {
     const f = e.target.files[0]; if (!f) return;
     try { const r = await api('/api/upload', { name: f.name, data: await readB64(f) }); o.setForms(r); st.form = r.path; previewPanel(st, o); }
     catch (err) { say(o.statusKey, fmt(S.ui.error, { msg: err.message }), true); render(); }

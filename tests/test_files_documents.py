@@ -59,6 +59,7 @@ def test_concurrent_pdf_conversions_have_separate_profiles(tmp_path, monkeypatch
         Path(target).write_bytes(b"pdf")
 
     monkeypatch.setattr("app.adapters.pdf.subprocess.run", run)
+    (tmp_path / "input.html").write_text("<p>x</p>", encoding="utf-8")  # 변환은 HTML을 임시 폴더로 복사해 찍는다
     monkeypatch.setattr(
         "app.adapters.pdf.os.environ.get",
         lambda key, default=None: str(tmp_path) if key == "PDF_BROWSER" else default,
@@ -111,7 +112,7 @@ def test_real_hwpx_fill_handoff_and_restore_links(app, make_app, monkeypatch):
     form = "forms/web/cne/품의서양식.hwpx"
     report = app.do_fill(form, "0:q01")
     assert report["ok"] and report["handoff"]["has_pdf"]
-    filled = app.out / report["report"]["files"]["hwpx"].removeprefix("/out/")
+    filled = app.out / report["report"]["files"]["doc"].removeprefix("/out/")
     doc = Document(filled)
     assert doc.sections
     text = "".join("".join(section.itertext()) for section in doc.sections.values())

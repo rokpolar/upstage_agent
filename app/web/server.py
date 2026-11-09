@@ -34,9 +34,14 @@ class Handler(BaseHTTPRequestHandler):
         if not p.is_file():
             raise FileNotFoundError("not found")
         ctype = (
-            {
+            {  # Windows는 확장자별 형식을 레지스트리에서 읽어 .js를 text/plain으로 줄 때가 있다(모듈 스크립트가 안 뜸)
                 ".hwpx": "application/hwp+zip",
                 ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                ".js": "text/javascript",
+                ".mjs": "text/javascript",
+                ".css": "text/css",
+                ".html": "text/html",
+                ".json": "application/json",
             }.get(p.suffix.lower())
             or mimetypes.guess_type(p.name)[0]
             or "application/octet-stream"

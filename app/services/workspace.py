@@ -92,8 +92,9 @@ class Application(QuotesService, FormsService, ExpensesService):
             raise ValueError("양식 경로가 필요합니다.")
         path = (self.root / relative).resolve()
         dirs = set(self.cfg["form_dirs"] + self.cfg["gyeolui_form_dirs"])
+        exts = {self.cfg.get("form_ext", ".hwpx"), self.cfg.get("gyeolui_form_ext", ".hwpx"), ".hwpx"}
         if (
-            path.suffix.lower() != ".hwpx"
+            path.suffix.lower() not in exts
             or not any(inside(path, self.root / d) for d in dirs)
             or not path.is_file()
         ):
