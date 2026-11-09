@@ -5,6 +5,8 @@
 !requirements.txt
 !tools/
 !tools/**
+!app/
+!app/**
 !config/
 !config/**
 !ui/

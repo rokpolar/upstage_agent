@@ -123,9 +123,9 @@ Studio 호출은 [Agent API](https://console.upstage.ai/docs/studio-and-agents/a
 
 ```
 upstage_agent/
-├── tools/           서버, Studio API 호출, 검산·질문, 업체 선정, 양식 채우기
-│   └── gyeolui.py   결의: 결과 읽기, 대조·질문, 결의서 입력값
-├── ui/              화면 (app.js 품의·공용, gyeolui.js 결의)
+├── app/             실제 구현 (domain, services, adapters, web, cli)
+├── tools/           기존 명령을 유지하는 실행 진입점
+├── ui/              ES modules (app.js 시작, pumui.js 품의, gyeolui.js 결의)
 ├── config/          규칙, 화면·질문 문구, 양식 칸 사전
 ├── forms/           기관 양식 (forms/expense: 기본 지출결의서)
 ├── workflow/        Studio 품의 워크플로 설정
@@ -136,6 +136,10 @@ upstage_agent/
 ```
 
 올린 파일과 결과는 `data_upload/`, `results_upload/`, `results_gyeolui_upload/`, `out/`에 쌓이며 GitHub에는 올라가지 않습니다.
+
+구매 정보, 검토 답변·보류, 업체 선정, 결의 정보, 품의 인계 값과 생성 결과는 `out/state.sqlite3`에 저장되어 서버를 다시 켜도 복원됩니다. 처음 실행할 때 기존 결과 JSON도 읽습니다. 단일 공유 작업 공간이며, 실행 중이던 Studio 작업은 서버 재시작 후 이어서 조회하지 않습니다. 서버가 켜진 상태에서 브라우저만 새로고침하면 결의 진행 표시가 이어집니다.
+
+상태 DB가 손상되면 자동으로 지우지 않고 시작을 중단합니다. 백업할 때는 서버를 끄고 `out/`과 업로드·결과 폴더를 함께 보관하세요.
 
 ---
 
@@ -148,11 +152,25 @@ upstage_agent/
 | 서버 | Python 표준 라이브러리 HTTP 서버 |
 | 양식 | HWPX 직접 편집 (lxml), PDF 미리보기 (Chrome/Chromium) |
 | 화면 | HTML · CSS · JavaScript (프레임워크 없음) |
+| 작업 저장 | SQLite (Python 표준 라이브러리) |
 | 배포 | Docker Compose (Chromium·한글 글꼴 포함) |
 
 ---
 
 ## 더 보기
+
+개발 환경과 검증:
+
+```bash
+python3 -m venv .venv
+.venv/bin/python -m pip install -r requirements-dev.txt
+.venv/bin/python -m pytest -q
+.venv/bin/ruff check app tests tools
+```
+
+`run.sh`와 `run.bat`은 `.venv`가 있으면 해당 Python을 사용합니다. 테스트는 임시 작업 폴더와 모의 Studio 응답을 사용하며 실제 문서를 API로 제출하지 않습니다. HTTP 테스트에는 로컬 임시 포트 사용 권한이 필요합니다.
+
+화면 모듈 테스트는 Node.js가 있으면 함께 실행합니다.
 
 - [품의 설계](docs/DESIGN.md) — 검산 규칙, 질문 방식, 양식 채우기 원리, 시험 결과
 - [결의 설계](docs/GYEOLUI.md) — 결의 결과 읽기, 대조 규칙, 품의 연결, 결의서 채우기

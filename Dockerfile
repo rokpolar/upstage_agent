@@ -18,6 +18,7 @@ COPY requirements.txt ./
 RUN python -m pip install --no-cache-dir -r requirements.txt
 
 COPY tools/ ./tools/
+COPY app/ ./app/
 COPY config/ ./config/
 COPY ui/ ./ui/
 COPY forms/ ./forms/

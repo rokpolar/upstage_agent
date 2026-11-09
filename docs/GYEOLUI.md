@@ -1,5 +1,7 @@
 # 결의 설계 기록
 
+현재 업무 규칙은 `app/domain/gyeolui.py`, Studio 결과·진행 해석은 `app/adapters/studio_gyeolui.py`, 업무 흐름은 `app/services/expenses.py`에 있다. 기존 `tools/` 명령은 유지한다. 저장한 결의 정보와 답변은 SQLite에서 복원하며 화면의 `info_saved`로 단계 이동을 판단한다.
+
 품의 Agent의 원칙을 그대로 가져와 결의(지출결의서)로 넓혔다. **모델은 읽기만, 계산과 규칙은 코드가, 애매한 건 사람이.**
 새로 만든 것보다 품의 코드를 다시 쓴 것이 많다.
 

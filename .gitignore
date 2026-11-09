@@ -3,6 +3,11 @@
 
 # 실행하면 생기는 파일
 __pycache__/
+.venv/
+.pytest_cache/
+.ruff_cache/
+.playwright-cli/
+output/playwright/
 *.pyc
 out/
 score_report.csv

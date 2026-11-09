@@ -1,7 +1,13 @@
+import { S, MODES } from './state.js';
+import { $, $$, won, fmt, esc, ICON, status, say, head, popup, setHTML } from './dom.js';
+import { api, readB64 } from './api.js';
+import { modeOf, keys, current, go } from './navigation.js';
+import { render } from './shell.js';
+import { stageMark, stageList } from './progress.js';
 // 결의서 작업 화면: 증빙 선택 → 검증 → 결의 정보 → 결의서 작성. app.js의 도우미(S, $, api, head, popup, formPanel…)를 그대로 쓴다.
 // 문구는 /api/init 의 ui.gyeolui(config/ui.json). 단계 주소는 #g-docs, #g-review, #g-info, #g-form.
 S.g = { set: 0, sel: null, files: [], withPumui: true, link: true, form: null, preview: null, previewState: 'idle',
-  result: null, busy: {}, saved: new Set(), timer: null, watch: [], view: null };
+  result: null, busy: {}, timer: null, watch: [], view: null };
 
 const GT = () => S.ui.gyeolui;
 const gItems = () => S.init.gyeolui.items;
@@ -40,13 +46,11 @@ function gNowStage(it) {
   const done = new Set((it.progress || {}).done || []);
   return GI().stages.find(([k]) => !done.has(k)) || GI().stages[GI().stages.length - 1];
 }
-const gMark = (st) => (st === 'done' ? ICON.ok : st === 'fail' ? ICON.warn : st === 'now' ? '<span class="spin keep-motion" aria-hidden="true"></span>' : '<span class="dot" aria-hidden="true"></span>');
+const gMark = stageMark;
 function gSteps(it) {
   const done = new Set(it.status === 'done' ? GI().stages.map(([k]) => k) : (it.progress || {}).done || []), now = gNowStage(it)[0];
-  return GI().stages.map(([key, label]) => {
-    const st = done.has(key) ? 'done' : key === now ? (it.status === 'error' ? 'fail' : it.status === 'running' ? 'now' : 'wait') : 'wait';
-    return `<li class="is-${st}">${gMark(st)}<span>${esc(label)}</span></li>`;
-  }).join('');
+  return stageList(GI().stages, (key) => done.has(key) ? 'done'
+    : key === now ? (it.status === 'error' ? 'fail' : it.status === 'running' ? 'now' : 'wait') : 'wait');
 }
 function gFound(it) {
   const t = GI(), f = (it.progress || {}).found || {};
@@ -198,7 +202,11 @@ function bindGDocs() {
   $('#next').onclick = () => go(1);
 }
 function gPick(id) {
-  if (S.g.sel !== id) { S.g.sel = id; S.g.result = null; }
+  if (S.g.sel !== id) {
+    S.g.sel = id;
+    const it = gById(id);
+    S.g.result = it?.fill ? {ok: true, report: {files: it.fill, missing: [], filled: [], notes: []}} : null;
+  }
 }
 
 // ---------------------------------------------------------------- 2. 검증
@@ -270,30 +278,70 @@ function bindGInfo() {
       else { const v = $(`#ginfo input[name="${k}"]`).value.trim(); if (v) info[k] = v; }
     });
     try {
-      gPut(await api('/api/gyeolui/info', { id: S.g.sel, info })); S.g.saved.add(S.g.sel); S.g.result = null;
+      gPut(await api('/api/gyeolui/info', { id: S.g.sel, info })); S.g.result = null;
       say('ginfo', GT().info.saved); go(3);
     } catch (err) { say('ginfo', fmt(S.ui.error, { msg: err.message }), true); render(); }
   };
 }
 
-// ---------------------------------------------------------------- 4. 결의서 작성 (양식 판은 품의서와 같은 것)
-const gPanel = () => ({
-  t: GT().form, forms: () => S.init.gyeolui.forms, statusKey: 'gform', missingHref: `#${GT().step_keys[2]}`, setForms: setAllForms,
-  fill: () => api('/api/gyeolui/fill', { id: S.g.sel, form: S.g.form }),
-});
+// ---------------------------------------------------------------- 4. 결의서 작성 (지출결의서 DOCX 양식 고정)
+// 왼쪽: 고정 양식, 작성 버튼, 작성 내역·입력값 없음. 오른쪽: 미리보기와 DOCX 다운로드.
+function viewGForm() {
+  const t = GT().form, r = S.g.result, ul = (title, arr, open, help = '', action = '') => (arr.length
+    ? `<details ${open ? 'open' : ''}><summary>${esc(title)} <span class="count">${arr.length}</span></summary>${help ? `<p class="help">${esc(help)}</p>` : ''}<ul>${arr.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>${action}</details>` : '');
+  let doc, side = '';
+  if (r && r.ok) {
+    const rep = r.report, f = rep.files;
+    doc = `<div class="doc__head"><h2>${esc(t.result)}</h2><a class="key key--primary" href="${f.docx}" download="${esc(f.name || '')}">${esc(t.download_docx)}</a></div>
+      <iframe title="${esc(t.result_title)}" src="${f.html}"></iframe><p class="help">${esc(t.preview_note)}</p>`;
+    side = `<div class="report">${ul(t.missing, rep.missing.map((m) => m.label), true, t.missing_help, `<a class="key" href="#${GT().step_keys[2]}">${esc(t.missing_action)}</a>`)}
+      ${ul(t.filled, (rep.filled || []).map((x) => `${x.label}: ${x.value}`), !rep.missing.length)}${ul(t.notes, rep.notes || [], false)}</div>`;
+  } else if (r && !r.ok) {
+    doc = `<div class="doc__head"><h2>${esc(t.blocked)}</h2></div><div class="report"><ul>${r.blocked.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></div>`;
+  } else if (S.g.preview) {
+    doc = `<div class="doc__head"><h2>${esc(t.preview_title)}</h2></div><iframe title="${esc(t.preview_title)}" src="${S.g.preview}"></iframe>`;
+  } else {
+    doc = `<div class="doc__empty" ${S.g.previewTried ? '' : 'aria-busy="true"'}>${esc(S.g.previewTried ? GT().form.preview_title : S.ui.loading)}</div>`;
+  }
+  const busy = S.g.busy.fill;
+  return `${head(t)}<div class="split"><div class="stack">
+      <div class="field"><span class="label">${esc(t.template_label)}</span>
+        <p class="cut small">${esc(fmt(t.template_fixed, { name: S.init.gyeolui.template || '' }))}</p>
+        <p class="help">${esc(t.template_help)}</p></div>
+      ${status('gform')}
+      <button type="button" class="key key--primary" id="gfill" ${busy ? 'aria-busy="true"' : ''}>${esc(busy ? t.filling : r && r.ok ? t.refill : t.fill)}</button>
+      ${side}
+    </div><section class="cut doc" aria-live="polite">${doc}</section></div>`;
+}
+function bindGForm() {
+  $('#gfill').onclick = async () => {
+    S.g.busy.fill = true; render();
+    try {
+      S.g.result = await api('/api/gyeolui/fill', { id: S.g.sel });
+      if (S.g.result.ok) { const it = gSel(); if (it) it.fill = S.g.result.report.files; }
+      S.status.gform = null;
+    } catch (err) { say('gform', fmt(S.ui.error, { msg: err.message }), true); }
+    S.g.busy.fill = false; render();
+  };
+}
 
 MODES.gyeolui = {
   keys: () => GT().step_keys, steps: () => GT().steps, wordmark: () => GT().wordmark, title: () => GT().title,
-  open: (i) => [true, gDone(gSel()), gClear(gSel()), gClear(gSel()) && S.g.saved.has(S.g.sel)][i],
+  open: (i) => [true, gDone(gSel()), gClear(gSel()), gClear(gSel()) && !!gSel()?.info_saved][i],
   views: [[viewGDocs, bindGDocs], [viewGReview, bindGReview], [viewGInfo, bindGInfo],
-    [() => formPanel(S.g, gPanel()), () => bindPanel(S.g, gPanel())]],
-  // 결의서 단계에 처음 오면 기본 지출결의서 양식을 골라 미리보기를 띄운다
+    [viewGForm, bindGForm]],
+  // 결의서 단계에 처음 오면 고정 DOCX 양식의 빈 미리보기를 받아 둔다
   after: async (at) => {
-    const d = S.init.gyeolui.default_form;
-    if (at === 3 && !S.g.form && S.init.gyeolui.forms.some((f) => f.path === d)) { S.g.form = d; await previewPanel(S.g, gPanel()); }
+    if (at !== 3 || S.g.preview || S.g.previewTried) return;
+    S.g.previewTried = true;  // 실패해도 다시 그릴 때마다 되풀이하지 않는다
+    try { S.g.preview = (await api('/api/gyeolui/template_preview')).url; } catch (e) { say('gform', fmt(S.ui.error, { msg: e.message }), true); }
+    render();
   },
   init: () => {
     const gi = S.init.gyeolui;
+    S.g.sel = null; S.g.result = null;
+    const saved = gi.items.find((it) => it.status === 'done' && it.info_saved);
+    if (saved) gPick(saved.id);
     S.g.set = Math.max(0, gi.sets.findIndex((_, i) => gi.items.some((x) => x.set === i)));
     S.g.watch = gi.items.filter((x) => x.status === 'running').map((x) => x.id);  // 새로고침해도 실행 중인 건의 진행을 보여 준다
     gPoll();

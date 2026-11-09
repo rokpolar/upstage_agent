@@ -2,6 +2,8 @@
 
 > 처음 README에 쓰던 상세 기록이다. 빠른 시작과 전체 소개는 저장소의 [README](../README.md)를 본다.
 
+현재 구현은 `app/domain`(업무 규칙), `app/services`(업무 흐름), `app/adapters`(Studio·파일·문서·SQLite), `app/web`(HTTP), `app/cli`(명령줄)로 분리되어 있다. 아래 `tools/` 명령은 호환 진입점이다. 화면은 ES modules이며 저장한 작업은 `out/state.sqlite3`에서 복원한다.
+
 견적서 1장 → 지출품의서 초안 → 승인 → 결의 agent로 인계.
 품의서 칸 구성은 `[서식 9] 지출품의서`를 따른다. 서식에 "업체별, 지출건별로 따로 작성"이라고 되어 있어서 **품의서 1건 = 업체 1곳의 견적서 1장**으로 정했다(업체 선정은 담당자가 한다).
 
@@ -68,7 +70,7 @@ python tools/render_pumui.py out/q04_resolved.json examples/case_q01.json --appr
 
 ### 화면 (`tools/server.py` + `ui/`)
 ```bash
-python tools/server.py      # http://127.0.0.1:8765
+python tools/server.py      # http://127.0.0.1:8766
 ```
 견적 고르기 → 검토 질문에 답하기 → 업체 고르기(추천·사유) → 구매 정보 → 양식 고르고 채우기 → `.hwpx`·PDF 받기.
 **견적서 올리기**: 화면에서 PDF를 올리면 Upstage Studio 품의 Agent(Document Parse → Information Extract)를 API로 불러 그 자리에서 읽고 목록에 더한다(`data_upload/` → `results_upload/`). `.env`에 `UPSTAGE_API_KEY`가 없으면 올리기 버튼 대신 안내가 뜨고, 미리 처리해 둔 견적만 쓸 수 있다.
