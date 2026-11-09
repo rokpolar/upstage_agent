@@ -12,7 +12,7 @@
    cd pumui-agent
    pip install -r requirements.txt
    ```
-3. **키 넣기(선택):** `.env.example`을 `.env`로 복사하고 `UPSTAGE_API_KEY`에 본인 키를 넣는다.
+3. **키 넣기(선택):** `.env.example`을 `.env`로 복사하고 `UPSTAGE_API_KEY`에 **팀 조직(Default Organization, 소유자 서수빈)** 에서 만든 본인 키를 넣는다. 개인 조직 키로는 팀 워크플로를 부를 수 없다.
    - 키가 없어도 저장된 팀 견적서 예시 60건으로 품의서 작성까지 해 볼 수 있다. 새 견적서 올리기만 안 된다.
    - `.env`는 GitHub에 올리지 않는다(`.gitignore`에 있음).
 4. **실행:**
@@ -38,7 +38,7 @@
 ```
 
 - Studio 워크플로 설정은 `workflow/품의 Agent (노드).json`이 원본이다. Studio 화면의 "워크플로우 설정 가져오기"로 넣는다.
-- 앱이 부르는 워크플로는 `config/rules.json`의 `runtime.studio.agent_id`다. 팀 조직 워크플로로 바꾸려면 이 값과 `.env`의 키를 팀 조직 것으로 바꾼다.
+- 앱이 부르는 워크플로는 팀 조직 Studio의 "품의 Agent (노드)"(`config/rules.json` `runtime.studio.agent_id` = `agt_TcUDLvUvQgK3weF26ieC6B`)다. 워크플로를 고치면 Studio에서 "워크플로우 설정 내보내기"로 받은 JSON을 `workflow/`에 덮어써 저장소와 맞춘다.
 - 목록의 팀 견적서 예시(`data_team/` → `results_team/`)는 미리 돌려 둔 결과라 Studio를 다시 부르지 않는다.
 - 규칙·문구·양식 칸 이름은 모두 `config/`에 있다(코드에 하드코딩하지 않는다).
 
