@@ -34,7 +34,7 @@ from grouping import group as group_quotes
 from harness import ACK, HOLD, coerce, normalize, recheck, resolve, source_text
 from hwpx_preview import preview
 from score import unwrap
-from select_vendor import finalize, recommend
+from select_vendor import cross_checks, finalize, recommend
 
 UI = ROOT / "ui"
 CFG = rules()["ui"]
@@ -68,7 +68,33 @@ def studio_missing(kind="pumui"):
     return settings(kind)[1]
 
 
+class NotQuoteError(ValueError):
+    def __init__(self, message, category):
+        super().__init__(message)
+        self.category = category
+
+
 PROGRESS = {}  # 올리는 중인 견적서: token → {"done": [...], "found": {...}, "finished": bool}
+
+
+def split_pages(name, data_b64):
+    """여러 쪽 PDF를 쪽마다 한 파일로 나눈다(한 파일에 업체 견적서 여러 장이 들어오는 경우). 한 쪽이면 그대로."""
+    raw = base64.b64decode(data_b64)
+    if not CFG.get("split_pages") or Path(name).suffix.lower() != ".pdf":
+        return [{"name": name, "data": data_b64}]
+    import io
+    from pypdf import PdfReader, PdfWriter
+    reader = PdfReader(io.BytesIO(raw))
+    if len(reader.pages) < 2:
+        return [{"name": name, "data": data_b64}]
+    out = []
+    for n, page in enumerate(reader.pages, 1):
+        w = PdfWriter()
+        w.add_page(page)
+        buf = io.BytesIO()
+        w.write(buf)
+        out.append({"name": f"{Path(name).stem}_p{n}.pdf", "page": n, "data": base64.b64encode(buf.getvalue()).decode()})
+    return out
 
 
 def studio_quote(name, data_b64, token=None):
@@ -92,7 +118,7 @@ def studio_quote(name, data_b64, token=None):
         _, job_id = run_file(src, ROOT / res_dir, progress)
     except NotQuote as e:  # 견적서가 아니면 올린 파일을 남기지 않는다
         src.unlink(missing_ok=True)
-        raise ValueError(msg["not_quote"].format(category=e.category)) from None
+        raise NotQuoteError(msg["not_quote"].format(category=e.category), e.category) from None
     except StudioError as e:  # 읽지 못했으면 올린 파일도 남기지 않고, 무엇을 확인할지 알려 준다
         src.unlink(missing_ok=True)
         print(f"Studio 오류: {e}", file=sys.stderr)
@@ -100,7 +126,14 @@ def studio_quote(name, data_b64, token=None):
     except Exception:
         src.unlink(missing_ok=True)
         raise
-    return add_quote(0, ROOT / res_dir / f"{src.stem}.json", src_dir), job_id
+    res = ROOT / res_dir / f"{src.stem}.json"
+    r = unwrap(json.loads(res.read_text(encoding="utf-8")))
+    F = fields()
+    if not (r.get(F["items"]) or r.get(F["total"])):  # 품목도 금액도 없으면 표지·안내문 같은 쪽이다
+        res.unlink(missing_ok=True)
+        src.unlink(missing_ok=True)
+        raise NotQuoteError(msg["not_quote_empty"], msg["empty_category"])
+    return add_quote(0, res, src_dir), job_id
 
 
 def text_of(q):
@@ -146,7 +179,8 @@ def answer(qid, key, value, who):
 
 def quote_for_select(qid):
     s = summary(qid)
-    return {"file": qid, "vendor": s["vendor"], "total": s["total"] or 0, "quote_date": s["quote_date"] or "",
+    rep = STATE["quotes"][qid]["state"]["result"].get(fields()["vendor_representative"]) or ""
+    return {"file": qid, "vendor": s["vendor"], "rep": rep, "total": s["total"] or 0, "quote_date": s["quote_date"] or "",
             "issues": [x["kind"] for x in s["questions"]], "issue_messages": [x["message"] for x in s["questions"]]}
 
 
@@ -189,6 +223,7 @@ def do_fill(form_rel, qid):
     folder.mkdir(parents=True, exist_ok=True)
     name = f"{STATE['case'].get('case_id', 'case')}_{Path(form_rel).stem}"
     filled = doc.save(folder / f"{name}.hwpx")
+    # PDF는 결의 쪽 증빙 묶음에 붙이려고 만든다. 화면에서는 미리보기를 브라우저로 인쇄·PDF 저장한다
     pdf = preview(filled, pdf=True)
     report["files"] = {"hwpx": out_url(filled), "pdf": out_url(pdf), "html": out_url(filled.with_suffix(".preview.html"))}
     (folder / f"{name}.report.json").write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -460,9 +495,13 @@ class Handler(BaseHTTPRequestHandler):
         u = urlparse(self.path)
         try:
             b = self.body()
+            if u.path == "/api/quotes/split":
+                return self.send(200, {"pages": split_pages(b["name"], b["data"])})
             if u.path == "/api/quotes/upload":
                 try:
                     qid, job_id = studio_quote(b["name"], b["data"], b.get("token"))
+                except NotQuoteError as e:  # 견적서가 아닌 쪽(팩스 표지 등)은 실패가 아니라 건너뛴다
+                    return self.send(200, {"skipped": str(e), "category": e.category})
                 except (ValueError, RuntimeError) as e:
                     return self.send(400, {"error": str(e)})
                 finally:
@@ -480,7 +519,7 @@ class Handler(BaseHTTPRequestHandler):
                 quotes = [quote_for_select(i) for i in b["ids"]]
                 rec, auto, order, excluded = recommend(quotes)
                 return self.send(200, {"quotes": quotes, "recommended": rec["file"] if rec else None, "auto_reason": auto,
-                                       "excluded": [q["file"] for q in excluded]})
+                                       "excluded": [q["file"] for q in excluded], "warnings": cross_checks(quotes)})
             if u.path == "/api/select":
                 quotes = [quote_for_select(i) for i in b["ids"]]
                 rec, auto, _, _ = recommend(quotes)

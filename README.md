@@ -27,7 +27,7 @@
 | 업체 선정 | 품의서 작성 |
 |---|---|
 | ![업체 선정](docs/images/3_vendor.jpg) | ![품의서 작성](docs/images/4_form.jpg) |
-| 유효기간 안의 최저가 업체를 추천하고 선정 사유를 씁니다. | 기관 양식의 칸을 찾아 채웁니다. |
+| 유효기간 안의 최저가 업체를 추천하고 선정 사유를 씁니다. | 기관 양식의 칸을 찾아 채웁니다. HWPX로 받거나, 미리보기에서 바로 인쇄·PDF 저장을 합니다. |
 
 ### 결의 — 품의서 + 증빙 → 지출결의서
 
@@ -117,6 +117,13 @@ Studio 호출은 [Agent API](https://console.upstage.ai/docs/studio-and-agents/a
 
 설계 원칙: **모델은 읽기만, 계산과 규칙은 코드가, 애매한 건 사람이.** 규칙·문구·양식 칸 이름은 모두 [`config/`](config/)에 있고 코드에 하드코딩하지 않습니다.
 
+품의 쪽에서 코드가 더 하는 일:
+
+- 한 PDF에 업체 견적서 여러 장이 들어 있으면 쪽마다 나눠 읽고, 팩스 표지·안내문처럼 견적 내용이 없는 쪽은 건너뜁니다.
+- 대표자가 같은 업체(들러리 견적 의심)나 최저가가 같은 업체가 있으면 경고하고 사람이 고르게 합니다.
+- 같은 물품 묶기: Solar가 견적서마다 품목 분류를 쓰고, 코드가 품목 이름 글자 유사도와 합쳐 묶습니다. 업체 비교는 한 묶음 안에서만 합니다. 채점: `python tools/grouping.py results_team --check`
+- 품의서 품목 표는 양식 머리줄 높이에 맞추고, 금액·수량이 칸에서 줄바꿈되지 않게 글자 모양을 고릅니다.
+
 ---
 
 ## 폴더 구조
@@ -146,7 +153,7 @@ upstage_agent/
 | 문서 인식·추출 | Upstage Studio (Document Parse, Classify, Information Extract) |
 | 판단·문장 | Solar Pro 4 (Studio Instruct) |
 | 서버 | Python 표준 라이브러리 HTTP 서버 |
-| 양식 | HWPX 직접 편집 (lxml), PDF 미리보기 (Chrome/Chromium) |
+| 양식 | HWPX 직접 편집 (lxml), 양식 여백·글꼴대로 그린 미리보기·PDF (Chrome/Chromium, 화면에서는 브라우저 인쇄로 PDF 저장) |
 | 화면 | HTML · CSS · JavaScript (프레임워크 없음) |
 | 배포 | Docker Compose (Chromium·한글 글꼴 포함) |
 
