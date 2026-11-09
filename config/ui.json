@@ -251,7 +251,7 @@
   },
   "form": {
     "heading": "품의서 작성",
-    "lead": "기관 양식에 채워 Word로 저장합니다.",
+    "lead": "기관 양식에 채워 PDF로 만듭니다.",
     "legend": "양식",
     "upload": "양식 업로드",
     "pick_first": "양식을 선택하면 미리보기가 표시됩니다.",
@@ -261,7 +261,8 @@
     "blocked": "검토에서 처리하지 않은 항목이 있습니다.",
     "result": "작성 완료",
     "download_hwpx": "HWPX 다운로드",
-    "fixed_form": "양식: {name}. 작성하면 Word 파일로 저장됩니다.",
+    "fixed_form": "양식: {name}. 작성하면 PDF와 Word 파일로 저장됩니다.",
+    "pdf_help": "PDF는 양식 모양 그대로 만든 제출용이고, Word는 내용을 고칠 때 씁니다.",
     "print": "인쇄·PDF 저장",
     "print_help": "인쇄 창에서 프린터나 'PDF로 저장'을 고르세요. 한글에서 HWPX를 열어 인쇄해도 됩니다.",
     "unplaced": "양식에 해당 칸 없음",
