@@ -1,0 +1,21 @@
+# 실행에 필요한 코드·설정·양식만 빌드 컨텍스트에 넣는다.
+# .env, 올린 파일과 결과, out/, .git, .venv, 팀 예시 데이터는 제외된다.
+**
+!Dockerfile
+!requirements.txt
+!tools/
+!tools/**
+!config/
+!config/**
+!ui/
+!ui/**
+!forms/
+!forms/**
+!templates/
+!templates/**
+!examples/
+!examples/**
+forms/uploads/
+**/__pycache__/
+**/*.pyc
+**/.DS_Store

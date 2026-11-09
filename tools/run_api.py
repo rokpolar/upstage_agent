@@ -1,9 +1,13 @@
-"""Studio 품의 Agent를 Upstage API로 실행해 results/에 저장한다 (브라우저 없이).
+"""Studio 품의·결의 워크플로를 Upstage API로 실행해 결과 JSON으로 저장한다 (브라우저 없이).
 
     python tools/run_api.py samples              # 폴더 안 문서 전부
     python tools/run_api.py samples/q01.pdf      # 문서 1개
     python tools/run_api.py samples --score      # 실행 후 answers/와 채점(코드 검산 포함)
     python tools/run_api.py data_team/견적서예시 --out results_team --skip-existing   # 결과 없는 것만, 여러 건 동시에
+    python tools/run_api.py data_team/결의묶음예시 --kind gyeolui --out examples/gyeolui   # 결의 워크플로
+
+워크플로 설정은 rules.json runtime에 있다: 품의 = runtime.studio, 결의 = runtime.gyeolui_studio.
+결의 결과(단계별 원본)는 tools/gyeolui.py from_steps가 읽어 {request, receipts, template, studio}로 저장한다.
 
 노드 워크플로(rules.json runtime.studio)면 단계별 결과를 받아 추출 JSON에 "studio" 칸을 붙인다:
   {"category": 분류, "review": 견적 검토, "decision": 후속 처리 판정, "branch": 분기 노드 이름, "note": 분기 노드 결과}
@@ -47,26 +51,42 @@ def load_env():
     return env
 
 
-def settings():
-    """(.env, rules.json)에서 API 주소·키·Agent ID·Config ID를 읽는다. 빠진 값 이름 목록도 돌려준다."""
+PROFILES = {"pumui": "studio", "gyeolui": "gyeolui_studio"}  # 워크플로 종류 → rules.json runtime 칸
+DEFAULT_ENV = {"key": "UPSTAGE_API_KEY", "agent_id": "AGENT_ID", "config_id": "CONFIG_ID"}
+
+
+def profile(kind="pumui"):
+    return rules()["runtime"].get(PROFILES[kind]) or {}
+
+
+def settings(kind="pumui"):
+    """(.env, rules.json)에서 API 주소·키·Agent ID·Config ID를 읽는다. 빠진 값 이름 목록도 돌려준다.
+
+    품의(kind=pumui): UPSTAGE_API_KEY, AGENT_ID, CONFIG_ID
+    결의(kind=gyeolui): GYEOLUI_API_KEY(비면 UPSTAGE_API_KEY), GYEOLUI_AGENT_ID, GYEOLUI_CONFIG_ID
+    둘 다 rules.json에 agent_id가 있으면 그것을 먼저 쓴다.
+    """
     global BASE
     env = load_env()
     BASE = env.get("UPSTAGE_BASE_URL") or rules()["runtime"]["api_base_url"]
-    st = rules()["runtime"].get("studio") or {}
+    st = profile(kind)
+    names = {**DEFAULT_ENV, **(st.get("env") or {})}
+    key = env.get(names["key"]) or env.get(DEFAULT_ENV["key"])
     if st.get("agent_id"):  # 노드 워크플로가 정해져 있으면 그것을 쓴다
-        s = {"key": env.get("UPSTAGE_API_KEY"), "agent_id": st["agent_id"], "config_id": st.get("config_id")}
+        s = {"key": key, "agent_id": st["agent_id"], "config_id": st.get("config_id")}
     else:
-        s = {"key": env.get("UPSTAGE_API_KEY"), "agent_id": env.get("AGENT_ID"), "config_id": env.get("CONFIG_ID", "1")}
-    missing = [n for n, k in (("UPSTAGE_API_KEY", "key"), ("AGENT_ID", "agent_id")) if not s[k]]
+        s = {"key": key, "agent_id": env.get(names["agent_id"]), "config_id": env.get(names["config_id"], "1")}
+    missing = [n for n, k in ((DEFAULT_ENV["key"], "key"), (names["agent_id"], "agent_id")) if not s[k]]
     return s, missing
 
 
-def run_file(path, out_dir):
-    """견적서 하나를 Studio 품의 Agent로 돌려 out_dir/<이름>.json에 저장하고 (결과, job_id)를 돌려준다."""
-    s, missing = settings()
+def run_file(path, out_dir, kind="pumui", on_job=None):
+    """문서 하나를 Studio 워크플로(kind)로 돌려 out_dir/<이름>.json에 저장하고 (결과, job_id)를 돌려준다.
+    on_job(job_id)는 실행이 접수되면 한 번 불린다(화면에 진행 상황을 보여 줄 때)."""
+    s, missing = settings(kind)
     if missing:
         raise RuntimeError(f"{ROOT / '.env'}에 {', '.join(missing)} 값이 없어요.")
-    result, job_id = run_one(Path(path), s["key"], s["agent_id"], s["config_id"])
+    result, job_id = run_one(Path(path), s["key"], s["agent_id"], s["config_id"], kind, on_job)
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
     (out / f"{Path(path).stem}.json").write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -128,9 +148,10 @@ class NotQuote(RuntimeError):
         self.category = category
 
 
-def run_one(path, key, agent_id, config_id):
-    st = rules()["runtime"].get("studio") or {}
+def run_one(path, key, agent_id, config_id, kind="pumui", on_job=None):
+    st = profile(kind)
     include = st.get("include") or ["last"]
+    poll_include = st.get("poll_include") or include
     file_id = upload(path, key)
     req = {"model": agent_id, "include": include,
            "input": [{"role": "user", "content": [{"type": "input_file", "file_id": file_id}]}]}
@@ -138,17 +159,25 @@ def run_one(path, key, agent_id, config_id):
         req["config_id"] = config_id
     job = call("POST", "/responses", key, json.dumps(req).encode(), {"Content-Type": "application/json"})
     job_id = job["id"]
+    if on_job:
+        on_job(job_id)
     started = time.time()
     rt = rules()["runtime"]
-    query = "&".join(f"include[]={x}" for x in include)
+    timeout = st.get("api_timeout_seconds") or rt["api_timeout_seconds"]
+    query = lambda inc: "&".join(f"include[]={x}" for x in inc)
     while job.get("status") in ("queued", "in_progress", None):
-        if time.time() - started > rt["api_timeout_seconds"]:
-            raise RuntimeError(f"{job_id}: {rt['api_timeout_seconds']}초 넘게 끝나지 않음")
+        if time.time() - started > timeout:
+            raise RuntimeError(f"{job_id}: {timeout}초 넘게 끝나지 않음")
         time.sleep(rt["api_poll_seconds"])
-        job = call("GET", f"/responses/{job_id}?{query}", key)
+        job = call("GET", f"/responses/{job_id}?{query(poll_include)}", key)
     if job.get("status") != "completed":
         raise RuntimeError(f"{job_id}: status={job.get('status')}")
+    if poll_include != include:  # 끝난 뒤 단계별 결과를 한 번만 받는다
+        job = call("GET", f"/responses/{job_id}?{query(include)}", key)
     steps = [o for o in job.get("output") or [] if o.get("step_type")]
+    if kind == "gyeolui":
+        from gyeolui import from_steps as gyeolui_steps
+        return gyeolui_steps(steps, st, job_id), job_id
     if steps:
         return from_steps(steps, st, job_id), job_id
     text = output_text(job)
@@ -205,10 +234,11 @@ def main():
     ap.add_argument("--score", action="store_true", help="실행 후 answers/와 채점")
     ap.add_argument("--skip-existing", action="store_true", help="이미 끝난 문서는 건너뛴다(노드 워크플로면 Studio 판정이 있는 결과만)")
     ap.add_argument("--workers", type=int, help="동시에 돌릴 문서 수(기본: rules.json runtime.studio.workers)")
+    ap.add_argument("--kind", choices=sorted(PROFILES), default="pumui", help="pumui=견적서→품의, gyeolui=증빙 묶음→결의")
     a = ap.parse_args()
     sys.stdout.reconfigure(encoding="utf-8")
 
-    s, missing = settings()
+    s, missing = settings(a.kind)
     if missing:
         sys.exit(f"{ROOT / '.env'}에 {', '.join(missing)} 값을 넣어 주세요.")
     key, agent_id, config_id = s["key"], s["agent_id"], s["config_id"]
@@ -220,13 +250,13 @@ def main():
     print(f"Agent {agent_id} (config {config_id}) · 문서 {len(files)}건")
 
     if a.skip_existing:  # 노드 워크플로면 Studio 판정("studio")까지 있는 결과만 끝난 것으로 본다
-        node = bool((rules()["runtime"].get("studio") or {}).get("agent_id"))
+        node = bool(profile(a.kind).get("agent_id"))
 
         def done(f):
             p = out / f"{f.stem}.json"
             return p.exists() and (not node or "studio" in json.loads(p.read_text(encoding="utf-8")))
         files = [f for f in files if not done(f)]
-    workers = a.workers or (rules()["runtime"].get("studio") or {}).get("workers", 1)
+    workers = a.workers or profile(a.kind).get("workers", 1)
     print(f"실행할 문서 {len(files)}건, 동시 {workers}건")
 
     failed = []
@@ -234,14 +264,15 @@ def main():
     def one(f):
         t = time.time()
         try:
-            result, job_id = run_one(f, key, agent_id, config_id)
+            result, job_id = run_one(f, key, agent_id, config_id, a.kind)
         except NotQuote as e:
             return f, f"견적서 아님({e.category})", None
         except Exception as e:  # 한 건이 실패해도 나머지는 계속 돌린다
             return f, f"실패: {e}", None
         (out / f"{f.stem}.json").write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
         st = result.get("studio") or {}
-        return f, f"완료 {time.time() - t:.0f}초  {st.get('decision', '')}  ({job_id})", True
+        decision = st.get("decision") or " / ".join((st.get("decisions") or {}).values())
+        return f, f"완료 {time.time() - t:.0f}초  {decision}  ({job_id})", True
 
     with ThreadPoolExecutor(max_workers=workers) as pool:
         for i, (f, msg, ok) in enumerate(pool.map(one, files), 1):
@@ -250,7 +281,7 @@ def main():
                 failed.append(f.name)
 
     print(f"\n완료 {len(files) - len(failed)}건 / 실패 {len(failed)}건")
-    if a.score and len(files) > len(failed):
+    if a.score and a.kind == "pumui" and len(files) > len(failed):
         print()
         subprocess.run([sys.executable, str(ROOT / "tools" / "score.py"), str(out), str(ROOT / "answers"), "--check"])
     sys.exit(1 if failed else 0)

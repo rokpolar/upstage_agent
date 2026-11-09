@@ -11,3 +11,5 @@ data_upload/*
 results_upload/*
 !data_upload/.gitkeep
 !results_upload/.gitkeep
+results_gyeolui_upload/*
+!results_gyeolui_upload/.gitkeep

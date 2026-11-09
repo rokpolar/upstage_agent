@@ -114,5 +114,88 @@
       "keep": "업체 확인 후 진행",
       "hold": "보류(재견적 요청)"
     }
+  },
+  "_gyeolui_comment": "아래 g_로 시작하는 항목은 결의(지출결의서) 검토 문구. 문구 규칙은 위와 같다.",
+  "g_hold_flag": "보류: 증빙 보완 필요",
+  "g_source_names": {
+    "request": "품의서",
+    "linked": "작성한 품의서",
+    "payment": "결제 증빙",
+    "statement": "거래명세서",
+    "other": "증빙"
+  },
+  "g_no_request": {
+    "message": "증빙 묶음에서 품의서를 찾지 못했습니다. 품의 금액과 비교할 수 없습니다.",
+    "options": {
+      "keep": "품의서 없이 진행",
+      "hold": "보류(품의서 첨부 요청)"
+    }
+  },
+  "g_no_receipt": {
+    "message": "영수증·거래명세서 등 지출 증빙을 찾지 못했습니다.",
+    "options": {
+      "hold": "보류(증빙 첨부 요청)"
+    }
+  },
+  "g_receipt_sum": {
+    "message": "{name} 합계 불일치: 공급가액 {supply} + 부가세 {vat} = {calc}원, 증빙 합계 {total}원",
+    "options": {
+      "keep": "증빙 값 유지",
+      "hold": "보류(증빙 재발급 요청)"
+    }
+  },
+  "g_receipt_lines": {
+    "message": "{name} 품목 합계 {line_sum}원이 공급가액 {supply}원과 다릅니다.",
+    "options": {
+      "keep": "증빙 값 유지",
+      "hold": "보류(증빙 재발급 요청)"
+    }
+  },
+  "g_cancelled": {
+    "message": "{name}에 취소·환불 표시가 있습니다: {status}",
+    "options": {
+      "keep": "확인 후 진행",
+      "hold": "보류(취소 여부 확인)"
+    }
+  },
+  "g_amount": {
+    "message": "지급금액 불일치: {detail}",
+    "detail_item": "{source} {amount}원",
+    "detail_joiner": ", ",
+    "option": "{amount}원 적용 ({sources})",
+    "options": {
+      "input": "직접 입력",
+      "hold": "보류(보완 요청)"
+    }
+  },
+  "g_over_request": {
+    "message": "지급금액 {amount}원이 품의 금액 {request}원보다 {gap}원 많습니다.",
+    "options": {
+      "keep": "초과분 확인 후 진행",
+      "hold": "보류(추가 품의 필요)"
+    }
+  },
+  "g_vendor": {
+    "message": "지급처 불일치: {detail}",
+    "detail_item": "{source} '{vendor}'",
+    "option": "'{vendor}' 적용",
+    "options": {
+      "input": "직접 입력",
+      "hold": "보류(업체 확인)"
+    }
+  },
+  "g_date_order": {
+    "message": "거래일({paid})이 품의일({requested})보다 앞섭니다(사후 품의 여부 확인).",
+    "options": {
+      "keep": "확인 후 진행",
+      "hold": "보류(사유서 요청)"
+    }
+  },
+  "g_link_mismatch": {
+    "message": "작성한 품의서({linked})와 증빙 묶음의 품의서({bundle})가 다른 건으로 보입니다.",
+    "options": {
+      "keep": "같은 건으로 진행",
+      "hold": "보류(묶음 확인)"
+    }
   }
 }

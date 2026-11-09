@@ -1,0 +1,7 @@
+{
+  "template_version": "expense-resolution-v1",
+  "word_source": "expenditure-resolution.docx",
+  "word_source_sha256": "99d28363cee6fd268edb5acddad87081933f3d6f67bcad2e5f59c74f4d18e32f",
+  "hwpx_source": "Equivalent field layout generated with korean-report-hwpx blank engine",
+  "upstream_commit": "204b87af367b47c46ec1c7b3e98a47a0db3ff298"
+}

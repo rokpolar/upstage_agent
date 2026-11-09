@@ -12,6 +12,7 @@
   6) 한글로 HWP·PDF와 첫 쪽 그림을 만든다.
 
 라벨·형식·자리표시 규칙은 전부 config/form_roles.json에 있다. 코드에는 칸을 찾고 쓰는 방법만 둔다.
+지출결의서는 같은 방법에 사전만 바꿔 쓴다(config/form_roles_gyeolui.json, fill(..., roles_name="form_roles_gyeolui")).
 """
 import argparse
 import datetime as dt
@@ -30,9 +31,17 @@ def key(s):
     return KEY_STRIP.sub("", s or "").lower()
 
 
+class SafeDict(dict):
+    """양식 문구 틀에 없는 이름이 있어도 멈추지 않고 빈칸으로 둔다."""
+
+    def __missing__(self, k):
+        return ""
+
+
 class Roles:
-    def __init__(self):
-        self.cfg = config("form_roles")
+    def __init__(self, name="form_roles"):
+        self.name = name
+        self.cfg = config(name)
         self.field_labels = sorted(((key(l), role) for role, f in self.cfg["fields"].items() for l in f["labels"]),
                                    key=lambda x: -len(x[0]))
         self.column_labels = {key(l): role for role, ls in self.cfg["item_table"]["columns"].items() for l in ls}
@@ -81,9 +90,10 @@ def build_values(result, case, selection, roles):
            "case": case, "selection": selection or {}}
     first_item = item_name(items[0].get(I["description"]) if items else "", cfg["item_table"])
     more = cfg["templates"]["more"].format(n=len(items) - 1) if len(items) > 1 else ""
-    form_ctx = {"project_name": case.get("project_name", ""), "first_item": first_item.split("(")[0].strip(),
-                "more": more, "quote_count": (selection or {}).get("quote_count", 1)}
-    src["form"] = {k: v.format(**form_ctx) for k, v in cfg["templates"].items() if not k.startswith("_") and k != "more"}
+    form_ctx = SafeDict({**{k: v for k, v in case.items() if isinstance(v, (str, int))},
+                         "project_name": case.get("project_name", ""), "first_item": first_item.split("(")[0].strip(),
+                         "more": more, "quote_count": (selection or {}).get("quote_count", 1)})
+    src["form"] = {k: v.format_map(form_ctx) for k, v in cfg["templates"].items() if not k.startswith("_") and k != "more"}
     out = {}
     for role, f in cfg["fields"].items():
         v = None
@@ -99,6 +109,8 @@ def build_values(result, case, selection, roles):
             v = fmt_date(v, cfg)
         elif kind == "amount_korean":
             v = cfg["formats"]["amount_korean"].format(korean=korean_amount(int(v)), won=won(int(v)))
+        elif kind == "amount":
+            v = cfg["formats"]["amount"].format(won=won(int(v)))
         out[role] = {"value": str(v), "format": kind, "raw": raw}
     return out
 
@@ -117,9 +129,10 @@ def build_rows(result, roles):
     for n, it in enumerate(result.get(F["items"]) or [], 1):
         basis = str(it.get(I["basis"]) or "")
         unit = re.sub(r"^.*?\*\s*[\d,]+", "", basis)
+        qty, price = to_int(it.get(I["quantity"])), to_int(it.get(I["unit_price"]))
         rows.append({"no": str(n), "category": it.get(I["category"]) or "", "description": item_name(it.get(I["description"]), it_cfg),
-                     "spec": "", "unit": unit, "quantity": won(to_int(it.get(I["quantity"])) or 0),
-                     "unit_price": won(to_int(it.get(I["unit_price"])) or 0),
+                     "spec": "", "unit": unit, "quantity": won(qty) if qty is not None else "",
+                     "unit_price": won(price) if price is not None else "",
                      "amount": won(to_int(it.get(I["amount"])) or 0), "basis": basis, "note": it.get(I["note"]) or ""})
     vat = to_int(result.get(F["vat"])) or 0
     if it_cfg["vat_row"]["enabled"] and vat:
@@ -133,14 +146,18 @@ def build_rows(result, roles):
 # ---------------------------------------------------------------- 양식 고르기
 
 def pick_tables(doc, roles):
-    """한 파일에 여러 양식이 있으면 품의서로 보이는 첫 묶음의 표만 고른다."""
-    inc = [re.compile(p) for p in roles.cfg["form_title"]["include"]]
-    exc = [re.compile(p) for p in roles.cfg["form_title"]["exclude"]]
+    """한 파일에 여러 양식이 있으면 찾는 양식(품의서 또는 결의서)으로 보이는 첫 묶음의 표만 고른다.
+    form_title.include_first가 true면 include를 먼저 본다(제목에 '품의'와 '결의'가 같이 있는 양식용)."""
+    ft = roles.cfg["form_title"]
+    inc = [re.compile(p) for p in ft["include"]]
+    exc = [re.compile(p) for p in ft["exclude"]]
     blocks, current, seen_title = [], None, False
     for t in doc.tables:
-        head = " ".join(c.text for c in t.cells if c.row == 0)[:200]
+        head = " ".join(c.text for c in t.cells if c.row == 0)[:ft.get("head_chars", 200)]
         kind = None
-        if any(p.search(head) for p in exc):
+        if ft.get("include_first") and any(p.search(head) for p in inc):
+            kind = "pumui"
+        elif any(p.search(head) for p in exc):
             kind = "other"
         elif any(p.search(head) for p in inc):
             kind = "pumui"
@@ -213,7 +230,7 @@ def fill_item_table(table, info, rows, values, roles, report, written):
                 continue
             cell.set_text(row.get(role, "") if row else "", label_ref, align[role])
             written.add(row.get(role, "") if row else "")
-    total = values.get("total")
+    total = values.get(roles.cfg["item_table"].get("total_role", "total"))  # 합계 줄에 넣을 금액 역할
     for tr in info["total_rows"]:
         cell = table.at(tr, cols["amount"].col) if "amount" in cols else None
         if cell is not None and key(cell.text) not in roles.total_row:
@@ -233,10 +250,11 @@ def mark_checkbox(text, chosen, cfg):
     return text
 
 
-def fill_fields(tables, skip_rows, values, roles, report):
+def fill_fields(tables, skip_rows, values, roles, report, done=()):
+    """done: 이미 다른 자리(본문 자리표시 등)에 쓴 역할."""
     cfg = roles.cfg
     msg = cfg["report"]
-    used, seen_labels = set(), []
+    used, seen_labels = set(done), []
     for t in tables:
         for c in t.cells:
             if any(c.row in rng for rng in skip_rows.get(t.index, [])):
@@ -294,13 +312,35 @@ def fill_fields(tables, skip_rows, values, roles, report):
     for role, v in left.items():
         if role in placed:
             report["notes"].append(msg["free_text_placed"].format(name=cfg["free_text"]["names"].get(role, role)))
+        elif cfg["fields"].get(role, {}).get("optional"):  # 양식에 없으면 그만인 값(품의번호 등)
+            continue
         else:
             report["unplaced"].append({"what": cfg["free_text"]["names"].get(role, role), "value": v["value"], "why": msg["no_slot"]})
     return seen_labels
 
 
-def fill_inline_blanks(tables, result, case, roles, report):
-    """문장 안 빈자리(빈 괄호, 빈 날짜 줄)를 채우고 예시 표시를 지운다(form_roles.json inline_blanks)."""
+def fill_body_slots(doc, values, roles, report):
+    """표 밖 본문의 {{역할}} 자리표시(서명·날짜 줄)를 먼저 채운다. 채운 역할 목록을 돌려준다."""
+    cfg = roles.cfg.get("inline_blanks") or {}
+    if not (cfg.get("slot_pattern") and cfg.get("body")):
+        return set()
+    slot, done = re.compile(cfg["slot_pattern"]), set()
+    for root_el in doc.sections.values():
+        for p in root_el.iter(q("p")):
+            if any(a.tag == q("tc") for a in p.iterancestors()):
+                continue
+            line = Cell.para_text(p)
+            hits = [m[1] for m in slot.finditer(line) if m[1] in values]
+            if hits:
+                Cell.set_para_text(p, slot.sub(lambda m: values[m[1]]["value"] if m[1] in values else m[0], line))
+                done.update(hits)
+                report.setdefault("_written", []).extend(values[h]["value"] for h in hits)
+    return done
+
+
+def fill_inline_blanks(tables, result, case, roles, report, doc=None, values=None):
+    """문장 안 빈자리(빈 괄호, 빈 날짜 줄, {{역할}} 자리표시)를 채우고 예시 표시를 지운다(form_roles.json inline_blanks).
+    body가 true면 표 밖 본문 문단(서명·날짜 줄)도 채운다."""
     cfg = roles.cfg.get("inline_blanks")
     if not cfg:
         return
@@ -308,29 +348,42 @@ def fill_inline_blanks(tables, result, case, roles, report):
     items = result.get(fields()["items"]) or []
     first = item_name(items[0].get(fields()["item"]["description"]), roles.cfg["item_table"]).split("(")[0].strip() if items else ""
     more = roles.cfg["templates"]["more"].format(n=len(items) - 1) if len(items) > 1 else ""
-    d = re.match(r"(\d{4})-(\d{1,2})-(\d{1,2})", str(case.get("draft_date") or ""))
+    d = re.match(r"(\d{4})-(\d{1,2})-(\d{1,2})", str(case.get(cfg.get("date_source", "draft_date")) or ""))
     ctx = {"item_summary": cfg["item_summary"].format(first_item=first, more=more) if first else "",
            "draft_dot": cfg["draft_dot"].format(y=d[1], m=int(d[2]), d=int(d[3])) if d else ""}
     rules_ = [(re.compile(r["pattern"]), r["context"], r["value"]) for r in cfg["rules"]]
-    for tbl in tables:
-        for c in tbl.cells:
-            for p in c.paragraphs():
-                line = c.para_text(p)
-                new = line
-                for marker in cfg.get("strip_markers", []):
-                    if marker in new:
-                        new = new.replace(marker, "").strip()
-                        report["notes"].append(msg["marker_removed"].format(marker=marker))
-                for pat, context, value in rules_:
-                    if not pat.search(new) or (context and not any(w in new for w in context)):
-                        continue
-                    if any(not ctx.get(k) for k in re.findall(r"\{(\w+)\}", value)):
-                        continue  # 채울 값이 없으면 빈자리 그대로
-                    new = pat.sub(value.format(**ctx), new, count=1)
-                    report.setdefault("_written", []).append(new.strip())
-                    report["notes"].append(msg["blank_filled"].format(value=new.strip()))
-                if new != line:
-                    c.set_para_text(p, new)
+    slot = re.compile(cfg["slot_pattern"]) if cfg.get("slot_pattern") else None
+    spots = [(c.para_text, c.set_para_text, p) for tbl in tables for c in tbl.cells for p in c.paragraphs()]
+    if cfg.get("body") and doc is not None:
+        spots += [(Cell.para_text, Cell.set_para_text, p) for root_el in doc.sections.values() for p in root_el.iter(q("p"))
+                  if not any(a.tag == q("tc") for a in p.iterancestors())]
+    names = roles.cfg["free_text"]["names"]
+
+    def fill_slot(m):  # 양식에 심어 둔 {{역할}} 자리표시: 값이 있으면 넣고, 없으면 비우고 보고서에 남긴다
+        v = (values or {}).get(m[1])
+        if v is None:
+            report["missing"].append({"role": m[1], "label": names.get(m[1], m[1])})
+            return ""
+        report.setdefault("_written", []).append(v["value"])
+        return v["value"]
+
+    for get, put, p in spots:
+        line = get(p)
+        new = slot.sub(fill_slot, line) if slot else line
+        for marker in cfg.get("strip_markers", []):
+            if marker in new:
+                new = new.replace(marker, "").strip()
+                report["notes"].append(msg["marker_removed"].format(marker=marker))
+        for pat, context, value in rules_:
+            if not pat.search(new) or (context and not any(w in new for w in context)):
+                continue
+            if any(not ctx.get(k) for k in re.findall(r"\{(\w+)\}", value)):
+                continue  # 채울 값이 없으면 빈자리 그대로
+            new = pat.sub(value.format(**ctx), new, count=1)
+            report.setdefault("_written", []).append(new.strip())
+            report["notes"].append(msg["blank_filled"].format(value=new.strip()))
+        if new != line:
+            put(p, new)
 
 
 def label_text(text):
@@ -441,8 +494,8 @@ def unknown_labels(tables, skip_rows, roles):
 
 # ---------------------------------------------------------------- 실행
 
-def fill(form_hwpx, result, case, selection=None):
-    roles = Roles()
+def fill(form_hwpx, result, case, selection=None, roles_name="form_roles"):
+    roles = Roles(roles_name)
     msg = roles.cfg["report"]
     doc = Document(form_hwpx)
     report = {"form": str(form_hwpx), "missing": [], "unplaced": [], "unknown_labels": [], "notes": []}
@@ -454,6 +507,11 @@ def fill(form_hwpx, result, case, selection=None):
         report["notes"].append(msg["first_of_many"].format(n=len(kinds)))
     values = build_values(result, case, selection, roles)
     rows = build_rows(result, roles)
+    for col, role in roles.cfg["item_table"].get("row_fill", {}).items():  # 결의서 품목 표의 지급처·지급방법 열
+        if not col.startswith("_") and role in values:
+            for row in rows:
+                if row["no"]:
+                    row.setdefault(col, values[role]["value"])
     written = {v["value"] for v in values.values()}
     skip = {}
     item_done = False
@@ -465,10 +523,14 @@ def fill(form_hwpx, result, case, selection=None):
             first = min(c.row for c in info["columns"].values())
             skip.setdefault(t.index, []).append(range(first, last + 1))
             item_done = True
-    if not item_done:
+    if not item_done and roles.cfg["item_table"].get("optional"):  # 결의서는 지출내역 표가 없는 양식도 있다
+        report["notes"].append(msg["no_item_table"])
+    elif not item_done:
         report["unplaced"].append({"what": msg["item_name"], "why": msg["no_item_table"]})
-    fill_fields(tables, skip, values, roles, report)
-    fill_inline_blanks(tables, result, case, roles, report)
+    slotted = fill_body_slots(doc, values, roles, report)
+    fill_fields(tables, skip, values, roles, report, slotted)
+    fill_inline_blanks(tables, result, case, roles, report, doc, values)
+    report["missing"] = list({m["role"]: m for m in report["missing"]}.values())  # 같은 칸이 표와 본문에 다 있으면 한 번만
     report["unknown_labels"] = unknown_labels(tables, skip, roles)
     multi = n_pumui > 1 or bool(kinds and len(kinds) > 1)
     report["leftover"] = leftover_values(doc, written | set(report.pop("_written", [])), roles, tables if multi else None)
