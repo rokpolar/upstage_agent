@@ -39,8 +39,9 @@ cd pumui-agent
 ./run.sh        # Windows는 run.bat
 ```
 
-> **API 키:** 견적서를 새로 올리려면 `.env`의 `UPSTAGE_API_KEY`에 **팀 조직** Upstage 키를 넣습니다(처음 실행 때 `.env`가 자동으로 만들어집니다).
-> 키가 없어도 미리 처리해 둔 팀 견적서 예시 60건으로 품의서 작성까지 해 볼 수 있습니다. `.env`는 GitHub에 올리지 않습니다.
+> **API 키가 필요합니다.** 처음 실행하면 `.env` 파일이 만들어집니다. `UPSTAGE_API_KEY=` 뒤에 **팀 조직** Upstage 키를 넣고 다시 실행하세요. `.env`는 GitHub에 올리지 않습니다.
+>
+> 화면이 열리면 **견적서 업로드**로 견적서 PDF(여러 장 가능)를 올립니다. 시험해 볼 견적서는 `data_team/견적서예시/`에 있습니다.
 
 ## 동작 구조
 
@@ -59,6 +60,7 @@ Upstage Studio 워크플로 ─ 업로드할 때만 실행
 - **모델은 읽기만, 계산과 규칙은 코드가, 애매한 건 사람이** 정합니다.
 - Studio 워크플로 설정의 원본은 [`workflow/품의 Agent (노드).json`](workflow/) 입니다.
 - 규칙, 화면 문구, 양식 칸 이름은 모두 [`config/`](config/)에 있고 코드에 하드코딩하지 않습니다.
+- 올린 견적서는 `data_upload/`, Studio 결과는 `results_upload/`에 쌓입니다(GitHub에는 올라가지 않습니다).
 
 ## 기술 스택
 

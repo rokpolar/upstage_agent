@@ -69,7 +69,7 @@ function popup(title, body, actions = []) {
 // ---------------------------------------------------------------- 1. 견적
 function viewQuotes() {
   const t = S.ui.quotes, list = quotes().filter((q) => q.set === S.set);
-  const sets = `<fieldset class="seg"><legend>${esc(t.set_legend)}</legend>${S.init.sets.map((name, i) =>
+  const sets = S.init.sets.length < 2 ? '<span></span>' : `<fieldset class="seg"><legend>${esc(t.set_legend)}</legend>${S.init.sets.map((name, i) =>
     `<input type="radio" name="qset" id="qset${i}" value="${i}" ${i === S.set ? 'checked' : ''}><label for="qset${i}">${esc(name)}</label>`).join('')}</fieldset>`;
   const upload = S.init.studio_ready
     ? `<label class="key key--file" ${S.busy.upload ? 'aria-busy="true"' : ''}>${esc(t.upload)}<input type="file" id="qupload" accept=".pdf,.png,.jpg,.jpeg" multiple></label>`

@@ -53,7 +53,7 @@
     "default_funding_source": "보조금"
   },
   "ui": {
-    "_comment": "로컬 웹 화면(tools/server.py). quote_sets: [결과 JSON 폴더, 원본 견적서 PDF 폴더, 화면에 보일 이름].",
+    "_comment": "로컬 웹 화면(tools/server.py). quote_sets: [결과 JSON 폴더, 원본 견적서 PDF 폴더, 화면에 보일 이름]. 화면에는 직접 올린 견적서만 둔다. 시연용으로 [\"results_team\", \"data_team/견적서예시\", \"팀 견적서 예시\"]를 더하면 미리 처리한 팀 예시도 보인다.",
     "host": "127.0.0.1",
     "port": 8765,
     "quote_sets": [
@@ -61,16 +61,6 @@
         "results_upload",
         "data_upload",
         "업로드한 견적서"
-      ],
-      [
-        "results_team",
-        "data_team/견적서예시",
-        "팀 견적서 예시"
-      ],
-      [
-        "results",
-        "samples",
-        "개발용 샘플"
       ]
     ],
     "_upload_comment": "화면에서 올린 견적서는 quote_sets 첫 번째 줄의 PDF 폴더에 저장하고, Studio 품의 Agent 결과는 같은 줄의 결과 폴더에 저장한다.",
