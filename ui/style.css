@@ -35,7 +35,9 @@ body { word-break: keep-all; word-wrap: break-word; overflow-wrap: anywhere; let
 .ledger { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
 .ledger th { text-align: left; font-size: var(--text-xs); font-weight: 600; color: var(--color-muted); padding: var(--space-sm); border-bottom: var(--rule-hair) solid var(--color-rule); white-space: nowrap; }
 .ledger td { padding: 10px var(--space-sm); border-bottom: var(--rule-hair) solid var(--color-rule); vertical-align: middle; }
-.ledger .num { text-align: right; }
+.ledger .num { text-align: right; white-space: nowrap; }
+.ledger .vendor { word-break: keep-all; overflow-wrap: normal; }
+@media (max-width: 40rem) { .ledger .status { white-space: normal; word-break: keep-all; text-align: left; } }
 .ledger tbody tr { cursor: pointer; transition: background-color var(--dur-micro) var(--ease-out); }
 .ledger tbody tr:hover { background: var(--color-paper-2); }
 .ledger tbody tr.is-on { background: var(--color-paper-2); }
@@ -292,4 +294,5 @@ textarea.input { min-height: 72px; resize: vertical; line-height: 1.5; }
 }
 
 .intake__row.is-skip { color: var(--color-disabled); }
+.intake__row.is-reject { color: var(--color-warning); }
 .note--warn { background: #fff8e6; color: var(--color-warning); }

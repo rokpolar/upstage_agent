@@ -110,7 +110,7 @@ function viewQuotes() {
 const groupOf = (id) => (S.init.groups && S.init.groups[id]) || { group: 0, label: '' };
 const UP = () => S.uploads || (S.uploads = []);
 const viewed = () => UP().find((u) => u.id === S.upView) || UP().find((u) => !u.finished && !u.error) || UP()[UP().length - 1];
-const upState = (u) => (u.error ? 'fail' : u.skipped ? 'skip' : u.finished ? 'done' : u.started ? 'now' : 'wait');
+const upState = (u) => (u.error ? 'fail' : u.reject ? 'reject' : u.skipped ? 'skip' : u.finished ? 'done' : u.started ? 'now' : 'wait');
 function nowStage(u) {
   const st = S.ui.quotes.intake.stages, done = new Set(u.done || []);
   return st.find(([key]) => !done.has(key)) || st[st.length - 1];
@@ -132,16 +132,16 @@ function intakeFound(u) {
 function intakeTitle(u) {
   const t = S.ui.quotes.intake;
   if (UP().length > 1) return fmt(t.count, { done: UP().filter((x) => x.finished).length, n: UP().length });
-  return u.error ? t.failed : u.finished ? t.done : t.reading;
+  return u.error ? t.failed : u.reject ? t.rejected : u.finished ? t.done : t.reading;
 }
 function intakeList() {
   const t = S.ui.quotes.intake, v = viewed();
   if (UP().length < 2) return '';
   return UP().map((u) => {
     const st = upState(u), f = u.found || {};
-    const text = st === 'skip' ? fmt(t.row.skip, { category: f.category || '' }) : st === 'done' ? fmt(t.row.done, { vendor: f.vendor || '', total: won(f.total || 0) })
+    const text = st === 'skip' || st === 'reject' ? fmt(t.row[st], { category: f.category || '' }) : st === 'done' ? fmt(t.row.done, { vendor: f.vendor || '', total: won(f.total || 0) })
       : st === 'now' ? fmt(t.row.now, { stage: nowStage(u)[1] }) : t.row[st];
-    const mark = st === 'done' ? ICON.ok : st === 'fail' ? ICON.warn : st === 'now' ? '<span class="spin keep-motion" aria-hidden="true"></span>' : '<span class="dot" aria-hidden="true"></span>';
+    const mark = st === 'done' ? ICON.ok : st === 'fail' || st === 'reject' ? ICON.warn : st === 'now' ? '<span class="spin keep-motion" aria-hidden="true"></span>' : '<span class="dot" aria-hidden="true"></span>';
     return `<li><button type="button" class="intake__row is-${st}" data-up="${u.id}" ${u === v ? 'aria-current="true"' : ''}>${mark}<span class="intake__name">${esc(u.name)}</span><span class="intake__state">${esc(text)}</span></button></li>`;
   }).join('');
 }
@@ -209,13 +209,17 @@ async function uploadQuotes(files) {
     try {
       const r = await api('/api/quotes/split', { name: f.name, data: await readB64(f) });
       if (r.pages.length < 2) { pages.push(f); continue; }
-      r.pages.forEach((p) => pages.push(new File([Uint8Array.from(atob(p.data), (c) => c.charCodeAt(0))], p.name, { type: 'application/pdf' })));
+      r.pages.forEach((p) => {
+        const pf = new File([Uint8Array.from(atob(p.data), (c) => c.charCodeAt(0))], p.name, { type: 'application/pdf' });
+        pf.from = f.name;  // 어느 파일에서 나온 쪽인지(파일 전체가 견적서가 아니면 다시 올리기를 요청한다)
+        pages.push(pf);
+      });
     } catch (e) { pages.push(f); }
   }
   ok = pages;
   if (ok.length < fresh.length) say('upload', fmt(t.upload_bad_ext, { ext: exts.join(', ') }), true);
   if (!UP().some((u) => !u.finished && !u.error)) { UP().forEach((u) => URL.revokeObjectURL(u.url)); S.uploads = []; S.upView = null; }  // 새 묶음
-  const added = ok.map((f) => ({ id: (crypto.randomUUID && crypto.randomUUID()) || `${Date.now()}-${Math.random()}`, name: f.name, file: f,
+  const added = ok.map((f) => ({ id: (crypto.randomUUID && crypto.randomUUID()) || `${Date.now()}-${Math.random()}`, name: f.name, from: f.from || f.name, file: f,
     url: URL.createObjectURL(f), kind: /pdf$/i.test(f.type) || /\.pdf$/i.test(f.name) ? 'pdf' : 'img', done: [], found: {} }));
   UP().push(...added);
   if (!added.length) { render(); return; }
@@ -228,10 +232,20 @@ async function uploadQuotes(files) {
   const got = UP().filter((u) => u.qid).map((u) => u.qid), gs = new Set(got.map((id) => groupOf(id).group));
   if (gs.size === 1) S.picked = new Set(quotes().filter((q) => groupOf(q.id).group === [...gs][0]).map((q) => q.id));
   else if (gs.size > 1) { S.picked = new Set(); say('upload', t.mixed_upload); }
+  // 올린 파일 전체가 견적서로 읽히지 않았으면(표지 쪽만 빠진 경우는 제외) 다시 올리기를 요청한다
+  const byFile = new Map();
+  UP().forEach((u) => byFile.set(u.from, (byFile.get(u.from) || []).concat(u)));
+  const rejected = [...byFile.entries()].filter(([, us]) => us.every((u) => u.skipped));
+  rejected.forEach(([, us]) => us.forEach((u) => (u.reject = true)));
   S.busy.upload = false; render();
-  // 모두 읽었으면 잠시 결과를 보여 준 뒤 패널을 접어 목록이 보이게 한다(실패가 있으면 그대로 둔다)
+  if (rejected.length) {
+    const r = t.reject;
+    popup(r.title, [{ text: r.body }, { list: rejected.map(([name, us]) => fmt(r.item, { name, category: (us[0].found || {}).category || '' })) }, { text: r.check, muted: true }],
+      [{ label: r.again, primary: true, run: () => { const up = $('#qupload'); if (up) up.click(); } }]);
+  }
+  // 모두 읽었으면 잠시 결과를 보여 준 뒤 패널을 접어 목록이 보이게 한다(실패·다시 올릴 파일이 있으면 그대로 둔다)
   const batch = S.uploads;
-  if (batch.length && batch.every((u) => u.finished)) setTimeout(() => {
+  if (batch.length && batch.every((u) => u.finished && !u.reject)) setTimeout(() => {
     if (S.uploads === batch && !S.busy.upload) { batch.forEach((u) => URL.revokeObjectURL(u.url)); S.uploads = []; S.upView = null; render(); }
   }, t.intake.hold_ms);
 }

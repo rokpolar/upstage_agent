@@ -62,10 +62,19 @@
     "mixed_title": "품목이 다른 견적이 함께 선택되어 있습니다",
     "mixed_body": "업체 비교는 같은 품목끼리만 합니다. 비교할 묶음을 고르세요.",
     "mixed_upload": "품목이 다른 견적이 섞여 있어 품목별로 나눴습니다. 비교할 묶음을 고르세요.",
+    "reject": {
+      "_comment": "올린 파일 전체가 견적서로 읽히지 않았을 때(여러 쪽 PDF에서 표지 쪽만 빠진 경우는 해당하지 않음) 다시 올리기를 요청하는 창.",
+      "title": "견적서가 아닌 파일",
+      "body": "아래 파일은 견적서로 읽히지 않아 목록에 넣지 않았습니다. 파일을 확인하고 견적서를 다시 올려 주세요.",
+      "item": "{name} · {category}",
+      "check": "확인할 것: 거래명세서·영수증 등 다른 문서를 고르지 않았는지, 업체명과 품목·수량·금액이 보이는 견적서인지, 스캔이 흐리거나 잘리지 않았는지.",
+      "again": "견적서 다시 올리기"
+    },
     "intake": {
       "reading": "견적서 인식 중",
       "done": "인식 완료",
       "failed": "인식 실패",
+      "rejected": "견적서 아님 · 다시 올려 주세요",
       "file": "{name} · {i}/{n}",
       "preview": "{name} 미리보기",
       "stages": [
@@ -101,7 +110,7 @@
       "items": "{n}건",
       "close": "닫기",
       "count": "{done}/{n}건 완료",
-      "row": {"wait": "대기", "now": "{stage} 중", "done": "{vendor} · {total}원", "fail": "실패", "skip": "{category} · 건너뜀"},
+      "row": {"wait": "대기", "now": "{stage} 중", "done": "{vendor} · {total}원", "fail": "실패", "skip": "{category} · 건너뜀", "reject": "{category} · 다시 올리기"},
       "drop": "여기에 놓으면 업로드합니다",
       "hold_ms": 3000
     },
