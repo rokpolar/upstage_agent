@@ -34,8 +34,7 @@ function viewQuotes() {
   const table = list.length
     ? `<div class="ledger-wrap"><table class="ledger"><thead><tr><th><span class="visually-hidden">${esc(S.ui.select_col)}</span></th>${t.cols.map((c, i) => `<th class="${[1, 3].includes(i) ? 'num' : ''} ${[2, 3].includes(i) ? 'hide-sm' : ''}">${esc(c)}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div>`
     : `<div class="note"><p>${esc(t.empty)}</p><p class="muted">${esc(t.empty_action)}</p></div>`;
-  return `${head(t)}<div class="row spread" style="margin-bottom:var(--space-md)">${sets}<div class="row">${upload}</div></div>
-    ${S.init.studio_ready ? `<p class="help">${esc(t.upload_hint)}</p>` : `<p class="note">${esc(t.studio_off)}</p>`}
+  return `${head(t)}${sets}<div class="upload-zone">${S.init.studio_ready ? `<div><p class="upload-zone__title">${esc(t.upload_title)}</p><p class="help">${esc(t.upload_hint)}</p></div>${upload}` : `<p class="note">${esc(t.studio_off)}</p>`}</div>
     ${status('upload')}${intake()}${table}
     <div class="actions"><p class="help">${S.picked.size ? esc(fmt(t.picked, { n: S.picked.size })) : ''}</p>
       <button type="button" class="key key--primary" id="next" ${S.picked.size ? '' : 'disabled'}>${esc(t.next)}</button></div>`;
@@ -131,6 +130,7 @@ async function uploadQuotes(files) {
   if (!fresh.length) return;
   const exts = S.init.upload_ext || ['.pdf', '.png', '.jpg', '.jpeg'];
   let ok = fresh.filter((f) => exts.some((x) => f.name.toLowerCase().endsWith(x)));
+  const rejectedExtension = ok.length !== fresh.length;
   // 여러 쪽 PDF는 쪽마다 나눠 한 장씩 읽는다(한 파일에 업체 견적서 여러 장이 들어오는 경우)
   const pages = [];
   for (const f of ok) {
@@ -147,7 +147,7 @@ async function uploadQuotes(files) {
     } catch (e) { pages.push(f); }
   }
   ok = pages;
-  if (ok.length < fresh.length) say('upload', fmt(t.upload_bad_ext, { ext: exts.join(', ') }), true);
+  if (rejectedExtension) say('upload', fmt(t.upload_bad_ext, { ext: exts.join(', ') }), true);
   if (!UP().some((u) => !u.finished && !u.error)) { UP().forEach((u) => URL.revokeObjectURL(u.url)); S.uploads = []; S.upView = null; }  // 새 묶음
   const added = ok.map((f) => ({ id: (crypto.randomUUID && crypto.randomUUID()) || `${Date.now()}-${Math.random()}`, name: f.name, label: f.label || f.name, from: f.from || f.name, file: f,
     url: URL.createObjectURL(f), kind: /pdf$/i.test(f.type) || /\.pdf$/i.test(f.name) ? 'pdf' : 'img', done: [], found: {} }));
@@ -181,23 +181,11 @@ async function uploadQuotes(files) {
 }
 function bindQuotes() {
   $$('input[name="qset"]').forEach((el) => (el.onchange = () => { S.set = Number(el.value); render(); }));
-  const up = $('#qupload'); if (up) up.onchange = (e) => uploadQuotes(e.target.files);
+  const up = $('#qupload'); if (up) up.onchange = (e) => {
+    const files = [...e.target.files]; e.target.value = ''; uploadQuotes(files);
+  };
   const ic = $('#intake-close'); if (ic) ic.onclick = () => { UP().forEach((u) => URL.revokeObjectURL(u.url)); S.uploads = []; S.upView = null; render(); };
   $$('[data-up]').forEach((b) => (b.onclick = () => { S.upView = b.dataset.up; updateIntake(); }));
-  // 파일을 화면에 끌어다 놓아도 올린다
-  const main = $('#main');
-  if (main && S.init.studio_ready && !main.dataset.drop) {
-    main.dataset.drop = '1';
-    // 끌어다 놓기: 품의 견적 선택 화면이면 견적서 업로드, 결의 증빙 선택 화면이면 증빙 파일 목록에 담는다
-    const dropOk = () => (location.hash.slice(1) || S.ui.step_keys[0]) === keys()[0] && (modeOf() === 'pumui' || S.init.gyeolui.ready);
-    main.addEventListener('dragover', (e) => { if (!dropOk()) return; e.preventDefault(); main.classList.add('is-drop'); });
-    main.addEventListener('dragleave', (e) => { if (e.target === main) main.classList.remove('is-drop'); });
-    main.addEventListener('drop', (e) => {
-      if (!dropOk()) return; e.preventDefault(); main.classList.remove('is-drop');
-      if (modeOf() === 'gyeolui') { S.g.files = S.g.files.concat([...e.dataTransfer.files]); S.status.gupload = null; render(); }
-      else uploadQuotes(e.dataTransfer.files);
-    });
-  }
   $$('[data-issues]').forEach((b) => (b.onclick = (e) => {
     e.stopPropagation();  // 줄 선택은 바꾸지 않는다
     const t = S.ui.quotes, q = byId(b.dataset.issues);
@@ -237,7 +225,7 @@ function viewReview() {
     return `<section class="group"><div class="row spread"><h2>${esc(fmt(t.group, { vendor: q.vendor, total: won(q.total) }))}</h2>
         ${done ? `<span class="status status--ok">${ICON.ok}${esc(t.done)}</span>` : ''}${q.hold ? `<span class="status status--bad">${ICON.warn}${esc(S.ui.quotes.hold)}</span>` : ''}</div>
       ${q.answered.length ? `<p class="small muted">${esc(fmt(t.answered, { n: q.answered.length }))}</p>` : ''}
-      ${q.studio && q.studio.decision ? `<div class="studio"><p class="small"><span class="studio__tag">${esc(fmt(t.studio_decision, { decision: q.studio.decision }))}</span> <span class="muted">${esc(t.studio_help)}</span></p>${q.studio.note ? `<details class="studio__note"><summary>${esc(q.studio.branch || '')}</summary><p>${esc(q.studio.note)}</p></details>` : ''}</div>` : ''}
+      ${q.studio && q.studio.decision ? `<div class="studio"><p class="studio__tag">${esc(fmt(t.studio_decision, { decision: q.studio.decision }))}</p><p class="help">${esc(t.studio_help)}</p>${q.studio.note ? `<details class="studio__note"><summary>${esc(q.studio.branch || '')}</summary><p>${esc(q.studio.note)}</p></details>` : ''}</div>` : ''}
       ${q.model_flags.length && t.model_flags ? `<p class="small muted">${esc(fmt(t.model_flags, { flags: q.model_flags.join(', ') }))}</p>` : ''}${qs}</section>`;
   }).join('');
   const clear = picked().every((q) => !q.questions.length);
@@ -324,23 +312,37 @@ function bindVendor() {
 
 // ---------------------------------------------------------------- 4. 구매 정보
 function viewCase() {
-  const t = S.ui.case, c = S.init.case;
+  const t = S.ui.case, c = S.caseDraft || S.init.case;
   const field = ([k, label, type]) => type === 'funding'
     ? `<fieldset class="seg"><legend>${esc(label)}</legend>${S.init.funding_sources.map((f, i) => `<input type="radio" name="${k}" id="${k}${i}" value="${esc(f)}" ${c[k] === f ? 'checked' : ''}><label for="${k}${i}">${esc(f)}</label>`).join('')}</fieldset>`
-    : `<div class="field"><label for="f-${k}">${esc(label)}</label><input class="input" id="f-${k}" name="${k}" type="${type}" autocomplete="off" value="${esc(c[k] || '')}"></div>`;
-  return `${head(t)}<form id="caseform" class="fields">${t.fields.map(field).join('')}</form>${status('case')}
+    : `<div class="field ${['purpose', 'title'].includes(k) ? 'field--wide' : ''}"><label for="f-${k}">${esc(label)}</label>${k === 'purpose'
+      ? `<textarea class="input" id="f-${k}" name="${k}" aria-describedby="help-${k}" placeholder="${esc(t.hints[k].placeholder || '')}">${esc(c[k] || '')}</textarea>`
+      : `<input class="input" id="f-${k}" name="${k}" type="${type}" autocomplete="off" value="${esc(c[k] || '')}" aria-describedby="help-${k}" placeholder="${esc(t.hints[k]?.placeholder || '')}">`}
+      <p class="help" id="help-${k}">${esc(t.hints[k]?.help || '')}</p></div>`;
+  const sections = t.sections.map((section, i) => `<section class="form-section" aria-labelledby="case-section-${i}"><div class="form-section__head"><span class="form-section__number" aria-hidden="true">${String(i + 1).padStart(2, '0')}</span><div><h2 id="case-section-${i}">${esc(section.title)}</h2><p class="help">${esc(section.description)}</p></div></div><div class="fields">${section.keys.map((key) => t.fields.find(([k]) => k === key)).filter(Boolean).map(field).join('')}</div></section>`).join('');
+  return `${head(t)}<form id="caseform" class="form-sections">${sections}</form>${status('case')}
     <div class="actions"><button type="submit" form="caseform" class="key key--primary" id="save">${esc(t.save)}</button></div>`;
 }
 function bindCase() {
+  const capture = () => {
+    const c = { ...S.init.case };
+    S.ui.case.fields.forEach(([k, , type]) => {
+      const input = type === 'funding' ? $(`input[name="${k}"]:checked`) : $(`[name="${k}"]`);
+      if (input) c[k] = input.value;
+    });
+    S.caseDraft = c;
+  };
+  $('#caseform').oninput = capture;
+  $('#caseform').onchange = capture;
   $('#caseform').onsubmit = async (e) => {
     e.preventDefault(); $('#save').setAttribute('aria-busy', 'true');
     const c = { ...S.init.case };
     S.ui.case.fields.forEach(([k, , type]) => {
       if (type === 'funding') { const r = $(`input[name="${k}"]:checked`); if (r) c[k] = r.value; }
-      else { const v = $(`input[name="${k}"]`).value.trim(); if (v) c[k] = v; else delete c[k]; }
+      else { const v = $(`[name="${k}"]`).value.trim(); if (v) c[k] = v; else delete c[k]; }
     });
     try {
-      const r = await api('/api/case', { case: c }); S.init.case = c; S.init.quotes = r.quotes; S.compare = null; invalidatePumuiOutput();
+      const r = await api('/api/case', { case: c }); S.init.case = c; S.caseDraft = null; S.init.quotes = r.quotes; S.compare = null; invalidatePumuiOutput();
       say('case', S.ui.case.saved); go(reviewDone() ? 4 : 1);
     } catch (err) { say('case', fmt(S.ui.error, { msg: err.message }), true); render(); }
   };
@@ -357,6 +359,7 @@ const viewForm = () => formPanel(S, pumuiPanel());
 const bindForm = () => bindPanel(S, pumuiPanel());
 
 MODES.pumui = {
+  addFiles: uploadQuotes,
   keys: () => S.ui.step_keys, steps: () => S.ui.steps, wordmark: () => S.ui.wordmark, title: () => S.ui.title,
   open: pumuiOpen,
   views: [[viewQuotes, bindQuotes], [viewReview, bindReview], [viewVendor, bindVendor], [viewCase, bindCase], [viewForm, bindForm]],

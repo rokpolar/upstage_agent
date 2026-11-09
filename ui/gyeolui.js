@@ -8,7 +8,7 @@ import { renderMarkdown } from './markdown.js';
 // 결의서 작업 화면: 증빙 선택 → 검증 → 결의 정보 → 결의서 작성. app.js의 도우미(S, $, api, head, popup, formPanel…)를 그대로 쓴다.
 // 문구는 /api/init 의 ui.gyeolui(config/ui.json). 단계 주소는 #g-docs, #g-review, #g-info, #g-form.
 S.g = { set: 0, sel: null, files: [], withPumui: true, link: true, form: null, preview: null, previewState: 'idle',
-  result: null, busy: {}, timer: null, watch: [], view: null };
+  result: null, busy: {}, timer: null, watch: [], view: null, infoDrafts: {} };
 
 const GT = () => S.ui.gyeolui;
 const gItems = () => S.init.gyeolui.items;
@@ -139,7 +139,7 @@ function viewGDocs() {
         <label class="check"><input type="checkbox" id="g-link" ${S.g.link || S.g.withPumui ? 'checked' : ''} ${S.g.withPumui && h.has_pdf ? 'disabled' : ''}> ${esc(t.link)}</label></div>`
     : `<p class="help">${esc(t.no_handoff)}</p>`;
   const picked = S.g.files.length
-    ? `<p class="small">${esc(fmt(t.files, { n: S.g.files.length, names: S.g.files.map((f) => f.name).join(', ') }))}</p>` : '';
+    ? `<ul class="file-list" aria-label="${esc(t.selected_label)}">${S.g.files.map((f, i) => `<li><span>${esc(f.name)}</span><button type="button" class="linkish" data-remove-file="${i}" aria-label="${esc(f.name)} ${esc(t.remove)}">${esc(t.remove)}</button></li>`).join('')}</ul>` : '';
   const send = gi.ready
     ? `<div class="gsend cut"><div class="row spread"><label class="key key--file">${esc(t.upload)}<input type="file" id="gfiles" accept="${esc(gi.accept.join(','))}" multiple></label>
         <div class="row">${S.g.files.length ? `<button type="button" class="key" id="gclear">${esc(t.clear)}</button>` : ''}
@@ -192,7 +192,8 @@ async function gSend() {
 function bindGDocs() {
   const t = GT().docs;
   $$('input[name="gset"]').forEach((el) => (el.onchange = () => { S.g.set = Number(el.value); render(); }));
-  const f = $('#gfiles'); if (f) f.onchange = (e) => { S.g.files = [...e.target.files]; S.status.gupload = null; render(); };
+  const f = $('#gfiles'); if (f) f.onchange = (e) => { const files = [...e.target.files]; e.target.value = ''; addGFiles(files); };
+  $$('[data-remove-file]').forEach((b) => (b.onclick = () => { S.g.files.splice(Number(b.dataset.removeFile), 1); render(); }));
   const c = $('#gclear'); if (c) c.onclick = () => { S.g.files = []; render(); };
   const s = $('#gsend'); if (s) s.onclick = gSend;
   const w = $('#g-with'); if (w) w.onchange = (e) => { S.g.withPumui = e.target.checked; render(); };
@@ -201,6 +202,15 @@ function bindGDocs() {
   const gc = $('#gintake-close'); if (gc) gc.onclick = () => { S.g.watch = []; S.g.view = null; render(); };
   $$('[data-gview]').forEach((b) => (b.onclick = () => { S.g.view = b.dataset.gview; gUpdate(); }));
   $('#next').onclick = () => go(1);
+}
+function addGFiles(files) {
+  const accept = S.init.gyeolui.accept;
+  const incoming = [...files], valid = incoming.filter((f) => accept.some((ext) => f.name.toLowerCase().endsWith(ext)));
+  const same = (a, b) => a.name === b.name && a.size === b.size && a.lastModified === b.lastModified;
+  for (const f of valid) if (!S.g.files.some((saved) => same(saved, f))) S.g.files.push(f);
+  S.status.gupload = null;
+  if (valid.length !== incoming.length) say('gupload', fmt(GT().bad_ext, { ext: accept.join(', ') }), true);
+  render();
 }
 function gPick(id) {
   if (S.g.sel !== id) {
@@ -231,7 +241,7 @@ function viewGReview() {
   const reports = Object.entries(t.report_names).map(([k, name]) => [name, k === 'draft' ? st.draft : (st.reports || {})[k]])
     .concat((st.others || []).map((o) => [o.name, o.text])).filter(([, v]) => v)
     .map(([name, v]) => `<details class="studio__note"><summary>${esc(name)}</summary><div class="markdown-body">${renderMarkdown(v)}</div></details>`).join('');
-  const studio = `<section class="group"><h2>${esc(t.studio_title)}</h2><div class="studio"><p class="small">${tags} <span class="muted">${esc(t.studio_help)}</span></p>
+  const studio = `<section class="group"><h2>${esc(t.studio_title)}</h2><div class="studio"><div class="studio__decisions">${tags}</div><p class="help">${esc(t.studio_help)}</p>
       ${st.categories && st.categories.length ? `<p class="small muted">${esc(fmt(t.categories, { list: st.categories.join(', ') }))}</p>` : ''}${reports}</div></section>`;
   const status_ = gClear(it) ? `<span class="status status--ok">${ICON.ok}${esc(t.done)}</span>` : it.hold ? `<span class="status status--bad">${ICON.warn}${esc(GT().docs.hold)}</span>` : '';
   return `${head(t)}<div class="row spread"><p class="small muted">${esc(it.name)}${it.answered.length ? ' · ' + esc(fmt(t.answered, { n: it.answered.length })) : ''}</p>${status_}</div>
@@ -258,7 +268,7 @@ function bindGReview() {
 
 // ---------------------------------------------------------------- 3. 결의 정보
 function viewGInfo() {
-  const t = GT().info, it = gSel(), info = it.info || {};
+  const t = GT().info, it = gSel(), info = S.g.infoDrafts[it.id] || it.info || {};
   const field = ([key, label, type]) => {
     const readonly = type === 'readonly';
     const value = key === 'amount' ? (it.amount == null ? GT().review.undecided : won(it.amount) + S.ui.won)
@@ -269,6 +279,13 @@ function viewGInfo() {
     <div class="actions"><button type="submit" form="ginfo" class="key key--primary" id="gsave">${esc(t.save)}</button></div>`;
 }
 function bindGInfo() {
+  const capture = () => {
+    const info = {};
+    GT().info.fields.forEach(([key, , type]) => { if (type !== 'readonly') info[key] = $(`#gf-${key}`).value; });
+    S.g.infoDrafts[S.g.sel] = info;
+  };
+  $('#ginfo').oninput = capture;
+  $('#ginfo').onchange = capture;
   $('#ginfo').onsubmit = async (e) => {
     e.preventDefault(); $('#gsave').setAttribute('aria-busy', 'true');
     const info = {};
@@ -276,7 +293,7 @@ function bindGInfo() {
       if (type !== 'readonly') info[key] = $(`#gf-${key}`).value.trim();
     });
     try {
-      gPut(await api('/api/gyeolui/info', { id: S.g.sel, info })); S.g.result = null;
+      gPut(await api('/api/gyeolui/info', { id: S.g.sel, info })); delete S.g.infoDrafts[S.g.sel]; S.g.result = null;
       say('ginfo', GT().info.saved); go(3);
     } catch (err) { say('ginfo', fmt(S.ui.error, { msg: err.message }), true); render(); }
   };
@@ -324,6 +341,7 @@ function bindGForm() {
 }
 
 MODES.gyeolui = {
+  addFiles: addGFiles,
   keys: () => GT().step_keys, steps: () => GT().steps, wordmark: () => GT().wordmark, title: () => GT().title,
   open: (i) => [true, gDone(gSel()), gClear(gSel()), gClear(gSel()) && !!gSel()?.info_saved][i],
   views: [[viewGDocs, bindGDocs], [viewGReview, bindGReview], [viewGInfo, bindGInfo],

@@ -1,5 +1,5 @@
 {
-  "_comment": "웹 화면 문구. 화면 코드(ui/app.js)에는 문구를 두지 않는다. 문구 규칙: 제목·버튼은 명사형(그룹웨어 메뉴처럼), 안내는 합니다체 한 문장 이하, 의인화('Studio가 읽어')·설정 파일 경로·모델 내부 설명 금지, 담당자가 쓰는 용어(기안일·합계금액·비고·업로드). 빈 문자열이면 화면에 표시하지 않는다. 화면 모양은 Apple 스토어 구입 페이지를 참고: 제목은 '굵은 이름. 회색 설명' 두 톤.",
+  "_comment": "웹 화면 문구. 제목과 보조 설명을 별도 줄로 표시한다. 규칙·문구·양식 필드는 config에서 관리한다.",
   "title": "품의서 작성",
   "wordmark": "품의서",
   "description": "견적서를 인식해 검토와 업체 선정을 거쳐 기관 양식의 품의서를 작성합니다.",
@@ -43,8 +43,8 @@
     "hold": "보류",
     "empty": "등록된 견적서가 없습니다.",
     "empty_action": "견적서 PDF를 업로드하면 목록에 추가됩니다.",
-    "upload": "견적서 업로드",
-    "upload_hint": "업로드한 견적서는 Upstage Document Parse와 Information Extract로 인식합니다.",
+    "upload": "파일 선택",
+    "upload_hint": "파일 1개 또는 여러 개를 선택하거나 이곳에 끌어다 놓으세요. PDF, PNG, JPG 파일을 지원합니다.",
     "reading": "{name} 인식 중 ({i}/{n})",
     "read_done": "{name} 인식 완료",
     "studio_off": "Upstage API 키가 설정되지 않아 업로드할 수 없습니다. .env의 UPSTAGE_API_KEY를 확인하세요.",
@@ -133,13 +133,14 @@
     },
     "not_quote_empty": "품목과 금액이 없는 쪽(표지·안내문 등)이라 목록에 넣지 않았습니다.",
     "empty_category": "표지·안내문",
-    "not_quote": "견적서가 아니라 '{category}'(으)로 분류되어 목록에 넣지 않았습니다."
+    "not_quote": "견적서가 아니라 '{category}'(으)로 분류되어 목록에 넣지 않았습니다.",
+    "upload_title": "견적서를 추가하세요"
   },
   "review": {
     "heading": "견적 검토",
-    "lead": "확인 필요 항목을 처리합니다.",
+    "lead": "금액과 확인이 필요한 항목을 검토해 주세요.",
     "group": "{vendor} (합계 {total}원)",
-    "all_clear": "확인 필요 항목이 없습니다.",
+    "all_clear": "추가로 확인할 항목이 없습니다.",
     "done": "처리 완료",
     "options_label": "처리 방법",
     "input_label": "직접 입력",
@@ -147,8 +148,8 @@
     "answered": "처리 {n}건",
     "model_flags": "",
     "next": "다음",
-    "studio_decision": "Studio 판정: {decision}",
-    "studio_help": "Studio 노드 워크플로의 판정입니다. 금액은 앱이 원 단위로 다시 검산합니다."
+    "studio_decision": "검토 결과: {decision}",
+    "studio_help": "금액은 원 단위로 다시 계산했습니다. 원문과 비교한 뒤 처리 방법을 선택해 주세요."
   },
   "vendor": {
     "same_rep": "{vendors}의 대표자가 {rep}(으)로 같습니다. 같은 사람이 낸 견적은 비교견적으로 인정되지 않을 수 있으니 사업자 정보를 확인하세요.",
@@ -183,7 +184,7 @@
   },
   "case": {
     "heading": "품의 정보",
-    "lead": "견적서에 없는 항목만 입력합니다.",
+    "lead": "구매 목적과 집행 정보를 확인해 주세요. 입력한 내용은 품의서에 반영됩니다.",
     "fields": [
       [
         "project_name",
@@ -197,7 +198,7 @@
       ],
       [
         "title",
-        "제목 (미입력 시 자동 작성)",
+        "품의 제목",
         "text"
       ],
       [
@@ -246,8 +247,84 @@
         "text"
       ]
     ],
-    "save": "저장 후 다음",
-    "saved": "저장했습니다."
+    "save": "저장하고 품의서 작성",
+    "saved": "저장했습니다.",
+    "sections": [
+      {
+        "title": "사업 및 구매 목적",
+        "description": "어떤 업무에 필요한 구매인지 작성해 주세요.",
+        "keys": [
+          "project_name",
+          "project_period",
+          "purpose",
+          "title"
+        ]
+      },
+      {
+        "title": "예산 및 지출 계획",
+        "description": "구매에 사용할 재원과 지출 일정을 확인해 주세요.",
+        "keys": [
+          "funding_source",
+          "expected_date",
+          "payment_method",
+          "related_plan"
+        ]
+      },
+      {
+        "title": "기안 및 문서 정보",
+        "description": "품의서를 작성하는 담당자와 문서 정보를 입력해 주세요.",
+        "keys": [
+          "drafter",
+          "department",
+          "draft_date",
+          "doc_no"
+        ]
+      }
+    ],
+    "hints": {
+      "project_name": {
+        "placeholder": "예: 사무환경 개선 사업",
+        "help": "이번 구매가 속한 사업 또는 업무 이름입니다."
+      },
+      "project_period": {
+        "placeholder": "예: 2026.11.10 ~ 2026.12.31",
+        "help": "구매가 포함된 사업의 시작일과 종료일입니다."
+      },
+      "purpose": {
+        "placeholder": "예: 부서 공용 사무용품을 보충하기 위해 구매합니다.",
+        "help": "구매가 필요한 이유와 사용할 곳을 구체적으로 적어 주세요."
+      },
+      "title": {
+        "placeholder": "자동 작성하거나 직접 입력할 수 있습니다.",
+        "help": "비워 두면 구매 정보를 바탕으로 제목을 작성합니다."
+      },
+      "expected_date": {
+        "help": "실제 비용을 지출할 예정인 날짜입니다."
+      },
+      "payment_method": {
+        "placeholder": "예: 법인카드, 계좌이체",
+        "help": "구매 대금을 지급할 방법입니다."
+      },
+      "related_plan": {
+        "placeholder": "예: 2026 사무용품 구매계획서",
+        "help": "관련된 계획서 이름이나 문서번호를 적어 주세요."
+      },
+      "drafter": {
+        "placeholder": "담당자 이름",
+        "help": "품의서를 작성하는 담당자입니다."
+      },
+      "department": {
+        "placeholder": "예: 경영지원처",
+        "help": "기안자가 소속된 부서입니다."
+      },
+      "draft_date": {
+        "help": "품의서를 기안하는 날짜입니다."
+      },
+      "doc_no": {
+        "placeholder": "예: 경영지원-2026-0101",
+        "help": "기관에서 사용하는 문서번호를 입력해 주세요."
+      }
+    }
   },
   "form": {
     "heading": "품의서 작성",
@@ -288,7 +365,11 @@
   "upload": {
     "only_hwpx": ".hwpx 파일만 업로드할 수 있습니다."
   },
-  "download": {".docx": "Word 다운로드", ".hwpx": "HWPX 다운로드", ".pdf": "PDF 다운로드"},
+  "download": {
+    ".docx": "Word 다운로드",
+    ".hwpx": "HWPX 다운로드",
+    ".pdf": "PDF 다운로드"
+  },
   "close": "닫기",
   "offline": "서버와 연결되지 않습니다. 서버가 꺼져 있으면 다시 켠 뒤 이 화면을 새로고침하세요.",
   "modes": {
@@ -315,7 +396,7 @@
     ],
     "docs": {
       "heading": "증빙 선택",
-      "lead": "품의서와 영수증·거래명세서를 한 건으로 올립니다.",
+      "lead": "품의서와 증빙을 선택해 지출 내역을 검토합니다.",
       "set_legend": "구분",
       "cols": [
         "증빙 묶음",
@@ -325,8 +406,8 @@
         "검토"
       ],
       "select": "{name} 선택",
-      "upload": "증빙 파일 선택",
-      "upload_hint": "품의서, 영수증·거래명세서·세금계산서, 회사 결제 규정(있으면), 지출결의서 양식(있으면)을 한 번에 선택합니다. 여러 파일은 PDF 하나로 묶어 보냅니다.",
+      "upload": "파일 추가",
+      "upload_hint": "파일 1개 또는 여러 개를 선택할 수 있습니다. 나누어 추가한 파일도 한 건의 증빙으로 함께 검토합니다.",
       "files": "선택한 파일 {n}개: {names}",
       "clear": "선택 취소",
       "with_pumui": "작성한 품의서 PDF를 묶음 맨 앞에 넣기",
@@ -347,7 +428,9 @@
       "empty_action": "증빙 파일을 선택하고 결의 검토를 요청하면 목록에 추가됩니다.",
       "studio_off": "결의 워크플로 키가 설정되지 않아 업로드할 수 없습니다. .env의 GYEOLUI_API_KEY 또는 UPSTAGE_API_KEY를 확인하세요.",
       "next": "다음",
-      "error_title": "{name}: 검토 실패"
+      "error_title": "{name}: 검토 실패",
+      "selected_label": "선택한 증빙 파일",
+      "remove": "제거"
     },
     "review": {
       "heading": "증빙 검증",
@@ -373,8 +456,8 @@
       "input_label": "직접 입력",
       "input_submit": "적용",
       "answered": "처리 {n}건",
-      "studio_title": "Studio 검토",
-      "studio_help": "Studio 결의 워크플로의 보고서입니다. 지급금액·지급처는 앱이 증빙 값으로 다시 대조합니다.",
+      "studio_title": "상세 검토 결과",
+      "studio_help": "지급금액과 지급처를 증빙과 대조한 결과입니다. 근거를 확인한 뒤 처리 방법을 선택해 주세요.",
       "categories": "문서 구성: {list}",
       "decision_names": {
         "comparison_decision": "품의서·영수증 비교",
@@ -522,5 +605,10 @@
       },
       "hold_ms": 4000
     }
+  },
+  "navigation": {
+    "label": "단계 이동",
+    "back": "이전 단계",
+    "home": "홈으로"
   }
 }
