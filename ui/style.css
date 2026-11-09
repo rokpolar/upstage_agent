@@ -37,7 +37,10 @@ body { word-break: keep-all; word-wrap: break-word; overflow-wrap: anywhere; let
 .ledger td { padding: 10px var(--space-sm); border-bottom: var(--rule-hair) solid var(--color-rule); vertical-align: middle; }
 .ledger .num { text-align: right; white-space: nowrap; }
 .ledger .vendor { word-break: keep-all; overflow-wrap: normal; }
-@media (max-width: 40rem) { .ledger .status { white-space: normal; word-break: keep-all; text-align: left; } }
+@media (max-width: 40rem) {
+  .ledger th, .ledger td { padding-left: 6px; padding-right: 6px; }
+  .ledger .status { white-space: normal; word-break: keep-all; overflow-wrap: normal; text-align: left; }
+}
 .ledger tbody tr { cursor: pointer; transition: background-color var(--dur-micro) var(--ease-out); }
 .ledger tbody tr:hover { background: var(--color-paper-2); }
 .ledger tbody tr.is-on { background: var(--color-paper-2); }
@@ -154,6 +157,8 @@ textarea.input { min-height: 72px; resize: vertical; line-height: 1.5; }
 /* 아래 고정 바: 다음 단계 버튼 */
 .actions { position: sticky; bottom: 0; z-index: var(--z-sticky); display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: var(--space-sm); margin-top: var(--space-lg); padding-block: var(--space-sm); background: var(--color-paper); border-top: var(--rule-hair) solid var(--color-rule); }
 .actions .help { margin-right: auto; font-size: var(--text-sm); color: var(--color-ink); }
+.actions .key--back { margin-right: auto; }
+.actions .key--back + .help { margin-right: auto; }
 
 /* 품의서: 왼쪽 양식 타일, 오른쪽 문서 판 */
 .split { display: grid; grid-template-columns: minmax(0, 300px) minmax(0, 1fr); gap: var(--space-lg); align-items: start; }
@@ -221,6 +226,7 @@ textarea.input { min-height: 72px; resize: vertical; line-height: 1.5; }
   .tile { padding: var(--space-sm) var(--space-md); }
   .cut { padding: var(--space-md); }
   .actions .key { flex: 1 1 auto; }
+  .actions .key--back { flex: 0 0 auto; }
 }
 @media (prefers-reduced-motion: reduce) {
   .key, .tab, .seg label, .ledger tbody tr, .formlist label, .tile { transition: none; }

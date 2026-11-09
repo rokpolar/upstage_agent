@@ -289,6 +289,7 @@
     "only_hwpx": ".hwpx 파일만 업로드할 수 있습니다."
   },
   "download": {".docx": "Word 다운로드", ".hwpx": "HWPX 다운로드", ".pdf": "PDF 다운로드"},
+  "back": "이전",
   "close": "닫기",
   "offline": "서버와 연결되지 않습니다. 서버가 꺼져 있으면 다시 켠 뒤 이 화면을 새로고침하세요.",
   "modes": {

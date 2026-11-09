@@ -1,7 +1,7 @@
 import { S, MODES } from './state.js';
 import { $, $$, esc, fmt } from './dom.js';
 import { api } from './api.js';
-import { modeOf, M, keys, open, current } from './navigation.js';
+import { modeOf, M, keys, open, current, go } from './navigation.js';
 function renderTabs() {
   const at = current(), mode = modeOf();
   $('#modes').innerHTML = Object.entries(MODES).map(([k, m]) =>
@@ -36,7 +36,16 @@ async function render(fromNav = false) {
   if (keys()[at] !== location.hash.slice(1)) { history.replaceState(null, '', '#' + keys()[at]); }
   renderTabs();
   const [view, bind] = M().views[at];
-  const draw = () => { $('#main').innerHTML = view(); bind(); fitFrames(); };
+  // 첫 단계가 아니면 아래 동작 줄 맨 앞에 '이전' 버튼을 둔다(단계 이동은 위 탭으로도 된다)
+  const backKey = () => {
+    const bar = $('#main .actions');
+    if (!bar || at === 0 || bar.querySelector('[data-back]')) return;
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'key key--back'; b.dataset.back = ''; b.textContent = S.ui.back;
+    b.onclick = () => go(at - 1);
+    bar.prepend(b);
+  };
+  const draw = () => { $('#main').innerHTML = view(); bind(); fitFrames(); backKey(); };
   $('#main').classList.toggle('fit', at === 0);
   draw();
   if (M().after) await M().after(at, draw);
