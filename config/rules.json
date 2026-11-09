@@ -167,7 +167,7 @@
     "studio": {
       "_comment": "품의 Studio 노드 워크플로(workflow/품의 Agent (노드).json). agent_id·config_id·project_id는 기본값이고, env에 적은 이름의 환경변수·.env 값이 있으면 그것을 먼저 쓴다(앞 이름 우선). config_id가 null이거나 latest면 최신 설정으로 돈다. project_id가 있으면 모든 요청에 x-project-id 헤더를 보낸다(Agent가 프로젝트에 속할 때 필수). include all이면 단계별 결과가 온다.",
       "agent_id": "agt_jQdQGMLKPAN8U9gWTRFVqd",
-      "config_id": "1",
+      "config_id": "2",
       "project_id": "proj_4X2vw6uBUJ7sLUWVudkEPg",
       "env": {
         "key": ["PUMUI_API_KEY", "UPSTAGE_API_KEY"],

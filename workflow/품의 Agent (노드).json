@@ -3,9 +3,9 @@
   "schemaVersion": 4,
   "exportedAt": "2026-11-05T08:00:53.723Z",
   "exportedFrom": {
-    "workflowId": "agt_TcUDLvUvQgK3weF26ieC6B",
-    "workflowName": "품의 Agent (노드)",
-    "configId": "cfg_ZF4gMCRUkparLf6ThLNDWe",
+    "workflowId": "agt_jQdQGMLKPAN8U9gWTRFVqd",
+    "workflowName": "품의 Workflow",
+    "configId": "cfg_FLa8gH4KxhSX4qmKVqHpn6",
     "configVer": 2
   },
   "workflowConfig": {
