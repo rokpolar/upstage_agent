@@ -1,5 +1,5 @@
 {
-  "_comment": "역할 → 실제 키 이름. Studio 스키마(품의서_extract_schema.json)의 키를 바꾸면 여기만 맞추면 된다. 정답지·결의 인계 JSON도 이 키를 쓴다.",
+  "_comment": "역할 → 실제 키 이름. Studio 스키마(workflow/품의서_extract_schema.json)의 키를 바꾸면 여기만 맞추면 된다. 정답지·결의 인계 JSON도 이 키를 쓴다.",
   "vendor_name": "vendor_name",
   "vendor_representative": "vendor_representative",
   "quote_date": "quote_date",

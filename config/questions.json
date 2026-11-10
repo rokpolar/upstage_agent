@@ -53,7 +53,7 @@
     "options": {
       "use_calc": "계산값 {calc}원 적용",
       "keep": "견적서 값 {amount}원 유지",
-      "hold": "보류(재견적 요청)"
+      "hold": "보류하고 재견적 요청"
     }
   },
   "supply_sum": {
@@ -61,7 +61,7 @@
     "options": {
       "use_calc": "품목 합계 {item_sum}원 적용",
       "keep": "{where} 값 {supply}원 유지",
-      "hold": "보류(재견적 요청)"
+      "hold": "보류하고 재견적 요청"
     }
   },
   "vat_missing": {
@@ -90,11 +90,11 @@
     }
   },
   "total_sum": {
-    "message": "합계금액 불일치: 공급가액 {supply} + 부가세 {vat} = {total_calc}원, {where} 합계 {total}원",
+    "message": "합계 금액이 일치하지 않습니다. 공급가액 {supply}원 + 부가세 {vat}원 = {total_calc}원이며, {where}의 합계는 {total}원입니다.",
     "options": {
-      "use_calc": "계산값 {total_calc}원 적용",
-      "keep": "{where} 값 {total}원 유지",
-      "hold": "보류(재견적 요청)"
+      "use_calc": "계산한 금액 {total_calc}원 적용",
+      "keep": "{where} 금액 {total}원 유지",
+      "hold": "보류하고 재견적 요청"
     }
   },
   "category": {
@@ -112,7 +112,7 @@
     "message": "견적 유효기간({until})이 기안일({draft})보다 이릅니다.",
     "options": {
       "keep": "업체 확인 후 진행",
-      "hold": "보류(재견적 요청)"
+      "hold": "보류하고 재견적 요청"
     }
   },
   "_gyeolui_comment": "아래 g_로 시작하는 항목은 결의(지출결의서) 검토 문구. 문구 규칙은 위와 같다.",

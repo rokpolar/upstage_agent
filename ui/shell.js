@@ -1,7 +1,7 @@
 import { S, MODES } from './state.js';
 import { $, $$, esc, fmt } from './dom.js';
 import { api } from './api.js';
-import { modeOf, M, keys, open, current } from './navigation.js';
+import { modeOf, M, keys, open, current, go } from './navigation.js';
 function renderTabs() {
   const at = current(), mode = modeOf();
   $('#modes').innerHTML = Object.entries(MODES).map(([k, m]) =>
@@ -11,6 +11,30 @@ function renderTabs() {
   $('#tabs').innerHTML = M().steps().map((name, i) => open(i)
     ? `<a class="tab" href="#${keys()[i]}" ${i === at ? 'aria-current="step"' : ''}>${esc(name)}</a>`
     : `<span class="tab" aria-disabled="true">${esc(name)}</span>`).join('');
+}
+function stepNavigation(at) {
+  const t = S.ui.navigation;
+  if (!at && modeOf() === 'pumui') return '';
+  return `<nav class="stepnav" aria-label="${esc(t.label)}">${at ? `<a class="stepnav__back" href="#${keys()[at - 1]}"><span aria-hidden="true">←</span> ${esc(t.back)}</a>` : ''}<a class="stepnav__home" href="#${S.ui.step_keys[0]}">${esc(t.home)}</a></nav>`;
+}
+function bindFileDrop() {
+  const main = $('#main');
+  if (main.dataset.drop) return;
+  main.dataset.drop = '1';
+  const accepts = (e) => current() === 0 && [...(e.dataTransfer?.types || [])].includes('Files')
+    && (modeOf() === 'pumui' ? S.init.studio_ready : S.init.gyeolui.ready);
+  main.addEventListener('dragover', (e) => {
+    if (!accepts(e)) return;
+    e.preventDefault(); main.classList.add('is-drop');
+  });
+  main.addEventListener('dragleave', (e) => {
+    if (!main.contains(e.relatedTarget)) main.classList.remove('is-drop');
+  });
+  main.addEventListener('drop', (e) => {
+    main.classList.remove('is-drop');
+    if (!accepts(e)) return;
+    e.preventDefault(); M().addFiles(e.dataTransfer.files);
+  });
 }
 function fitFrame(f) {
   try {
@@ -36,7 +60,7 @@ async function render(fromNav = false) {
   if (keys()[at] !== location.hash.slice(1)) { history.replaceState(null, '', '#' + keys()[at]); }
   renderTabs();
   const [view, bind] = M().views[at];
-  const draw = () => { $('#main').innerHTML = view(); bind(); fitFrames(); };
+  const draw = () => { $('#main').innerHTML = stepNavigation(at) + view(); bind(); bindFileDrop(); fitFrames(); };
   $('#main').classList.toggle('fit', at === 0);
   draw();
   if (M().after) await M().after(at, draw);

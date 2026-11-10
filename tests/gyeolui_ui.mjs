@@ -70,9 +70,14 @@ globalThis.fetch = async (url, options) => {
   return {ok: true, json: async () => entry};
 };
 MODES.gyeolui.views[2][1]();
+formNode.oninput();
+assert.equal(S.g.infoDrafts.g1.description, '   ');
+assert.equal(entry.info.description, '행사 홍보물');
+assert.match(MODES.gyeolui.views[2][0](), /name="description"[^>]* value="   "/);
 await formNode.onsubmit({preventDefault() {}});
 assert.deepEqual(Object.keys(submitted.info), editable);
 assert.equal(submitted.info.description, '');
+assert.equal(S.g.infoDrafts.g1, undefined);
 assert.equal(location.hash, ui.gyeolui.step_keys[3]);
 
 S.result = {ok: true, handoff: {total: 990000}};

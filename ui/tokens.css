@@ -4,11 +4,11 @@
 :root {
   color-scheme: light;
   --space-3xs: 2px; --space-2xs: 4px; --space-xs: 8px; --space-sm: 12px; --space-md: 16px; --space-lg: 24px; --space-xl: 40px; --space-2xl: 64px; --space-3xl: 96px; --space-4xl: 144px;
-  --text-xs: 0.75rem; --text-sm: 0.875rem; --text-md: 1.0625rem; --text-lg: 1.3125rem; --text-xl: 1.75rem; --text-2xl: 2.5rem; --text-3xl: 3rem;
+  --text-xs: 0.75rem; --text-sm: 0.875rem; --text-md: 1rem; --text-lg: 1.1875rem; --text-xl: 1.5rem; --text-2xl: 2rem; --text-3xl: 2.5rem;
   --text-display-s: 1.75rem; --text-display: 2.5rem; --text-section: 1.3125rem; --text-title: 1.0625rem; --text-lead: 1.0625rem;
   --ease-out: cubic-bezier(0.25, 0.1, 0.25, 1); --ease-in: cubic-bezier(0.42, 0, 1, 1); --ease-in-out: cubic-bezier(0.42, 0, 0.58, 1);
   --dur-micro: 150ms; --dur-short: 240ms; --dur-long: 420ms;
-  --container: 1240px; --gutter: 40px; --gap-columns: 32px; --section-gap-s: 120px; --section-gap: 144px; --section-gap-l: 176px;
+  --container: 1240px; --gutter: 40px; /* 넓은 화면에서는 아래 미디어 규칙이 판을 넓힌다(양옆이 비지 않게) */ --gap-columns: 32px; --section-gap-s: 120px; --section-gap: 144px; --section-gap-l: 176px;
   --z-base: 1; --z-raised: 10; --z-dropdown: 100; --z-sticky: 200; --z-sticky-nav: 300; --z-modal: 400; --z-toast: 500; --z-tooltip: 600;
 
   --color-paper: #ffffff; --color-paper-2: #f5f5f7; --color-paper-3: #e8e8ed;
@@ -33,3 +33,6 @@
   --shadow-card: none;
   --tracking-display: -0.02em; --tracking-body: -0.01em; --display-weight: 700;
 }
+
+/* 전체 화면(1440px 이상): 판을 화면의 90%까지 넓힌다. 글 줄 길이는 .head h1 등 개별 max-width가 잡는다 */
+@media (min-width: 90rem) { :root { --container: min(1800px, 90vw); } }
