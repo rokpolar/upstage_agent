@@ -102,6 +102,8 @@
     "none": "없음"
   },
   "evidence": {
+    "_comment": "field_names: 화면에 보일 칸 이름(키 → 이름). 품목 칸은 '{no}번 품목 단가'처럼 쓴다.",
+    "field_names": {"supply_amount": "공급가액", "vat_amount": "부가세", "total_amount": "합계금액", "unit_price": "단가", "amount": "금액", "item": "{no}번 품목 {name}"},
     "message": "{field} {value}원이 견적서 원문에서 확인되지 않습니다.",
     "options": {
       "keep": "인식값 유지",

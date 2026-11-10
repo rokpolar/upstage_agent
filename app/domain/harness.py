@@ -95,6 +95,15 @@ def make_q(kind, key, field, values, params, evidence="", proposed=None):
     }
 
 
+def field_label(field):
+    """질문 문구에 쓸 칸 이름. 'supply_amount' → '공급가액', 'items[0].unit_price' → '1번 품목 단가'."""
+    names = config("questions")["evidence"]["field_names"]
+    m = re.fullmatch(r"\w+\[(\d+)\]\.(\w+)", field)
+    if m:
+        return names["item"].format(no=int(m[1]) + 1, name=names.get(m[2], m[2]))
+    return names.get(field, field)
+
+
 def evidence_line(text, *needles):
     """needles(주로 금액 표기)가 모두 들어 있는 원문 한 줄."""
     for line in text.splitlines():
@@ -308,7 +317,7 @@ def review(r, text="", case=None, acknowledged=()):
                         f"evidence:{field}:{v}",
                         field,
                         [("keep", None), ("input", None)],
-                        {"value": won(v), "field": field},
+                        {"value": won(v), "field": field_label(field)},
                     )
                 )
 
