@@ -3,6 +3,7 @@
 import json
 import mimetypes
 import os
+import sys
 import time
 import urllib.error
 import urllib.request
@@ -131,16 +132,19 @@ class StudioClient:
             raise RuntimeError(
                 f"{self.root / '.env'}에 {', '.join(missing)} 값이 없어요."
             )
-        result, job_id = self.run_one(
-            Path(path),
-            s["key"],
-            s["agent_id"],
-            s["config_id"],
-            progress,
-            kind,
-            on_job,
-            s["project_id"],
+        run = lambda agent, config: self.run_one(  # noqa: E731
+            Path(path), s["key"], agent, config, progress, kind, on_job, s["project_id"]
         )
+        try:
+            result, job_id = run(s["agent_id"], s["config_id"])
+        except StudioError as e:
+            # .env의 Agent ID가 이 프로젝트에 없는 예전 Agent면(404) rules.json의 기본 Agent로 한 번 다시 돈다
+            st = self.profile(kind)
+            default = st.get("agent_id")
+            if e.kind != "not_found" or not default or default == s["agent_id"]:
+                raise
+            print(f"[studio] .env의 Agent를 찾지 못해 설정 파일의 Agent({default})로 다시 실행합니다.", file=sys.stderr)
+            result, job_id = run(default, None if st.get("config_id") in (None, "", "latest") else str(st["config_id"]))
         out = Path(out_dir)
         out.mkdir(parents=True, exist_ok=True)
         write_json(out / f"{Path(path).stem}.json", result)
