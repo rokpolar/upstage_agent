@@ -147,6 +147,40 @@
           "대표자 동일"
         ]
       }
+    },
+    {
+      "case_id": "H",
+      "file": "신라면_최종제출_품의_set08.pdf",
+      "documents": [
+        "FAX 송부장",
+        "견적서"
+      ],
+      "answer": {
+        "decision": "작성 중지",
+        "selected_vendor": "확인 불가",
+        "selected_total": null,
+        "quote_count": 1,
+        "needs_review": []
+      }
+    },
+    {
+      "case_id": "I",
+      "file": "신라면_최종제출_품의_set09.pdf",
+      "documents": [
+        "견적서",
+        "견적서",
+        "견적서"
+      ],
+      "answer": {
+        "decision": "담당자 확인 필요",
+        "selected_vendor": "세이프라인산업",
+        "selected_total": 5203000,
+        "quote_count": 3,
+        "needs_review": [
+          "대표자 동일",
+          "계산 불일치"
+        ]
+      }
     }
   ]
 }
