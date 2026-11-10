@@ -5,6 +5,7 @@ import threading
 import zipfile
 from urllib.parse import quote
 
+import pytest
 from lxml import etree
 
 from app.adapters.docx import NS, DocxForm, cell_text, key, para_text, w
@@ -109,7 +110,7 @@ def test_missing_values_stay_blank_and_reported(tmp_path):
     assert any(p.replace(" ", "") == "20년월일" for p in paras)  # 날짜 줄은 양식 그대로
 
 
-def test_fill_from_workflow_result_and_download(app):
+def test_fill_from_workflow_result_and_download(app, monkeypatch):
     api = Routes(app)
     gid = "g0:expense"
     blocked = api.post("/api/gyeolui/fill", {"id": gid})
@@ -142,6 +143,26 @@ def test_fill_from_workflow_result_and_download(app):
     )
     assert record["form_input"]["values"]["amount"] == 2380400
     assert app.g_summary(gid)["fill"]["docx"] == r["report"]["files"]["docx"]
+    docx_download = api.post("/api/gyeolui/download", {"id": gid, "format": "docx"})
+    assert docx_download == {"url": r["report"]["files"]["docx"], "name": path.name}
+    with pytest.raises(ValueError):
+        api.post("/api/gyeolui/download", {"id": gid, "format": "zip"})
+
+    calls = []
+
+    def convert(source):
+        calls.append(source)
+        assert read(source)[0]["지급금액"] == cells["지급금액"]
+        pdf = source.with_suffix(".pdf")
+        pdf.write_bytes(b"%PDF-test")
+        return pdf, "mock"
+
+    monkeypatch.setattr("app.adapters.docx_pdf.to_pdf", convert)
+    pdf_download = api.post("/api/gyeolui/download", {"id": gid, "format": "pdf"})
+    assert pdf_download["name"] == path.with_suffix(".pdf").name
+    assert (app.out / pdf_download["url"].removeprefix("/out/")).read_bytes() == b"%PDF-test"
+    assert api.post("/api/gyeolui/download", {"id": gid, "format": "pdf"}) == pdf_download
+    assert len(calls) == 1
 
 
 def test_http_docx_download_and_template_preview(app):

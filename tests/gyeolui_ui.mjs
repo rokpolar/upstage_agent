@@ -87,4 +87,14 @@ assert.equal(S.result, null);
 assert.equal(S.init.gyeolui.handoff, null);
 assert.equal(S.init.quotes[0].fill, null);
 assert.equal(entry.fill.docx, '/out/historical.docx');
+S.g.result = {ok: true, report: {files: {docx: '/out/final.docx', html: '/out/final.html'}, missing: [], filled: [], notes: []}};
+for (const selected of ['docx', 'pdf']) {
+  S.g.downloadFormat = selected;
+  const markup = MODES.gyeolui.views[3][0]();
+  assert.equal((markup.match(/name="g-download-format"/g) || []).length, 2);
+  assert.equal((markup.match(/value="(?:docx|pdf)" checked/g) || []).length, 1);
+  assert.match(markup, new RegExp(`value="${selected}" checked`));
+  assert.equal((markup.match(/id="gdownload"/g) || []).length, 1);
+  assert.doesNotMatch(markup, /<a[^>]*download/);
+}
 console.log('gyeolui: safe Markdown, document order, readonly values, six-field payload, and handoff UI invalidation passed');

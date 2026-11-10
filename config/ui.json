@@ -543,8 +543,10 @@
       "template_help": "결의 워크플로 결과와 검증·결의 정보에서 정한 값을 이 양식에 넣습니다. 결재란은 비워 둡니다.",
       "refill": "다시 작성",
       "download_docx": "DOCX 다운로드",
+      "download_format": "다운로드 형식",
+      "download": "다운로드",
       "filled": "작성 내역",
-      "preview_note": "미리보기는 확인용입니다. 제출본은 DOCX 파일입니다.",
+      "preview_note": "DOCX 또는 PDF 중 하나를 선택해 다운로드하세요.",
       "print": "인쇄·PDF 저장",
       "print_help": "인쇄 창에서 프린터나 'PDF로 저장'을 고르세요. 한글에서 HWPX를 열어 인쇄해도 됩니다."
     },

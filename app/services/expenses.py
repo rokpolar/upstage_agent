@@ -10,7 +10,7 @@ import uuid
 from pathlib import Path
 
 from app.adapters.docx import DocxForm
-from app.adapters.files import decode_data, safe_name, write_json
+from app.adapters.files import confined, decode_data, safe_name, write_json
 from app.adapters.pdf import ConversionError, html_to_pdf
 from app.adapters.studio_errors import StudioError
 from app.config import config
@@ -369,6 +369,39 @@ class ExpensesService:
             return {"ok": True, "report": report}
 
         try:
+            return self.execute(publish, expected=revision)
+        except Exception:
+            shutil.rmtree(folder, ignore_errors=True)
+            raise
+
+    def g_download(self, gid, format):
+        if format not in ("docx", "pdf"):
+            raise ValueError("다운로드 형식은 DOCX 또는 PDF여야 합니다.")
+        state, revision = self.snapshot()
+        files = state["g"][gid].get("fill")
+        if not files:
+            raise ValueError("먼저 결의서를 작성하세요.")
+        name = Path(files["name"]).with_suffix("." + format).name
+        if format == "docx" or files.get("pdf"):
+            return {"url": files[format], "name": name}
+        prefix = getattr(self, "url_prefix", "") + "/out/"
+        if not files["docx"].startswith(prefix):
+            raise FileNotFoundError("작성한 결의서를 찾지 못했습니다.")
+        source = confined(self.out, files["docx"][len(prefix):])
+        folder = self.out / uuid.uuid4().hex
+        folder.mkdir(parents=True, exist_ok=True)
+        try:
+            from app.adapters.docx_pdf import to_pdf
+
+            docx = folder / source.name
+            shutil.copyfile(source, docx)
+            pdf, _ = to_pdf(docx)
+            url = self.out_url(pdf)
+
+            def publish():
+                self.state["g"][gid]["fill"]["pdf"] = url
+                return {"url": url, "name": name}
+
             return self.execute(publish, expected=revision)
         except Exception:
             shutil.rmtree(folder, ignore_errors=True)

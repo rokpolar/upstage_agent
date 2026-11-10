@@ -8,7 +8,7 @@ import { renderMarkdown } from './markdown.js';
 // 결의서 작업 화면: 증빙 선택 → 검증 → 결의 정보 → 결의서 작성. app.js의 도우미(S, $, api, head, popup, formPanel…)를 그대로 쓴다.
 // 문구는 /api/init 의 ui.gyeolui(config/ui.json). 단계 주소는 #g-docs, #g-review, #g-info, #g-form.
 S.g = { set: 0, sel: null, files: [], withPumui: true, link: true, form: null, preview: null, previewState: 'idle',
-  result: null, busy: {}, timer: null, watch: [], view: null, infoDrafts: {} };
+  result: null, busy: {}, timer: null, watch: [], view: null, infoDrafts: {}, downloadFormat: 'docx' };
 
 const GT = () => S.ui.gyeolui;
 const gItems = () => S.init.gyeolui.items;
@@ -300,14 +300,16 @@ function bindGInfo() {
 }
 
 // ---------------------------------------------------------------- 4. 결의서 작성 (지출결의서 DOCX 양식 고정)
-// 왼쪽: 고정 양식, 작성 버튼, 작성 내역·입력값 없음. 오른쪽: 미리보기와 DOCX 다운로드.
+// 왼쪽: 고정 양식, 작성 버튼, 작성 내역·입력값 없음. 오른쪽: 미리보기와 선택한 형식 다운로드.
 function viewGForm() {
   const t = GT().form, r = S.g.result, ul = (title, arr, open, help = '', action = '') => (arr.length
     ? `<details ${open ? 'open' : ''}><summary>${esc(title)} <span class="count">${arr.length}</span></summary>${help ? `<p class="help">${esc(help)}</p>` : ''}<ul>${arr.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>${action}</details>` : '');
   let doc, side = '';
   if (r && r.ok) {
     const rep = r.report, f = rep.files;
-    doc = `<div class="doc__head"><h2>${esc(t.result)}</h2><a class="key key--primary" href="${f.docx}" download="${esc(f.name || '')}">${esc(t.download_docx)}</a></div>
+    doc = `<div class="doc__head"><h2>${esc(t.result)}</h2>
+      <fieldset class="seg"><legend>${esc(t.download_format)}</legend>${['docx', 'pdf'].map((format) => `<input type="radio" name="g-download-format" id="g-download-${format}" value="${format}" ${S.g.downloadFormat === format ? 'checked' : ''}><label for="g-download-${format}">${format.toUpperCase()}</label>`).join('')}</fieldset>
+      <button type="button" class="key key--primary" id="gdownload">${esc(t.download)}</button></div>
       <iframe title="${esc(t.result_title)}" src="${f.html}"></iframe><p class="help">${esc(t.preview_note)}</p>`;
     side = `<div class="report">${ul(t.missing, rep.missing.map((m) => m.label), true, t.missing_help, `<a class="key" href="#${GT().step_keys[2]}">${esc(t.missing_action)}</a>`)}
       ${ul(t.filled, (rep.filled || []).map((x) => `${x.label}: ${x.value}`), !rep.missing.length)}${ul(t.notes, rep.notes || [], false)}</div>`;
@@ -329,6 +331,17 @@ function viewGForm() {
     <div class="actions"><button type="button" class="key key--primary" id="gfill" ${busy ? 'aria-busy="true"' : ''}>${esc(busy ? t.filling : r && r.ok ? t.refill : t.fill)}</button></div>`;
 }
 function bindGForm() {
+  $$('[name="g-download-format"]').forEach((input) => { input.onchange = () => { S.g.downloadFormat = input.value; }; });
+  const download = $('#gdownload');
+  if (download) download.onclick = async () => {
+    download.disabled = true; download.setAttribute('aria-busy', 'true');
+    try {
+      const file = await api('/api/gyeolui/download', { id: S.g.sel, format: S.g.downloadFormat });
+      const link = document.createElement('a'); link.href = file.url; link.download = file.name;
+      document.body.append(link); link.click(); link.remove();
+    } catch (err) { say('gform', fmt(S.ui.error, { msg: err.message }), true); }
+    finally { download.disabled = false; download.removeAttribute('aria-busy'); }
+  };
   $('#gfill').onclick = async () => {
     S.g.busy.fill = true; render();
     try {

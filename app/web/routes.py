@@ -172,10 +172,12 @@ class Routes:
             gid = a.g_upload(body)
             with a.lock:
                 return {"item": copy.deepcopy(a.g_summary(gid))}
-        if path in ("/api/gyeolui/answer", "/api/gyeolui/info", "/api/gyeolui/fill"):
+        if path in ("/api/gyeolui/answer", "/api/gyeolui/info", "/api/gyeolui/fill", "/api/gyeolui/download"):
             gid = require(body, "id", str)
             with a.lock:
                 self.check_ids([gid], "g")
+            if path.endswith("/download"):
+                return a.g_download(gid, require(body, "format", str))
             if path.endswith("/info"):
                 return a.execute(a.g_info, gid, require(body, "info", dict))
             if path.endswith("/answer"):
