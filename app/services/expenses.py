@@ -10,10 +10,11 @@ import uuid
 from pathlib import Path
 
 from app.adapters.docx import DocxForm
+from app.adapters.docx_preview import to_html
 from app.adapters.files import confined, decode_data, safe_name, write_json
 from app.adapters.pdf import ConversionError, html_to_pdf
 from app.adapters.studio_errors import StudioError
-from app.config import config
+from app.config import config, fields
 from app.domain import gyeolui
 from app.domain.money import korean_amount, won
 
@@ -318,7 +319,7 @@ class ExpensesService:
         src = self.docx_template()
         dst = self.out / "forms" / f"{src.stem}.preview.html"
         dst.parent.mkdir(parents=True, exist_ok=True)
-        dst.write_text(DocxForm(src).to_html(), encoding="utf-8")
+        dst.write_text(to_html(src), encoding="utf-8")
         return self.out_url(dst)
 
     def g_fill(self, gid, form_rel=None):
@@ -332,15 +333,44 @@ class ExpensesService:
             return {"ok": False, "blocked": gyeolui.blocked(st)}
         cfg = config("docx_gyeolui")
         result, case = gyeolui.form_input(st)
+        payment = next(
+            (
+                rc
+                for rc in st["result"]["receipts"]
+                if rc["kind"] == "payment" and rc.get("total") == case["amount"]
+            ),
+            {},
+        )
+        case.setdefault("payment_date", payment.get("date") or "")
         values = docx_values(case)
+        values["drafter_line"] = (
+            f"{case.get('drafter', '')}  (서명)    기안부서: {case.get('department', '')}"
+            if case.get("drafter")
+            else ""
+        )
+        for role in ("supply", "vat"):
+            value = result.get(fields()[role])
+            values[role + "_text"] = won(value) + "원" if value is not None else ""
+        for role in (
+            "payment_date",
+            "request_date",
+            "delivery_date",
+            "inspection_date",
+        ):
+            value = case.get(role) or ""
+            match = re.fullmatch(r"(\d{4})-(\d{1,2})-(\d{1,2})", value)
+            values[role + "_text"] = (
+                f"{match[1]}년 {int(match[2])}월 {int(match[3])}일" if match else value
+            )
         doc = DocxForm(self.docx_template())
         filled_report = doc.fill(values, cfg)
+        doc.fill_items(result)
         folder = self.out / uuid.uuid4().hex
         folder.mkdir(parents=True, exist_ok=True)
         name = safe_name(cfg["output_name"].format(name=e["name"]))
         filled = doc.save(folder / name, cfg.get("drop_parts", ()))
         page = folder / f"{Path(name).stem}.preview.html"
-        page.write_text(DocxForm(filled).to_html(), encoding="utf-8")
+        page.write_text(to_html(filled), encoding="utf-8")
         report = {
             "form": cfg["template"],
             "missing": filled_report["missing"],
@@ -387,7 +417,7 @@ class ExpensesService:
         prefix = getattr(self, "url_prefix", "") + "/out/"
         if not files["docx"].startswith(prefix):
             raise FileNotFoundError("작성한 결의서를 찾지 못했습니다.")
-        source = confined(self.out, files["docx"][len(prefix):])
+        source = confined(self.out, files["docx"][len(prefix) :])
         folder = self.out / uuid.uuid4().hex
         folder.mkdir(parents=True, exist_ok=True)
         try:

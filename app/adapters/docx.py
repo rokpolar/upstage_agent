@@ -16,6 +16,9 @@ from pathlib import Path
 
 from lxml import etree
 
+from app.config import fields
+from app.domain.money import won
+
 W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
 NS = {"w": W}
 XML_SPACE = "{http://www.w3.org/XML/1998/namespace}space"
@@ -123,7 +126,8 @@ class DocxForm:
                     rpr = copy.deepcopy(rpr)
                     for b in rpr.findall("w:b", NS) + rpr.findall("w:bCs", NS):
                         rpr.remove(b)
-                if has_all(tpl):
+                optional = cfg["cells"][role].get("optional", False)
+                if has_all(tpl) or optional:
                     self.write_cell(cells[i + 1], tpl.format_map(ctx), rpr)
                     report["filled"].append(
                         {
@@ -156,7 +160,7 @@ class DocxForm:
                 report["notes"].append(
                     f"양식에서 '{names.get(role, role)}' 줄을 찾지 못함"
                 )
-            elif has_all(rule["value"]):
+            elif has_all(rule["value"]) or rule.get("optional", False):
                 self.write_para(p, rule["value"].format_map(ctx))
                 report["filled"].append(
                     {
@@ -168,6 +172,55 @@ class DocxForm:
             elif not any(m["role"] == role for m in report["missing"]):
                 report["missing"].append({"role": role, "label": names.get(role, role)})
         return report
+
+    def fill_items(self, result):
+        """품목 표의 기존 병합을 유지하고, 줄이 부족하면 복제해 누락 없이 쓴다."""
+        item = fields()["item"]
+        rows = list(self.body.iter(w("tr")))
+        header = next(
+            (
+                r
+                for r in rows
+                if [key(cell_text(c)) for c in r.findall("w:tc", NS)][1:]
+                == ["적요", "수량", "단가", "금액", "비고"]
+            ),
+            None,
+        )
+        if header is None:
+            raise ValueError("지출결의서의 물품명세 표를 찾지 못했습니다.")
+        table = header.getparent()
+        following = list(table)[list(table).index(header) + 1 :]
+        slots, total = [], None
+        for row in following:
+            if row.tag != w("tr"):
+                continue
+            cells = row.findall("w:tc", NS)
+            if any(key(cell_text(c)) == "합계" for c in cells):
+                total = row
+                break
+            slots.append(row)
+        if not slots or total is None:
+            raise ValueError("지출결의서의 품목·합계 줄을 찾지 못했습니다.")
+        items = result.get(fields()["items"]) or []
+        while len(slots) < len(items):
+            row = copy.deepcopy(slots[-1])
+            table.insert(list(table).index(total), row)
+            slots.append(row)
+        for index, row in enumerate(slots):
+            line = items[index] if index < len(items) else {}
+            values = [
+                line.get(item["description"], ""),
+                *[
+                    won(line[k]) if line.get(k) is not None else ""
+                    for k in (item["quantity"], item["unit_price"], item["amount"])
+                ],
+                line.get(item["note"], ""),
+            ]
+            for cell, value in zip(row.findall("w:tc", NS)[1:], values):
+                self.write_cell(cell, value)
+        self.write_cell(
+            total.findall("w:tc", NS)[4], won(result.get(fields()["total"]))
+        )
 
     def save(self, path, drop=()):
         """채운 문서를 새 DOCX로 저장한다. drop의 부분(옛 미리보기 그림 등)은 빼고 관계 목록에서도 지운다."""

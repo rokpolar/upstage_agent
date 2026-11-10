@@ -1,34 +1,105 @@
 {
   "_comment": "지출결의서 DOCX 양식(고정)과 채우는 방법. tools 코드는 칸을 찾고 쓰는 방법만 알고, 어느 칸에 무엇을 쓰는지는 여기에 둔다. 값의 이름은 gyeolui.form_input의 case(결의 정보 + 검증에서 정한 지급금액·지급처)와 같다.",
-  "template": "forms/expense/지출결의서.docx",
+  "template": "forms/expense/물품구매_지출결의서_양식.docx",
   "output_name": "{name}_지출결의서.docx",
   "cells": {
-    "_comment": "라벨 칸(공백·기호를 뺀 글자로 비교) → 오른쪽 값 칸에 쓸 값. 값이 없으면 칸을 비우고 '입력값 없음'에 올린다.",
-    "account": {"labels": ["계정과목"], "value": "{account}"},
-    "description": {"labels": ["적요"], "value": "{description}"},
-    "amount": {"labels": ["지급금액"], "value": "{amount_text}"},
-    "payee": {"labels": ["지급처"], "value": "{payee}"},
-    "payment_method": {"labels": ["지급방법"], "value": "{payment_method}"},
-    "attachments": {"labels": ["증빙첨부"], "value": "{attachments}"}
+    "account": {
+      "labels": [
+        "계정과목"
+      ],
+      "value": "{account}"
+    },
+    "description": {
+      "labels": [
+        "제목"
+      ],
+      "value": "{description}"
+    },
+    "amount": {
+      "labels": [
+        "지급금액"
+      ],
+      "value": "{amount_text}"
+    },
+    "payee": {
+      "labels": [
+        "지급처"
+      ],
+      "value": "{payee}"
+    },
+    "payment_method": {
+      "labels": [
+        "지급방법"
+      ],
+      "value": "{payment_method}"
+    },
+    "resolution_date": {
+      "labels": [
+        "결의일자"
+      ],
+      "value": "{resolution_date_text}"
+    },
+    "drafter": {
+      "labels": [
+        "기안자"
+      ],
+      "value": "{drafter_line}"
+    },
+    "payment_date": {
+      "labels": [
+        "지급일자"
+      ],
+      "value": "{payment_date_text}",
+      "optional": true
+    }
   },
   "paragraphs": [
     {
-      "_comment": "날짜 줄 '20  년  월  일' → 결의일",
-      "role": "resolution_date",
-      "match": "^\\s*20\\s*년\\s*월\\s*일\\s*$",
-      "value": "{resolution_date_text}"
+      "role": "resolution_number",
+      "match": "^결의번호:",
+      "value": "결의번호: 제 {resolution_number} 호",
+      "optional": true
     },
     {
-      "_comment": "'기 안 자 :      (인)' → 기안자 이름. 서명은 하지 않는다.",
-      "role": "drafter",
-      "match": "^\\s*기\\s*안\\s*자\\s*[:：]",
-      "value": "기 안 자 :  {drafter}  (인)"
+      "role": "request_number",
+      "match": "^관련 품의:",
+      "value": "관련 품의: {request_number} (품의일: {request_date_text})",
+      "optional": true
     },
     {
-      "_comment": "'붙임 : 세금계산서 등 증빙서류 각 1부.'는 양식의 예시 문구 → 이번 결의의 증빙",
+      "role": "supply",
+      "match": "^공급가액:",
+      "value": "공급가액: {supply_text}    부가세: {vat_text}",
+      "optional": true
+    },
+    {
+      "role": "delivery_date",
+      "match": "^납품일:",
+      "value": "납품일: {delivery_date_text}",
+      "optional": true
+    },
+    {
+      "role": "inspection_date",
+      "match": "^검수일:",
+      "value": "검수일: {inspection_date_text}    검수자: {inspector} (서명)",
+      "optional": true
+    },
+    {
+      "role": "bank",
+      "match": "^입금은행:",
+      "value": "입금은행: {bank}    예금주: {account_holder}",
+      "optional": true
+    },
+    {
+      "role": "bank_account",
+      "match": "^계좌번호:",
+      "value": "계좌번호: {bank_account}",
+      "optional": true
+    },
+    {
       "role": "attachments",
-      "match": "^\\s*붙\\s*임\\s*[:：]",
-      "value": "붙임 : {attachments} 각 1부."
+      "match": "^□ 품의서",
+      "value": "{attachments}"
     }
   ],
   "formats": {
@@ -43,8 +114,18 @@
     "payment_method": "지급방법",
     "attachments": "증빙 첨부",
     "resolution_date": "결의일",
-    "drafter": "기안자"
+    "drafter": "기안자",
+    "payment_date": "지급일자",
+    "resolution_number": "결의번호",
+    "request_number": "관련 품의",
+    "supply": "공급가액·부가세",
+    "delivery_date": "납품일",
+    "inspection_date": "검수 확인",
+    "bank": "은행·예금주",
+    "bank_account": "계좌번호"
   },
-  "drop_parts": ["docProps/thumbnail.jpeg"],
+  "drop_parts": [
+    "docProps/thumbnail.jpeg"
+  ],
   "_drop_comment": "양식에 들어 있던 옛 첫 쪽 그림은 채운 내용과 달라서 뺀다."
 }

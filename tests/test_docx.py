@@ -9,12 +9,12 @@ import pytest
 from lxml import etree
 
 from app.adapters.docx import NS, DocxForm, cell_text, key, para_text, w
-from app.config import ROOT, config
+from app.config import ROOT, config, fields
 from app.web.routes import Routes
 from app.web.server import create_server
 from tests.test_http import request
 
-TEMPLATE = ROOT / "forms/expense/지출결의서.docx"
+TEMPLATE = ROOT / "forms/expense/물품구매_지출결의서_양식.docx"
 FULL = {
     "account": "행사운영비",
     "description": "노사협의회 워크숍 행사 케이터링 구매",
@@ -24,6 +24,7 @@ FULL = {
     "attachments": "품의서, 신용카드 매출전표, 거래명세서",
     "resolution_date_text": "2026년 11월 14일",
     "drafter": "최민호",
+    "drafter_line": "최민호 (서명) 기안부서: 총무부",
 }
 
 
@@ -38,7 +39,7 @@ def read(path):
         if len(tcs) == 2:
             cells[key(cell_text(tcs[0]))] = cell_text(tcs[1])
     body = doc.find("w:body", NS)
-    paras = [para_text(p) for p in body.findall("w:p", NS)]
+    paras = [para_text(p) for p in body.iter(w("p"))]
     return cells, paras, names
 
 
@@ -54,28 +55,32 @@ def test_fill_all_fields(tmp_path):
     cells, paras, names = read(out)
     assert cells["계정과목"] == "행사운영비"
     assert cells["지급금액"] == "금 이백삼십팔만사백원정 (￦2,380,400)"
-    assert cells["지급처"] == "맛누리케터링" and cells["증빙첨부"].startswith("품의서")
+    assert (
+        cells["지급처"] == "맛누리케터링"
+        and "품의서, 신용카드 매출전표, 거래명세서" in paras
+    )
     assert "2026년 11월 14일" in paras
     label_table = (
         etree.fromstring(zipfile.ZipFile(out).read("word/document.xml"))
         .find("w:body", NS)
-        .findall("w:tbl", NS)[1]
+        .findall("w:tbl", NS)[0]
     )
     value_runs = [
         r
         for tr in label_table.findall("w:tr", NS)
+        if len(tr.findall("w:tc", NS)) == 2
         for r in tr.findall("w:tc", NS)[1].iter(w("r"))
     ]
     assert value_runs and all(
         r.find("w:rPr/w:b", NS) is None for r in value_runs
     )  # 값은 굵게 하지 않는다
     assert all(
-        r.find("w:rPr/w:sz", NS).get(w("val")) == "21"
+        r.find("w:rPr/w:sz", NS).get(w("val")) == "22"
         for r in value_runs
         if r.find("w:rPr", NS) is not None
     )
-    assert any(p.startswith("기 안 자 :  최민호") and p.endswith("(인)") for p in paras)
-    assert "붙임 : 품의서, 신용카드 매출전표, 거래명세서 각 1부." in paras
+    assert any("최민호" in p and "서명" in p for p in paras)
+    assert "품의서, 신용카드 매출전표, 거래명세서" in paras
     assert not report["missing"] and not report["notes"]
     # 옛 첫 쪽 그림은 빼고, 관계 목록에도 남기지 않는다. [Content_Types].xml은 맨 앞
     assert "docProps/thumbnail.jpeg" not in names and names[0] == "[Content_Types].xml"
@@ -89,14 +94,14 @@ def test_fill_all_fields(tmp_path):
         .findall("w:tr", NS)[1]
         .findall("w:tc", NS)
     ]
-    assert approvals == ["", "", ""]
+    assert approvals[-6:] == [""] * 6
 
 
 def test_missing_values_stay_blank_and_reported(tmp_path):
     values = {
         k: v
         for k, v in FULL.items()
-        if k not in ("account", "drafter", "resolution_date_text")
+        if k not in ("account", "drafter", "drafter_line", "resolution_date_text")
     }
     doc = DocxForm(TEMPLATE)
     report = doc.fill(values, config("docx_gyeolui"))
@@ -107,7 +112,29 @@ def test_missing_values_stay_blank_and_reported(tmp_path):
         "drafter",
         "resolution_date",
     }
-    assert any(p.replace(" ", "") == "20년월일" for p in paras)  # 날짜 줄은 양식 그대로
+    assert not any("2026년" in p for p in paras)  # 날짜 줄은 양식 그대로
+
+
+def test_company_item_rows_expand_without_losing_details(tmp_path):
+    doc = DocxForm(TEMPLATE)
+    f, i = fields(), fields()["item"]
+    items = [
+        {
+            i["description"]: f"확인 품목 {n}",
+            i["quantity"]: n,
+            i["unit_price"]: 100,
+            i["amount"]: n * 100,
+        }
+        for n in range(1, 9)
+    ]
+    doc.fill_items({f["items"]: items, f["total"]: 3960})
+    path = doc.save(tmp_path / "items.docx")
+    with zipfile.ZipFile(path) as z:
+        root = etree.fromstring(z.read("word/document.xml"))
+    text = "".join(root.itertext())
+    assert all(f"확인 품목 {n}" in text for n in range(1, 9))
+    assert "3,960" in text
+    assert "재무책임자" in text and "대표이사" in text
 
 
 def test_fill_from_workflow_result_and_download(app, monkeypatch):
@@ -126,6 +153,7 @@ def test_fill_from_workflow_result_and_download(app, monkeypatch):
         "account": "행사운영비",
         "resolution_date": "2026-11-14",
         "drafter": "최민호",
+        "drafter_line": "최민호 (서명) 기안부서: 총무부",
     }
     api.post("/api/gyeolui/info", {"id": gid, "info": info})
     r = api.post("/api/gyeolui/fill", {"id": gid})
@@ -160,8 +188,12 @@ def test_fill_from_workflow_result_and_download(app, monkeypatch):
     monkeypatch.setattr("app.adapters.docx_pdf.to_pdf", convert)
     pdf_download = api.post("/api/gyeolui/download", {"id": gid, "format": "pdf"})
     assert pdf_download["name"] == path.with_suffix(".pdf").name
-    assert (app.out / pdf_download["url"].removeprefix("/out/")).read_bytes() == b"%PDF-test"
-    assert api.post("/api/gyeolui/download", {"id": gid, "format": "pdf"}) == pdf_download
+    assert (
+        app.out / pdf_download["url"].removeprefix("/out/")
+    ).read_bytes() == b"%PDF-test"
+    assert (
+        api.post("/api/gyeolui/download", {"id": gid, "format": "pdf"}) == pdf_download
+    )
     assert len(calls) == 1
 
 
@@ -176,11 +208,11 @@ def test_http_docx_download_and_template_preview(app):
         )  # 브라우저처럼 한글 경로를 인코딩해 보낸다
         assert (
             status == 200
-            and "계 정 과 목" in page.decode()
+            and "계정과목" in page.decode()
             and ctype.startswith("text/html")
         )
         init = json.loads(request(server, "/api/init")[1])
-        assert init["gyeolui"]["template"] == "지출결의서.docx"
+        assert init["gyeolui"]["template"] == "물품구매_지출결의서_양식.docx"
         doc = DocxForm(TEMPLATE)
         doc.fill(FULL, config("docx_gyeolui"))
         out = doc.save(app.out / "dl.docx")
