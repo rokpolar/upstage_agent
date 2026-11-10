@@ -51,6 +51,20 @@ assert.match(review, /규정 판정 사유/);
 assert.match(review, /<strong>일치<\/strong>/);
 assert.match(review, /비교: \*\*일치\*\*|품의서·영수증 비교: \*\*일치\*\*/);
 const form = MODES.gyeolui.views[2][0]();
+assert.match(form, /name="resolution_date"[^>]* value="2026-11-10"/);
+const savedDate = entry.info.resolution_date;
+const RealDate = globalThis.Date;
+try {
+  globalThis.Date = class extends RealDate { constructor() { super(2026, 10, 11, 0, 30); } };
+  delete entry.info.resolution_date;
+  assert.match(MODES.gyeolui.views[2][0](), /name="resolution_date"[^>]* value="2026-11-11"/);
+  S.g.infoDrafts.g1 = {...entry.info, resolution_date: ''};
+  assert.match(MODES.gyeolui.views[2][0](), /name="resolution_date"[^>]* value=""/);
+} finally {
+  globalThis.Date = RealDate;
+  entry.info.resolution_date = savedDate;
+  delete S.g.infoDrafts.g1;
+}
 const ordered = ['account', 'description', 'amount', 'payee', 'payment_method', 'attachments', 'resolution_date', 'drafter'];
 assert.deepEqual([...form.matchAll(/<input[^>]* name="([^"]+)"/g)].map((m) => m[1]), ordered);
 for (const key of ['amount', 'payee']) {

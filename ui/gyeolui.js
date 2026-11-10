@@ -269,10 +269,13 @@ function bindGReview() {
 // ---------------------------------------------------------------- 3. 결의 정보
 function viewGInfo() {
   const t = GT().info, it = gSel(), info = S.g.infoDrafts[it.id] || it.info || {};
+  const now = new Date();
+  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
   const field = ([key, label, type]) => {
     const readonly = type === 'readonly';
     const value = key === 'amount' ? (it.amount == null ? GT().review.undecided : won(it.amount) + S.ui.won)
-      : key === 'payee' ? (it.payee || GT().review.undecided) : info[key] ?? '';
+      : key === 'payee' ? (it.payee || GT().review.undecided)
+      : key === 'resolution_date' && !info[key] && !S.g.infoDrafts[it.id] ? today : info[key] ?? '';
     return `<div class="field"><label for="gf-${key}">${esc(label)}</label><input class="input" id="gf-${key}" name="${key}" type="${readonly ? 'text' : type}" autocomplete="off" value="${esc(value)}"${readonly ? ' readonly' : ''}></div>`;
   };
   return `${head(t)}<form id="ginfo" class="fields" style="margin-top:var(--space-lg)">${t.fields.map(field).join('')}</form>${status('ginfo')}
