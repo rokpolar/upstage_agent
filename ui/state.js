@@ -1,4 +1,4 @@
-const S = { init: null, ui: null, error: null, picked: new Set(), fold: {}, set: 0, compare: null, chosen: null, reason: '',
+const S = { init: null, ui: null, error: null, picked: new Set(), fold: {}, set: 0, compare: null, chosen: null, reason: '', vendorReasons: new Map(),
   form: null, preview: null, previewState: 'idle', result: null, status: {}, busy: {} };
 
 const MODES = {};

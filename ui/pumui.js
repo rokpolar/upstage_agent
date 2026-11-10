@@ -272,52 +272,64 @@ function viewVendor() {
     const same = (c.warnings || []).filter((w) => w.files.includes(q.file)).map((w) => (w.kind === 'same_lowest_total' ? t.same_low_tag : t.same_rep_tag));
     const tag = [rec ? esc(t.recommended) : ex ? esc(fmt(t.excluded, { why: q.issue_messages.join(', ') })) : '', same.map(esc).join(' · ')].filter(Boolean).join(' · ');
     return `<input type="radio" name="vendor" id="v${i}" value="${esc(q.file)}" ${on ? 'checked' : ''}>
-      <label for="v${i}" class="tile ${ex ? 'is-off' : ''}">${tag ? `<span class="tag">${tag}</span>` : ''}
+      <label for="v${i}" class="tile ${ex ? 'is-off' : ''}">${tag ? `<span class="tag ${rec ? 'tag--recommended' : ''}">${tag}</span>` : ''}
         <span class="name">${esc(q.vendor)}</span><span class="price">${won(q.total)}${esc(S.ui.won)}</span>
         <span class="meta">${esc(fmt(t.date, { date: q.quote_date || '' }))}</span>
         <span class="meta meta--right">${q.total === low ? esc(t.same) : esc(fmt(t.diff, { n: won(q.total - low) }))}</span></label>`;
   }).join('');
   const pick = c.quotes.find((q) => q.file === S.chosen) || {};
   const pq = byId(S.chosen);
-  const summary = `<aside class="summary" aria-live="polite"><span class="label">${esc(t.summary_title)}</span>
-      <span class="vendor">${esc(pick.vendor || '')}</span>
-      ${pq ? `<span class="muted small">${esc(fmt(t.summary_items, { n: pq.items.length }))}</span>` : ''}
-      <span class="label" style="margin-top:var(--space-md)">${esc(t.summary_total)}</span>
-      <span class="total">${won(pick.total)}${esc(S.ui.won)}</span></aside>`;
+  const summary = `<aside class="summary" aria-live="polite" aria-labelledby="selection-summary-title"><p class="label" id="selection-summary-title">${esc(t.summary_title)}</p>
+      <h2 class="vendor">${esc(pick.vendor || '')}</h2>
+      ${pq ? `<p class="muted small">${esc(fmt(t.summary_items, { n: pq.items.length }))}</p>` : ''}
+      <dl class="summary__amount"><dt class="label">${esc(t.summary_total)}</dt><dd class="total">${won(pick.total)}${esc(S.ui.won)}</dd></dl>
+      <p class="help">${esc(t.summary_help)}</p></aside>`;
   const isRec = S.chosen === c.recommended;
-  return `${head(t)}${(c.warnings || []).map((w) => `<p class="note note--warn" role="alert">${esc(w.kind === 'same_lowest_total' ? fmt(t.same_low, { vendors: w.vendors.join(', '), total: won(w.total) }) : fmt(t.same_rep, { vendors: w.vendors.join(', '), rep: w.rep }))}</p>`).join('')}${c.quotes.length === 1 ? `<p class="note">${esc(t.single)}</p>` : ''}
-    <div class="buy">${summary}<div class="stack">
-      <fieldset class="tiles" style="border:0;padding:0;margin:0"><legend class="visually-hidden">${esc(t.heading)}</legend>${tiles}</fieldset>
-      <div class="field" style="margin-top:var(--space-md)"><label for="reason">${esc(t.reason_label)}${isRec ? '' : ' ' + esc(S.ui.required)}</label>
-        <textarea class="input" id="reason" aria-describedby="reason-help" ${isRec ? '' : 'aria-required="true"'}>${esc(S.reason)}</textarea>
-        <p class="help" id="reason-help">${esc(isRec ? fmt(t.reason_auto, { auto: c.auto_reason }) : t.reason_required)}</p></div>
-    </div></div>
+  const notices = (c.warnings || []).map((w) => `<p class="note note--warn" role="alert">${esc(w.kind === 'same_lowest_total' ? fmt(t.same_low, { vendors: w.vendors.join(', '), total: won(w.total) }) : fmt(t.same_rep, { vendors: w.vendors.join(', '), rep: w.rep }))}</p>`);
+  if (c.quotes.length === 1) notices.push(`<p class="note vendor-notice">${esc(t.single)}</p>`);
+  return `${head(t)}<div class="vendor-flow">${notices.length ? `<div class="vendor-notices">${notices.join('')}</div>` : ''}
+    <div class="buy"><div class="vendor-workspace">
+      <section class="vendor-options" aria-labelledby="vendor-options-title"><div class="vendor-options__head"><h2 id="vendor-options-title">${esc(t.options_title)}</h2><span class="help">${esc(fmt(t.options_count, { n: c.quotes.length }))}</span></div>
+        <fieldset class="tiles"><legend class="visually-hidden">${esc(t.heading)}</legend>${tiles}</fieldset></section>
+      <div class="field vendor-reason"><label for="reason">${esc(t.reason_label)}${isRec ? '' : ' ' + esc(S.ui.required)}</label>
+        <p class="help" id="reason-help">${esc(isRec ? t.reason_auto : t.reason_required)}</p>
+        <textarea class="input" id="reason" aria-describedby="reason-help" placeholder="${esc(t.reason_placeholder)}" ${S.status.vendor?.error ? 'aria-invalid="true"' : ''} ${isRec ? '' : 'aria-required="true"'}>${esc(S.reason)}</textarea></div>
+    </div>${summary}</div></div>
     ${status('vendor')}
-    <div class="actions"><button type="button" class="key key--primary" id="confirm">${esc(t.confirm)}</button>
-      <button type="button" class="key" id="next" ${chosenSaved() ? '' : 'disabled'}>${esc(t.next)}</button></div>`;
+    <div class="actions vendor-actions"><p class="help">${esc(t.confirm_help)}</p><button type="button" class="key key--primary" id="confirm">${esc(t.confirm)}</button></div>`;
+}
+function vendorReason(id) {
+  if (S.vendorReasons.has(id)) return S.vendorReasons.get(id);
+  if (S.init.selection?.result_file === id && S.init.selection.reason) return S.init.selection.reason;
+  return id === S.compare?.recommended ? S.compare.auto_reason || '' : '';
 }
 async function loadCompare() {
   const ids = [...S.picked];
   S.compare = await api('/api/compare', { ids });
-  if (!S.chosen || !ids.includes(S.chosen)) { S.chosen = S.compare.recommended || ids[0]; S.reason = ''; }
+  if (!S.chosen || !ids.includes(S.chosen)) S.chosen = S.compare.recommended || ids[0];
+  S.reason = vendorReason(S.chosen);
 }
 function bindVendor() {
   if (!S.compare) return;
   $$('input[name="vendor"]').forEach((el) => (el.onchange = () => {
-    S.chosen = el.value; S.reason = $('#reason').value; S.status.vendor = null; render(); $(`#${el.id}`).focus();
+    S.vendorReasons.set(S.chosen, $('#reason').value);
+    S.chosen = el.value; S.reason = vendorReason(S.chosen); S.status.vendor = null; render(); $(`#${el.id}`).focus();
   }));
-  $('#reason').oninput = (e) => (S.reason = e.target.value);
+  $('#reason').oninput = (e) => { S.reason = e.target.value; S.vendorReasons.set(S.chosen, S.reason); };
   $('#confirm').onclick = async (e) => {
     e.target.setAttribute('aria-busy', 'true');
     try {
-      S.init.selection = await api('/api/select', { ids: [...S.picked], pick: S.chosen, reason: S.reason });
+      const typed = $('#reason').value.trim();
+      const reason = typed || (S.chosen === S.compare.recommended ? (S.compare.auto_reason || '').trim() : '');
+      if (!reason) throw new Error(S.ui.vendor.reason_required);
+      S.init.selection = await api('/api/select', { ids: [...S.picked], pick: S.chosen, reason });
+      S.reason = S.init.selection.reason; S.vendorReasons.set(S.chosen, S.reason);
       invalidatePumuiOutput();
       say('vendor', fmt(S.ui.vendor.chosen, { vendor: S.init.selection.vendor, reason: S.init.selection.reason }));
       go(3); return;  // 선정이 저장되면 바로 품의 정보로 넘어간다
     } catch (err) { say('vendor', err.message, true); $('#reason').setAttribute('aria-invalid', 'true'); }
     render(); if (S.status.vendor && S.status.vendor.error) $('#reason').focus();
   };
-  $('#next').onclick = () => go(3);
 }
 
 // ---------------------------------------------------------------- 4. 구매 정보
@@ -374,10 +386,11 @@ MODES.pumui = {
   open: pumuiOpen,
   views: [[viewQuotes, bindQuotes], [viewReview, bindReview], [viewVendor, bindVendor], [viewCase, bindCase], [viewForm, bindForm]],
   init: () => {
-    S.picked = new Set(); S.chosen = null; S.result = null; S.compare = null;
+    S.picked = new Set(); S.chosen = null; S.result = null; S.compare = null; S.reason = ''; S.vendorReasons = new Map();
     const sel = S.init.selection;
     if (!sel) return;
     S.chosen = sel.result_file;
+    S.reason = sel.reason || '';
     S.picked = new Set((sel.comparison || [{file: sel.result_file}]).map((q) => q.file).filter(byId));
     const q = byId(S.chosen);
     if (q && q.fill) {
