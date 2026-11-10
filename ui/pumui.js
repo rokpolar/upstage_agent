@@ -272,8 +272,7 @@ function viewVendor() {
     const same = (c.warnings || []).filter((w) => w.files.includes(q.file)).map((w) => (w.kind === 'same_lowest_total' ? t.same_low_tag : t.same_rep_tag));
     const tag = [rec ? esc(t.recommended) : ex ? esc(fmt(t.excluded, { why: q.issue_messages.join(', ') })) : '', same.map(esc).join(' · ')].filter(Boolean).join(' · ');
     return `<input type="radio" name="vendor" id="v${i}" value="${esc(q.file)}" ${on ? 'checked' : ''}>
-      <label for="v${i}" class="tile ${ex ? 'is-off' : ''}">${tag ? `<span class="tag ${rec ? 'tag--recommended' : ''}">${tag}</span>` : ''}
-        <span class="name">${esc(q.vendor)}</span><span class="price">${won(q.total)}${esc(S.ui.won)}</span>
+      <label for="v${i}" class="tile ${ex ? 'is-off' : ''}"><span class="tile__title"><span class="name">${esc(q.vendor)}</span>${tag ? `<span class="tag ${rec ? 'tag--recommended' : ''}">${tag}</span>` : ''}</span><span class="price">${won(q.total)}${esc(S.ui.won)}</span>
         <span class="meta">${esc(fmt(t.date, { date: q.quote_date || '' }))}</span>
         <span class="meta meta--right">${q.total === low ? esc(t.same) : esc(fmt(t.diff, { n: won(q.total - low) }))}</span></label>`;
   }).join('');
@@ -288,15 +287,15 @@ function viewVendor() {
   const notices = (c.warnings || []).map((w) => `<p class="note note--warn" role="alert">${esc(w.kind === 'same_lowest_total' ? fmt(t.same_low, { vendors: w.vendors.join(', '), total: won(w.total) }) : fmt(t.same_rep, { vendors: w.vendors.join(', '), rep: w.rep }))}</p>`);
   if (c.quotes.length === 1) notices.push(`<p class="note vendor-notice">${esc(t.single)}</p>`);
   return `${head(t)}<div class="vendor-flow">${notices.length ? `<div class="vendor-notices">${notices.join('')}</div>` : ''}
-    <div class="buy"><div class="vendor-workspace">
+    <div class="buy">${summary}<div class="vendor-workspace">
       <section class="vendor-options" aria-labelledby="vendor-options-title"><div class="vendor-options__head"><h2 id="vendor-options-title">${esc(t.options_title)}</h2><span class="help">${esc(fmt(t.options_count, { n: c.quotes.length }))}</span></div>
         <fieldset class="tiles"><legend class="visually-hidden">${esc(t.heading)}</legend>${tiles}</fieldset></section>
       <div class="field vendor-reason"><label for="reason">${esc(t.reason_label)}${isRec ? '' : ' ' + esc(S.ui.required)}</label>
         <p class="help" id="reason-help">${esc(isRec ? t.reason_auto : t.reason_required)}</p>
         <textarea class="input" id="reason" aria-describedby="reason-help" placeholder="${esc(t.reason_placeholder)}" ${S.status.vendor?.error ? 'aria-invalid="true"' : ''} ${isRec ? '' : 'aria-required="true"'}>${esc(S.reason)}</textarea></div>
-    </div>${summary}</div></div>
-    ${status('vendor')}
-    <div class="actions vendor-actions"><p class="help">${esc(t.confirm_help)}</p><button type="button" class="key key--primary" id="confirm">${esc(t.confirm)}</button></div>`;
+      ${S.status.vendor?.error ? status('vendor') : ''}
+    </div></div></div>
+    <div class="actions vendor-actions"><button type="button" class="key key--primary" id="confirm">${esc(t.confirm)}</button></div>`;
 }
 function vendorReason(id) {
   if (S.vendorReasons.has(id)) return S.vendorReasons.get(id);
@@ -325,7 +324,7 @@ function bindVendor() {
       S.init.selection = await api('/api/select', { ids: [...S.picked], pick: S.chosen, reason });
       S.reason = S.init.selection.reason; S.vendorReasons.set(S.chosen, S.reason);
       invalidatePumuiOutput();
-      say('vendor', fmt(S.ui.vendor.chosen, { vendor: S.init.selection.vendor, reason: S.init.selection.reason }));
+      S.status.vendor = null;
       go(3); return;  // 선정이 저장되면 바로 품의 정보로 넘어간다
     } catch (err) { say('vendor', err.message, true); $('#reason').setAttribute('aria-invalid', 'true'); }
     render(); if (S.status.vendor && S.status.vendor.error) $('#reason').focus();

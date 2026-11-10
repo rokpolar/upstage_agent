@@ -12,7 +12,7 @@ const ICON = {
 const status = (key) => S.status[key] ? `<p class="help ${S.status[key].error ? 'help--error' : ''}" role="status">${esc(S.status[key].text)}</p>` : '<p class="help" role="status"></p>';
 const say = (key, text, error = false) => { S.status[key] = { text, error }; };
 // 단계 제목과 보조 설명을 나누어 화면과 보조 기술 모두에서 위계를 유지한다.
-const head = (t) => `<div class="head"><h1>${esc(t.heading)}</h1>${t.lead ? `<p class="head__description">${esc(t.lead)}</p>` : ''}</div>`;
+const head = (t) => `<header class="head"><h1>${esc(t.heading)}</h1>${t.lead ? `<p class="head__description">${esc(t.lead)}</p>` : ''}</header>`;
 
 // ---------------------------------------------------------------- 팝업 (확인 필요 설명)
 // body는 [{text, muted}] 문단 목록, actions는 [{label, primary, run}] (run이 없으면 닫기만)

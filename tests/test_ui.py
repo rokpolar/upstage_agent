@@ -5,7 +5,10 @@ from pathlib import Path
 import pytest
 
 
-@pytest.mark.parametrize("script", ["ui_smoke.mjs", "gyeolui_ui.mjs", "pumui_ui.mjs", "vendor_ui.mjs"])
+@pytest.mark.parametrize(
+    "script",
+    ["ui_smoke.mjs", "gyeolui_ui.mjs", "pumui_ui.mjs", "vendor_ui.mjs", "layout_ui.mjs"],
+)
 def test_es_modules_restore_and_progress(script):
     node = shutil.which("node")
     if not node:

@@ -1,0 +1,20 @@
+import assert from 'node:assert/strict';
+import { head } from '../ui/dom.js';
+import { stepFrame } from '../ui/layout.js';
+
+const title = head({ heading: '견적 검토', lead: '검토할 내용입니다.' });
+const navigation = '<nav class="stepnav">이전 단계</nav>';
+const body = '<section><p>긴 검토 내용</p></section>';
+const footer = '<div class="actions vendor-actions"><button>선정</button></div>';
+const framed = stepFrame(title + body + footer, navigation, '<검토 내용>');
+assert.match(framed, /aria-label="&lt;검토 내용&gt;" tabindex="0"/);
+assert(framed.indexOf(navigation) < framed.indexOf('class="stage-body"'));
+assert(framed.indexOf(title) < framed.indexOf('class="stage-body"'));
+assert.match(framed, /<section><p>긴 검토 내용<\/p><\/section><\/div><div class="actions vendor-actions">/);
+assert.equal((framed.match(/class="actions/g) || []).length, 1);
+const preview = '<div class="split"><section class="doc"><iframe title="미리보기"></iframe></section></div>';
+const noFooter = stepFrame(title + preview, navigation, '품의서 작성');
+assert(noFooter.includes(preview));
+assert.doesNotMatch(noFooter, /class="actions/);
+assert.equal((noFooter.match(/<header class="head">/g) || []).length, 1);
+console.log('layout: fixed navigation and footer, scroll region label, and footer-free document preview passed');
