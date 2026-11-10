@@ -2,6 +2,7 @@ import { S, MODES } from './state.js';
 import { $, $$, esc, fmt } from './dom.js';
 import { api } from './api.js';
 import { modeOf, M, keys, open, current, go } from './navigation.js';
+import { stepFrame } from './layout.js';
 function renderTabs() {
   const at = current(), mode = modeOf();
   $('#modes').innerHTML = Object.entries(MODES).map(([k, m]) =>
@@ -60,11 +61,24 @@ async function render(fromNav = false) {
   if (keys()[at] !== location.hash.slice(1)) { history.replaceState(null, '', '#' + keys()[at]); }
   renderTabs();
   const [view, bind] = M().views[at];
-  const draw = () => { $('#main').innerHTML = stepNavigation(at) + view(); bind(); bindFileDrop(); fitFrames(); };
+  const isCase = modeOf() === 'pumui' && at === 3;
+  const draw = () => {
+    const html = view(), navigation = stepNavigation(at);
+    const scrolls = fromNav ? [] : ['.stage-body', '.ledger-wrap', '.tiles', '.split > .stack'].map((selector) =>
+      [selector, $$(selector).map((el) => [el.scrollTop, el.scrollLeft])]);
+    $('#main').innerHTML = isCase ? navigation + html : stepFrame(html, navigation, M().steps()[at]);
+    bind(); bindFileDrop(); fitFrames();
+    scrolls.forEach(([selector, positions]) => $$(selector).forEach((el, i) => {
+      if (positions[i]) [el.scrollTop, el.scrollLeft] = positions[i];
+    }));
+  };
+  $('#main').classList.toggle('work--fixed', !isCase);
+  $('#main').classList.toggle('work--case', isCase);
+  $('#main').dataset.step = keys()[at];
   $('#main').classList.toggle('fit', at === 0);
   draw();
   if (M().after) await M().after(at, draw);
-  if (fromNav) $('#main').focus({ preventScroll: true });
+  if (fromNav) { window.scrollTo?.(0, 0); $('#main').focus({ preventScroll: true }); }
 }
 
 async function start() {

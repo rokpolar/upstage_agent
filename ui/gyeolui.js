@@ -324,9 +324,9 @@ function viewGForm() {
         <p class="cut small">${esc(fmt(t.template_fixed, { name: S.init.gyeolui.template || '' }))}</p>
         <p class="help">${esc(t.template_help)}</p></div>
       ${status('gform')}
-      <button type="button" class="key key--primary" id="gfill" ${busy ? 'aria-busy="true"' : ''}>${esc(busy ? t.filling : r && r.ok ? t.refill : t.fill)}</button>
       ${side}
-    </div><section class="cut doc" aria-live="polite">${doc}</section></div>`;
+    </div><section class="cut doc" aria-live="polite">${doc}</section></div>
+    <div class="actions"><button type="button" class="key key--primary" id="gfill" ${busy ? 'aria-busy="true"' : ''}>${esc(busy ? t.filling : r && r.ok ? t.refill : t.fill)}</button></div>`;
 }
 function bindGForm() {
   $('#gfill').onclick = async () => {

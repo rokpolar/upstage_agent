@@ -141,18 +141,18 @@ body { word-break: keep-all; word-wrap: break-word; overflow-wrap: anywhere; let
 .markdown-body > :last-child { margin-bottom: 0; }
 #ginfo .input[readonly] { background: var(--color-paper-2); color: var(--color-ink-2); }
 
-/* 업체 선정: 비교와 사유를 왼쪽에, 확정할 견적 요약을 오른쪽에 둔다. */
+/* 업체 선정: 선택 요약은 왼쪽, 견적 선택과 선정 사유는 오른쪽에 둔다. */
 .vendor-flow { display: grid; gap: var(--space-lg); }
 .vendor-notices { display: grid; gap: var(--space-sm); }
 .vendor-notices .note { max-width: none; }
 .vendor-notice { background: var(--color-paper); border: 1px solid var(--color-rule); color: var(--color-ink-2); }
-.buy { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(280px, 1fr); gap: var(--space-xl); align-items: start; }
+.buy { display: grid; grid-template-columns: minmax(240px, 1fr) minmax(0, 1.6fr); gap: var(--space-lg); align-items: start; }
 .vendor-workspace { min-width: 0; display: grid; gap: var(--space-lg); }
 .vendor-options { min-width: 0; display: grid; gap: var(--space-sm); }
 .vendor-options__head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: var(--space-sm); }
 .vendor-options__head h2 { font-size: var(--text-md); font-weight: 600; }
 .vendor-reason { padding: var(--space-lg); border: 1px solid var(--color-rule); border-radius: var(--radius-panel); }
-.vendor-reason .input { min-height: 120px; margin-top: var(--space-xs); }
+.vendor-reason .input { min-height: 88px; margin-top: var(--space-xs); }
 .summary { position: sticky; top: calc(var(--bar-h) + var(--space-lg)); min-width: 0; background: var(--color-paper-2); border-radius: var(--radius-panel); padding: var(--space-lg); display: grid; gap: var(--space-xs); }
 .summary .label { font-size: var(--text-sm); color: var(--color-muted); }
 .summary .vendor { font-size: var(--text-xl); font-weight: 600; letter-spacing: var(--tracking-display); }
@@ -167,6 +167,7 @@ body { word-break: keep-all; word-wrap: break-word; overflow-wrap: anywhere; let
 .tile .tag { grid-column: 1 / -1; font-size: var(--text-xs); color: var(--color-tag); font-weight: 600; }
 .tile .tag--recommended { justify-self: start; padding: 3px 9px; border-radius: var(--radius-pill); background: #eef5ff; color: var(--color-link); }
 .tile .name { font-size: var(--text-md); font-weight: 600; }
+.tile__title { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-xs); min-width: 0; }
 .tile .price { font-size: var(--text-md); text-align: right; font-variant-numeric: tabular-nums; }
 .tile .meta { font-size: var(--text-xs); color: var(--color-muted); }
 .tile .meta--right { text-align: right; }
@@ -184,15 +185,18 @@ textarea.input { min-height: 72px; resize: vertical; line-height: 1.5; }
 .help { font-size: var(--text-xs); color: var(--color-muted); min-height: 1.5em; min-height: 1lh; line-height: 1.5; }
 .help--error { color: var(--color-error); }
 .fields { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap: var(--space-md) var(--space-lg); }
-.form-sections { max-width: 960px; display: grid; gap: var(--space-lg); }
-/* 전체 화면에서는 품의 정보 영역을 화면 폭만큼 나란히(1440px에서 두 칸, 1920px에서 세 칸) 놓아 오른쪽이 비지 않게 한다 */
-@media (min-width: 90rem) { .form-sections { max-width: none; grid-template-columns: repeat(auto-fit, minmax(500px, 1fr)); align-items: start; } }
+.form-sections { max-width: 960px; margin-inline: auto; display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-lg); }
 .form-section { padding: var(--space-lg); border: 1px solid var(--color-rule); border-radius: var(--radius-panel); }
 .form-section__head { display: flex; align-items: baseline; gap: var(--space-sm); margin-bottom: var(--space-lg); }
 .form-section__head h2 { font-size: var(--text-lg); }
 .form-section__head .help { margin-top: var(--space-2xs); }
 .form-section__number { flex: none; white-space: nowrap; color: var(--color-muted); font-size: var(--text-sm); font-variant-numeric: tabular-nums; }
 .form-section .fields { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+/* 넓은 화면은 01·02·03을 한 줄에, 좁은 화면은 한 열에 순서대로 표시한다. */
+@media (min-width: 90rem) {
+  .form-sections { max-width: none; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: start; }
+  .form-section .fields { grid-template-columns: minmax(0, 1fr); }
+}
 .field--wide { grid-column: 1 / -1; }
 .form-section textarea { min-height: 100px; }
 .file-list { list-style: none; display: grid; gap: var(--space-xs); padding: 0; margin: 0; }
@@ -249,17 +253,10 @@ textarea.input { min-height: 72px; resize: vertical; line-height: 1.5; }
   .tabs { gap: 0 var(--space-md); }
   .ledger .hide-sm { display: none; }
 }
-/* 견적 선택: 페이지는 고정, 목록만 넘긴다 (머리글 고정). 아주 좁은 화면은 페이지 스크롤 그대로 */
+/* 상단 바의 실제 높이는 shell.js가 갱신한다. */
 :root { --bar-h: 53px; }
 @media (min-width: 60rem) { :root { --bar-h: 65px; } }  /* 위 상단 바 확대 규칙과 짝 */
 @media (min-width: 90rem) { :root { --bar-h: 73px; } }
-@media (min-width: 40.0625rem) {
-  .work.fit { display: flex; flex-direction: column; height: calc(100vh - var(--bar-h)); height: calc(100dvh - var(--bar-h)); padding-bottom: 0; }
-  .work.fit > * { flex: none; }
-  .work.fit > .ledger-wrap { flex: 1 1 auto; min-height: 160px; overflow-y: auto; overscroll-behavior: contain; }
-  .work.fit .ledger thead th { position: sticky; top: 0; z-index: 1; background: var(--color-paper); }
-  .work.fit > .actions { margin-top: auto; }
-}
 /* 창 높이가 낮으면 위쪽 여백을 줄인다 */
 @media (max-height: 44rem) {
   .work { padding-top: var(--space-md); }
@@ -382,3 +379,49 @@ textarea.input { min-height: 72px; resize: vertical; line-height: 1.5; }
 .intake__row.is-skip { color: var(--color-disabled); }
 .intake__row.is-reject { color: var(--color-warning); }
 .note--warn { background: #fff8e6; color: var(--color-warning); }
+
+/* 품의 정보를 제외한 단계는 화면 안에서 이동·실행 버튼을 유지한다. */
+.work--fixed { height: calc(100vh - var(--bar-h)); height: calc(100dvh - var(--bar-h)); display: flex; flex-direction: column; overflow: hidden; padding-top: var(--space-md); }
+.work:focus { outline: none; }
+.stage-heading { flex: none; }
+.stage-heading .stepnav { margin-bottom: var(--space-sm); }
+.stage-heading .head { margin-bottom: var(--space-md); }
+.stage-body { flex: 1 1 auto; min-height: 0; min-width: 0; overflow: auto; overscroll-behavior: contain; padding-bottom: var(--space-sm); }
+.stage-body:focus-visible { outline-offset: -2px; }
+.stage-body > .help:empty { display: none; }
+.work--fixed > .actions { flex: none; position: static; margin-top: 0; }
+.work--case > .actions { position: static; }
+.work--fixed.fit .stage-body { display: flex; flex-direction: column; }
+.work--fixed.fit .stage-body > * { flex: none; }
+.work--fixed.fit .stage-body > .ledger-wrap { flex: 1 1 auto; min-height: 120px; overflow: auto; }
+.work--fixed .ledger thead th { position: sticky; top: 0; z-index: 1; background: var(--color-paper); }
+.work--fixed[data-step="vendor"] .stage-body { overflow: hidden; }
+.work--fixed .vendor-flow { height: 100%; min-height: 0; display: flex; flex-direction: column; gap: var(--space-md); }
+.work--fixed .vendor-notices { flex: none; }
+.work--fixed .buy { flex: 1 1 auto; min-height: 0; }
+.work--fixed .summary { position: static; align-self: start; }
+.work--fixed .vendor-workspace { height: 100%; min-height: 0; display: flex; flex-direction: column; gap: var(--space-md); }
+.work--fixed .vendor-options { flex: 0 1 auto; min-height: 0; display: flex; flex-direction: column; }
+.work--fixed .vendor-options__head { flex: none; }
+.work--fixed .tiles { overflow: auto; align-content: start; padding: 2px; overscroll-behavior: contain; }
+.work--fixed .vendor-reason { flex: none; padding: var(--space-md); }
+.work--fixed .vendor-workspace > .help { flex: none; }
+.work--fixed .split { height: 100%; min-height: 0; align-items: stretch; }
+.work--fixed .split > .stack { min-height: 0; overflow: auto; align-content: start; }
+.work--fixed .doc { min-height: 0; display: flex; flex-direction: column; }
+.work--fixed .doc > :not(iframe) { flex: none; }
+.work--fixed .doc iframe { flex: 1 1 auto; min-height: 0; height: 0; }
+.work--fixed .doc .report { flex: 1 1 auto; min-height: 0; overflow: auto; }
+@media (max-width: 45rem) {
+  .work--fixed .buy { grid-template-columns: minmax(0, 1fr); }
+  .work--fixed .buy .summary { display: none; }
+  .work--fixed .split { grid-template-rows: minmax(0, 0.65fr) minmax(0, 1fr); gap: var(--space-md); }
+}
+@media (max-height: 48rem) {
+  .work--fixed { padding-top: var(--space-xs); }
+  .stage-heading .stepnav { margin-bottom: var(--space-xs); }
+  .stage-heading .head { margin-bottom: var(--space-sm); }
+  .work--fixed .tile { padding-block: var(--space-xs); }
+  .work--fixed .vendor-reason { gap: var(--space-2xs); padding: var(--space-sm); }
+  .work--fixed .vendor-reason .input { min-height: 72px; margin-top: var(--space-2xs); }
+}

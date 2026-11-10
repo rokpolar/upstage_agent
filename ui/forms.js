@@ -32,10 +32,10 @@ function formPanel(st, o) {
       <label class="key key--file">${esc(t.upload)}<input type="file" id="fupload" accept=".hwpx"></label>
       <p class="help">${esc(t.upload_hint)}</p>`}
       ${status(o.statusKey)}
-      <button type="button" class="key key--primary" id="fill" ${st.form ? '' : 'disabled aria-describedby="fill-why"'} ${st.busy.fill ? 'aria-busy="true"' : ''}>${esc(st.busy.fill ? t.filling : t.fill)}</button>
       ${st.form ? '' : `<p class="help" id="fill-why">${esc(t.fill_disabled)}</p>`}
       ${side}
-    </div><section class="cut doc" aria-live="polite">${doc}</section></div>`;
+    </div><section class="cut doc" aria-live="polite">${doc}</section></div>
+    <div class="actions"><button type="button" class="key key--primary" id="fill" ${st.form ? '' : 'disabled aria-describedby="fill-why"'} ${st.busy.fill ? 'aria-busy="true"' : ''}>${esc(st.busy.fill ? t.filling : t.fill)}</button></div>`;
 }
 async function previewPanel(st, o) {
   st.previewState = 'loading'; st.result = null; render();
