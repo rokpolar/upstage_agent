@@ -2,11 +2,14 @@
 
 import copy
 import json
+import shutil
+import tempfile
 import threading
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 
 from app.adapters.files import inside
+from app.adapters.memory_store import MemoryStore
 from app.adapters.store import StateStore
 from app.adapters.studio import StudioClient
 from app.config import Settings
@@ -26,19 +29,34 @@ class ConflictError(RuntimeError):
 @dataclass
 class Dependencies:
     studio: StudioClient
-    store: StateStore
+    store: StateStore | MemoryStore
 
 
 class Application(QuotesService, FormsService, ExpensesService):
     def __init__(self, settings=None, dependencies=None):
         self.settings = settings or Settings.load()
+        self.base_settings = self.settings
+        self.temporary = None
+        if dependencies is None or isinstance(dependencies.store, MemoryStore):
+            self.temporary = tempfile.TemporaryDirectory(prefix="upstage-work-")
+            root = Path(self.temporary.name)
+            # Only shipped resources are copied. Historical uploads/results are ignored.
+            for name in ("config", "examples", "templates", "ui", "forms"):
+                shutil.copytree(
+                    self.settings.root / name,
+                    root / name,
+                    ignore=shutil.ignore_patterns("uploads", "__pycache__"),
+                )
+            self.settings = replace(
+                self.settings, root=root, database=root / "out/state.sqlite3"
+            )
         self.root = self.settings.root
         self.cfg = self.settings.ui
         self.gcfg = self.cfg["gyeolui_sets"]
         self.out = self.root / self.cfg["output_dir"]
         deps = dependencies or Dependencies(
-            StudioClient(self.root, self.settings.runtime),
-            StateStore(self.settings.database),
+            StudioClient(self.base_settings.root, self.settings.runtime),
+            MemoryStore(),
         )
         self.studio, self.store = deps.studio, deps.store
         self.lock = threading.RLock()
@@ -92,7 +110,11 @@ class Application(QuotesService, FormsService, ExpensesService):
             raise ValueError("양식 경로가 필요합니다.")
         path = (self.root / relative).resolve()
         dirs = set(self.cfg["form_dirs"] + self.cfg["gyeolui_form_dirs"])
-        exts = {self.cfg.get("form_ext", ".hwpx"), self.cfg.get("gyeolui_form_ext", ".hwpx"), ".hwpx"}
+        exts = {
+            self.cfg.get("form_ext", ".hwpx"),
+            self.cfg.get("gyeolui_form_ext", ".hwpx"),
+            ".hwpx",
+        }
         if (
             path.suffix.lower() not in exts
             or not any(inside(path, self.root / d) for d in dirs)
@@ -175,3 +197,5 @@ class Application(QuotesService, FormsService, ExpensesService):
     def close(self):
         for thread in self.threads:
             thread.join(timeout=1)
+        if self.temporary and not any(t.is_alive() for t in self.threads):
+            self.temporary.cleanup()

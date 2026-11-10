@@ -16,13 +16,9 @@ services:
     env_file:
       - path: ./.env
         required: true
-    volumes:
-      # 올린 견적서·증빙, Studio 결과, 올린 양식, 만든 품의서·결의서는 호스트 폴더에 남긴다(run.sh로 켜도 같은 폴더)
-      - ./data_upload:/app/data_upload
-      - ./results_upload:/app/results_upload
-      - ./results_gyeolui_upload:/app/results_gyeolui_upload
-      - ./forms/uploads:/app/forms/uploads
-      - ./out:/app/out
+    # 페이지별 업로드·결과는 RAM 임시 공간만 사용한다. 호스트 볼륨에 저장하지 않는다.
+    tmpfs:
+      - /tmp:mode=1777
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8766/healthz', timeout=3).read()"]
       interval: 10s

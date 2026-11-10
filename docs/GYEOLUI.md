@@ -1,6 +1,6 @@
 # 결의 설계 기록
 
-현재 업무 규칙은 `app/domain/gyeolui.py`, Studio 결과·진행 해석은 `app/adapters/studio_gyeolui.py`, 업무 흐름은 `app/services/expenses.py`에 있다. 기존 `tools/` 명령은 유지한다. 저장한 결의 정보와 답변은 SQLite에서 복원하며 화면의 `info_saved`로 단계 이동을 판단한다.
+현재 업무 규칙은 `app/domain/gyeolui.py`, Studio 결과·진행 해석은 `app/adapters/studio_gyeolui.py`, 업무 흐름은 `app/services/expenses.py`에 있다. 기존 `tools/` 명령은 유지한다. 결의 정보와 답변은 현재 페이지의 메모리에서만 유지하며 화면의 `info_saved`로 단계 이동을 판단한다. 새로고침·재접속 시 빈 상태로 시작하고 증빙·생성 문서도 이전 작업에서 복원하지 않는다.
 
 현재 웹 화면은 고정 DOCX 양식을 사용한다. 결의 정보는 계정과목 → 적요 → 지급금액 → 지급처 → 지급방법 → 증빙 첨부 → 결의일 → 기안자 순서다. 지급금액·지급처는 읽기 전용이며 입력란 아래의 Studio 설명은 표시하지 않는다. 문서에 쓰이지 않는 추가 항목은 화면에서 숨기고 저장 값은 보존한다.
 

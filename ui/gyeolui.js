@@ -1,6 +1,6 @@
 import { S, MODES } from './state.js';
 import { $, $$, won, fmt, esc, ICON, status, say, head, popup, setHTML } from './dom.js';
-import { api, readB64 } from './api.js';
+import { api, readB64, workspaceUrl } from './api.js';
 import { modeOf, keys, current, go } from './navigation.js';
 import { render } from './shell.js';
 import { stageMark, stageList } from './progress.js';
@@ -78,7 +78,7 @@ function gIntakeList() {
 }
 function gIntakeDoc(it) {
   if (!it.has_source) return '';
-  const url = `/api/gyeolui/source?id=${encodeURIComponent(it.id)}`, name = esc(fmt(GI().preview, { name: it.name }));
+  const url = workspaceUrl(`/api/gyeolui/source?id=${encodeURIComponent(it.id)}`), name = esc(fmt(GI().preview, { name: it.name }));
   return it.source_kind === 'pdf' ? `<iframe src="${url}#toolbar=0&navpanes=0&view=FitH" title="${name}"></iframe>` : `<img src="${url}" alt="${name}">`;
 }
 const gFiles = (it) => (it.parts && it.parts.length ? it.parts.join(', ') : it.name);

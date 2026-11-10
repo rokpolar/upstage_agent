@@ -54,7 +54,7 @@ class FormsService:
         return out
 
     def out_url(self, path):
-        return "/out/" + str(
+        return getattr(self, "url_prefix", "") + "/out/" + str(
             Path(path).resolve().relative_to(self.out.resolve())
         ).replace("\\", "/")
 

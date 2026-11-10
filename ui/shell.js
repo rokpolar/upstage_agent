@@ -1,6 +1,6 @@
 import { S, MODES } from './state.js';
 import { $, $$, esc, fmt } from './dom.js';
-import { api } from './api.js';
+import { api, startWorkspace } from './api.js';
 import { modeOf, M, keys, open, current, go } from './navigation.js';
 import { stepFrame } from './layout.js';
 function renderTabs() {
@@ -84,6 +84,7 @@ async function render(fromNav = false) {
 async function start() {
   S.error = null; $('#main').innerHTML = '<p class="muted" aria-busy="true">불러오는 중</p>';
   try {
+    await startWorkspace();
     S.init = await api('/api/init'); S.ui = S.init.ui;
     for (const mode of Object.values(MODES)) if (mode.init) mode.init();
     S.set = Math.max(0, S.init.sets.findIndex((_, i) => S.init.quotes.some((q) => q.set === i)));

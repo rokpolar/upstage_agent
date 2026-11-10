@@ -3,13 +3,16 @@
 import json
 import mimetypes
 import traceback
+from contextlib import nullcontext
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, unquote, urlparse
 
 from app.adapters.files import confined
+from app.adapters.memory_store import MemoryStore
 from app.services.workspace import Application, ConflictError
 
 from .routes import Routes
+from .workspaces import Workspaces
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -65,19 +68,40 @@ class Handler(BaseHTTPRequestHandler):
         u = urlparse(self.path)
         try:
             a = self.server.app
-            if post:
-                return self.send(200, self.server.routes.post(u.path, self.body()))
+            pool = self.server.workspaces
+            if pool and u.path == "/api/workspace/new" and post:
+                self.body()
+                return self.send(200, {"prefix": pool.new()})
             if u.path in ("/", "/index.html"):
                 return self.file(a.root / "ui", "index.html")
             if u.path.startswith("/ui/"):
                 return self.file(a.root / "ui", u.path[4:])
-            if u.path.startswith("/out/"):
-                return self.file(a.out, u.path[5:])
-            query = parse_qs(u.query)
-            if u.path == "/api/gyeolui/source":
-                p = a.source_path(query.get("id", [""])[0])
-                return self.file(p.parent, p.name)
-            return self.send(200, self.server.routes.get(u.path, query))
+            path = u.path
+            context = nullcontext(a)
+            if pool and path.startswith("/work/"):
+                _, _, token, rest = path.split("/", 3)
+                path = "/" + rest
+                if path == "/api/workspace/close" and post:
+                    self.body()
+                    pool.release(token)
+                    return self.send(200, {"ok": True})
+                context = pool.use(token)
+            elif pool and path not in ("/healthz", "/api/init"):
+                raise FileNotFoundError("새 작업을 시작하세요.")
+            with context as a:
+                routes = Routes(a)
+                if path == "/api/workspace/ping" and post:
+                    self.body()
+                    return self.send(200, {"ok": True})
+                if post:
+                    return self.send(200, routes.post(path, self.body()))
+                if path.startswith("/out/"):
+                    return self.file(a.out, path[5:])
+                query = parse_qs(u.query)
+                if path == "/api/gyeolui/source":
+                    p = a.source_path(query.get("id", [""])[0])
+                    return self.file(p.parent, p.name)
+                return self.send(200, routes.get(path, query))
         except ConflictError as e:
             self.send(409, {"error": str(e)})
         except (FileNotFoundError, StopIteration):
@@ -99,9 +123,20 @@ class Handler(BaseHTTPRequestHandler):
         self.dispatch(post=True)
 
 
-def create_server(app=None, address=None):
+class Server(ThreadingHTTPServer):
+    def server_close(self):
+        super().server_close()
+        if self.workspaces:
+            self.workspaces.close()
+        self.app.close()
+
+
+def create_server(app=None, address=None, *, session_factory=None):
     app = app or Application()
-    server = ThreadingHTTPServer(address or (app.cfg["host"], app.cfg["port"]), Handler)
+    server = Server(address or (app.cfg["host"], app.cfg["port"]), Handler)
     server.app = app
     server.routes = Routes(app)
+    if session_factory is None and isinstance(app.store, MemoryStore):
+        session_factory = lambda: Application(app.base_settings)
+    server.workspaces = Workspaces(session_factory) if session_factory else None
     return server

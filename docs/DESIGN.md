@@ -2,7 +2,7 @@
 
 > 처음 README에 쓰던 상세 기록이다. 빠른 시작과 전체 소개는 저장소의 [README](../README.md)를 본다.
 
-현재 구현은 `app/domain`(업무 규칙), `app/services`(업무 흐름), `app/adapters`(Studio·파일·문서·SQLite), `app/web`(HTTP), `app/cli`(명령줄)로 분리되어 있다. 아래 `tools/` 명령은 호환 진입점이다. 화면은 ES modules이며 저장한 작업은 `out/state.sqlite3`에서 복원한다.
+현재 구현은 `app/domain`(업무 규칙), `app/services`(업무 흐름), `app/adapters`(Studio·파일·문서), `app/web`(HTTP), `app/cli`(명령줄)로 분리되어 있다. 아래 `tools/` 명령은 호환 진입점이다. 화면은 ES modules이며 웹 작업은 페이지별 메모리·임시 파일만 사용한다. 새로고침·재접속 시 과거 업로드나 SQLite 상태를 복원하지 않는다.
 
 > 2026-11-10 기준: 최종 제출은 구매 건 단위 판정 워크플로(아래 "Studio 최종 제출 워크플로")이고, 품의서 양식은 고덕 물품구매품의서(Word)로 고정해 PDF로 낸다. 아래 첫 부분은 초기(견적서 1장 단위) 설계 기록이다.
 
