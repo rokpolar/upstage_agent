@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="130" height="24" viewBox="0 0 130 24" role="img" aria-labelledby="title desc">
+  <title id="title">Docker Compose</title>
+  <desc id="desc">Upstage Agent 기술 정보: Docker Compose</desc>
+  <defs><clipPath id="shape"><rect width="130" height="24" rx="3"/></clipPath></defs>
+  <g clip-path="url(#shape)">
+    <rect width="57" height="24" fill="#384250"/>
+    <rect x="57" width="73" height="24" fill="#496a81"/>
+  </g>
+  <g fill="#fff" text-anchor="middle" font-family="Verdana, 'DejaVu Sans', sans-serif" font-size="11">
+    <text x="28.5" y="16">Docker</text>
+    <text x="93.5" y="16">Compose</text>
+  </g>
+</svg>

@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="148" height="24" viewBox="0 0 148 24" role="img" aria-labelledby="title desc">
+  <title id="title">output DOCX · PDF</title>
+  <desc id="desc">Upstage Agent 기술 정보: output DOCX · PDF</desc>
+  <defs><clipPath id="shape"><rect width="148" height="24" rx="3"/></clipPath></defs>
+  <g clip-path="url(#shape)">
+    <rect width="54" height="24" fill="#384250"/>
+    <rect x="54" width="94" height="24" fill="#59636e"/>
+  </g>
+  <g fill="#fff" text-anchor="middle" font-family="Verdana, 'DejaVu Sans', sans-serif" font-size="11">
+    <text x="27.0" y="16">output</text>
+    <text x="101.0" y="16">DOCX · PDF</text>
+  </g>
+</svg>

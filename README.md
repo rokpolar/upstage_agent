@@ -1,173 +1,151 @@
-# Upstage Agent — 품의·결의
+<div align="center">
 
-**견적서로 품의서를, 품의서와 영수증으로 지출결의서를 만드는 AI 에이전트**
+# Upstage Agent
 
-문서는 Upstage Studio가 읽고, 금액 계산과 규칙 검사는 코드가 하고, 사람은 정해야 할 것만 고릅니다. 결과는 기관 양식(HWPX)에 그대로 채워 HWPX·PDF로 내려받습니다.
+품의·지출결의 문서 작성 및 검증
 
-![Python](https://img.shields.io/badge/Python-3.11+-3776AB?logo=python&logoColor=white)
-![Upstage](https://img.shields.io/badge/Upstage-Studio%20%C2%B7%20Solar%20Pro%204-7B61FF)
-![HWPX](https://img.shields.io/badge/output-HWPX%20%C2%B7%20PDF-1f9d55)
-![Docker](https://img.shields.io/badge/Docker-compose-2496ED?logo=docker&logoColor=white)
+![Python 3.11 이상](assets/readme/python.svg)
+![Upstage Studio · Solar Pro 4](assets/readme/studio.svg)
+![Docker Compose](assets/readme/docker.svg)
+![출력 DOCX · PDF](assets/readme/output.svg)
 
-대울경 × Upstage AI Agent 해커톤 V.2 출품작. [품의 Agent](https://github.com/yoonhoc/pumui-agent)에 결의 Agent를 같은 구조로 더해 한 화면에서 이어 씁니다.
+[주요 기능](#주요-기능) · [시스템 구조](#시스템-구조) · [빠른 시작](#빠른-시작) · [기술 스택](#기술-스택) · [개발 안내](#개발-안내)
 
----
+</div>
 
-## 하는 일
+견적서 검토부터 품의서·지출결의서 작성까지 연결하는 웹 애플리케이션입니다. Upstage Studio의 문서 추출 결과를 코드로 검증하고, 담당자가 확정한 정보를 고정 양식에 반영합니다.
 
-화면 위쪽의 **품의 | 결의** 전환으로 두 업무를 오갑니다.
+## 주요 기능
 
-### 품의 — 견적서 → 품의서
-
-| 견적서 업로드 | 검토 |
+| 입력 | 산출물 |
 |---|---|
-| ![견적서 업로드](docs/images/1_upload.jpg) | ![검토](docs/images/2_review.jpg) |
-| 여러 장을 한꺼번에 올리면 동시에 읽고, 같은 물품끼리 자동으로 묶습니다. | 단가×수량, 합계, 부가세를 원 단위로 다시 계산하고, 사람이 정할 것만 묻습니다. |
+| 견적서 | 물품구매품의서 |
+| 품의서 및 거래 증빙 | 지출결의서 |
 
-| 업체 선정 | 품의서 작성 |
-|---|---|
-| ![업체 선정](docs/images/3_vendor.jpg) | ![품의서 작성](docs/images/4_form.jpg) |
-| 유효기간 안의 최저가 업체를 추천하고 선정 사유를 씁니다. | 기관 양식의 칸을 찾아 채웁니다. HWPX로 받거나, 미리보기에서 바로 인쇄·PDF 저장을 합니다. |
+- 품의: 동일 물품의 견적을 비교하고, 금액·유효기간을 검토해 업체를 선정합니다.
+- 결의: 품의 내용과 영수증·카드전표·거래명세서·세금계산서를 대조합니다.
+- 업무 연결: 작성한 품의서의 금액·업체·품목과 PDF를 결의 단계로 전달합니다.
 
-### 결의 — 품의서 + 증빙 → 지출결의서
+![견적 검토 화면: 유효기간이 지난 견적을 표시하고 담당자에게 진행 또는 보류를 요청합니다.](docs/images/2_review.jpg)
 
-| 단계 | 하는 일 |
-|---|---|
-| **증빙 선택** | 품의서, 영수증·카드전표·거래명세서·세금계산서(+ 회사 결제 규정, 결의서 양식)를 한 번에 올립니다. 여러 파일은 PDF 하나로 묶어 보냅니다. |
-| **검증** | 품의 금액·업체와 실제 증빙을 대조합니다. 금액이 1원이라도 다르면 후보를 보여 주고 담당자가 고릅니다. |
-| **결의 정보** | 계정과목·적요·지급방법은 Studio 초안으로 미리 채우고, 결의일·기안자는 담당자가 넣습니다. |
-| **결의서 작성** | 품의서와 같은 엔진으로 지출결의서 양식을 채웁니다. |
+견적 검토 예시 — 유효기간이 지난 견적은 담당자의 확인을 거쳐 진행합니다.
 
-검증 단계에서 코드가 확인하는 것:
+<details>
+<summary>업로드·업체 선정 화면</summary>
 
-- 지급금액 불일치 (품의서 · 카드전표 · 거래명세서)
-- 품의 금액 초과 집행
-- 지급처 불일치 (㈜·띄어쓰기 무시)
-- 증빙 산술 (공급가액 + 부가세 = 합계, 품목 합 = 공급가액)
-- 품의일보다 앞선 거래일 (사후 품의)
-- 취소·환불 표시
+![견적서 업로드 화면](docs/images/1_upload.jpg)
 
-**품의에서 결의로 이어 쓰기:** 품의서를 만들면 그 금액·업체·품목과 품의서 PDF가 결의 쪽으로 넘어갑니다. 결의에서는 영수증만 올리면 됩니다.
+![업체 선정 화면](docs/images/3_vendor.jpg)
 
----
+</details>
+
+## 시스템 구조
+
+<img src="assets/readme/workflow.svg" width="100%" alt="처리 순서: Upstage Studio 문서 추출 → Python 규칙 검증 → 담당자 검토·확정 → DOCX·PDF 양식 작성">
+
+Studio가 문서를 분류·추출하면 코드가 금액과 업무 규칙을 검증합니다. 확인이 필요한 항목은 담당자가 처리하며, 확정된 정보로 DOCX·PDF를 생성합니다. 결의 입력이 여러 파일이면 PDF 하나로 묶어 Studio에 전달합니다.
+
+- 품의 검증: 단가 × 수량, 합계·부가세, 견적 유효기간, 최저가 동률, 동일 대표자 업체를 확인합니다.
+- 결의 검증: 품의·증빙 금액과 지급처 불일치, 초과 집행, 증빙 산술, 사후 품의, 취소·환불 표시를 확인합니다.
+
+금액이 1원이라도 다르면 확인 후보를 표시합니다. 납품·검수·계좌 정보와 서명 등 확인되지 않은 값은 자동 생성하지 않습니다.
 
 ## 빠른 시작
 
-### 1. API 키
+### 1. Studio 연결 설정
+
+저장소 루트에서 설정 파일을 복사합니다.
 
 ```bash
 cp .env.example .env
 ```
 
-`.env`에 [Upstage Console](https://console.upstage.ai/api-keys)의 키를 넣습니다. `.env`는 GitHub에 올라가지 않으며, 같은 이름의 환경변수가 있으면 그 값을 먼저 씁니다.
+`.env`에 [Upstage API 키](https://console.upstage.ai/api-keys)를 입력합니다. 품의·결의 Agent ID와 Config ID는 Studio의 `API로 이용하기`에서 확인합니다.
 
-품의와 결의는 Studio Agent가 따로라서 설정도 워크플로마다 따로 둡니다. 비운 값은 [`config/rules.json`](config/rules.json)의 기본값을 씁니다.
+```dotenv
+UPSTAGE_API_KEY=up_...
+PUMUI_AGENT_ID=agt_...
+PUMUI_CONFIG_ID=latest
+GYEOLUI_AGENT_ID=agt_...
+GYEOLUI_CONFIG_ID=latest
+```
 
-| 변수 | 품의 | 결의 | 설명 |
-|---|---|---|---|
-| API 키 | `PUMUI_API_KEY` | `GYEOLUI_API_KEY` | 비우면 `UPSTAGE_API_KEY` (필수) |
-| Agent ID | `PUMUI_AGENT_ID` | `GYEOLUI_AGENT_ID` | `agt_...` |
-| Config ID | `PUMUI_CONFIG_ID` | `GYEOLUI_CONFIG_ID` | `latest`면 최신 설정 |
-| Project ID | `PUMUI_PROJECT_ID` | `GYEOLUI_PROJECT_ID` | 비우면 `UPSTAGE_PROJECT_ID`. Agent가 프로젝트에 속하면 필수 |
+Agent가 Studio 프로젝트에 속하면 `UPSTAGE_PROJECT_ID`도 설정합니다. API 키는 해당 프로젝트가 있는 조직의 키를 사용합니다. `.env`는 Git에 포함하지 않습니다.
 
-Studio의 "API로 이용하기"에 `x-project-id`가 적혀 있으면 그 Agent는 프로젝트에 속한 것입니다. 이때는 Project ID를 꼭 넣고, API 키도 그 프로젝트가 있는 조직의 키를 씁니다.
+<details>
+<summary>워크플로별 설정과 기본값</summary>
 
-### 2. 실행
+| 설정 | 품의 | 결의 |
+|---|---|---|
+| API 키 | `PUMUI_API_KEY` | `GYEOLUI_API_KEY` |
+| Agent ID | `PUMUI_AGENT_ID` | `GYEOLUI_AGENT_ID` |
+| Config ID | `PUMUI_CONFIG_ID` | `GYEOLUI_CONFIG_ID` |
+| Project ID | `PUMUI_PROJECT_ID` | `GYEOLUI_PROJECT_ID` |
 
-**Docker** (Python·Chrome 설치 불필요)
+- 개별 API 키를 비우면 `UPSTAGE_API_KEY`, 개별 Project ID를 비우면 `UPSTAGE_PROJECT_ID`를 사용합니다.
+- Agent·Config ID를 비우면 [`config/rules.json`](config/rules.json)의 기본값을 사용합니다. `latest`는 최신 Studio 설정을 실행합니다.
+- 같은 이름의 환경변수가 있으면 `.env`보다 우선합니다.
+
+</details>
+
+### 2. 앱 실행
+
+Docker Compose로 실행합니다. Python·Chromium과 한글 글꼴은 이미지에 포함됩니다.
 
 ```bash
 docker compose up -d --build --wait
 ```
 
-**로컬** (Python 3.11 이상)
+로컬 실행에는 Python 3.11 이상이 필요하며, PDF 생성에는 Chrome 또는 Chromium을 사용합니다.
 
 ```bash
-./run.sh        # Windows는 run.bat 더블클릭
+./run.sh
 ```
 
-브라우저에서 **http://127.0.0.1:8766** 을 엽니다.
+Windows에서는 `run.bat`을 실행합니다. 앱 주소는 [http://127.0.0.1:8766](http://127.0.0.1:8766)입니다.
 
-### 3. 시험용 문서
+### 3. 예시 문서로 시작
 
-| 폴더 | 내용 |
-|---|---|
-| `data_team/견적서예시/` | 최종 제출 데이터셋(구매 건 7건, 파일 13개). 정답지는 `answers_final/신라면_최종제출_answer.json` |
-| `data_team/거래명세서/` | 결의용 영수증·거래명세서 PDF |
-| `data_team/결의묶음예시/` | 품의서 + 증빙 + 양식을 한 파일로 묶은 결의 예시 |
+- 품의: [`data_team/견적서예시/`](data_team/견적서예시/)의 견적서를 올립니다.
+- 결의: [`data_team/결의묶음예시/`](data_team/결의묶음예시/)의 품의서·증빙 묶음을 올립니다.
+- 추가 증빙: [`data_team/거래명세서/`](data_team/거래명세서/)에서 확인합니다.
 
----
+문서를 업로드하고 확인 사항을 처리한 뒤, 생성된 DOCX·PDF를 내려받습니다.
 
-## 동작 구조
+## 운영 및 데이터 관리
 
-```
-[품의]  견적서 ──▶ Studio 품의 워크플로 ──▶ 검산·질문 ──▶ 업체 선정 ──▶ 품의서 HWPX·PDF
-                                                                        │
-                                                         품의 값 + 품의서 PDF
-                                                                        ▼
-[결의]  품의서 + 영수증 ──▶ Studio 결의 워크플로 ──▶ 금액·지급처 대조 ──▶ 결의 정보 ──▶ 결의서 HWPX·PDF
-```
-
-| Studio 워크플로 | 노드 |
-|---|---|
-| 품의(앱, 견적서 한 장씩) | 문서 인식 → 견적서 분류 → 정보 추출 → 견적 검토 → 후속 처리 판정 |
-| 품의 판정(최종 제출, 구매 건 단위) | 문서 인식 → 분류·분할(견적서/기타) → 정보 추출 → 병합 → 견적 비교 검토 → **품의 판정**(정답지 키 JSON) → 후속 처리 분기 → 갈래별 안내문 |
-| 결의 | 문서 인식 → 분류·분할 → 추출(품의서/영수증/양식) → 품의서·영수증 비교 → 판정 → 회사 규정 검증 → 판정 → 결의서 기입 데이터 |
-
-Studio 호출은 [Agent API](https://console.upstage.ai/docs/studio-and-agents/agents/overview) 명세를 따릅니다: 파일 업로드 → 실행 → `completed`/`failed`까지 조회, 프로젝트 Agent면 모든 요청에 `x-project-id`, 429·5xx는 기다렸다 재시도, 올리기 전에 형식·500 MB·1,000쪽 제한 검사.
-
-설계 원칙: **애매한 건 추측하지 않고 사람에게.** 앱에서는 모델이 읽고 코드가 원 단위로 다시 검산하며, 제출용 Studio 워크플로는 검토 노드가 검산·규칙 적용을 글로 쓰고 판정 노드가 그 결론만 JSON으로 옮깁니다(구성과 규칙: [docs/DESIGN.md](docs/DESIGN.md)). 규칙·문구·양식 칸 이름은 모두 [`config/`](config/)에 있고 코드에 하드코딩하지 않습니다.
-
-품의 쪽에서 코드가 더 하는 일:
-
-- 한 PDF에 업체 견적서 여러 장이 들어 있으면 쪽마다 나눠 읽고, 팩스 표지·안내문처럼 견적 내용이 없는 쪽은 건너뜁니다. 올린 파일 전체가 견적서가 아니면(거래명세서·영수증 등) 무엇으로 읽혔는지 알리고 다시 올리기를 요청합니다.
-- 대표자가 같은 업체(들러리 견적 의심)나 최저가가 같은 업체가 있으면 경고하고 사람이 고르게 합니다.
-- 같은 물품 묶기: Solar가 견적서마다 품목 분류를 쓰고, 코드가 품목 이름 글자 유사도와 합쳐 묶습니다. 업체 비교는 한 묶음 안에서만 합니다. 채점: `python tools/grouping.py results_team --check`
-- 품의서 품목 표는 양식 머리줄 높이에 맞추고, 금액·수량이 칸에서 줄바꿈되지 않게 글자 모양을 고릅니다.
-
----
-
-## 폴더 구조
-
-```
-upstage_agent/
-├── app/             실제 구현 (domain, services, adapters, web, cli)
-├── tools/           기존 명령을 유지하는 실행 진입점
-├── ui/              ES modules (app.js 시작, pumui.js 품의, gyeolui.js 결의)
-├── config/          규칙, 화면·질문 문구, 양식 칸 사전
-├── forms/           기관 양식 (forms/expense: 기본 지출결의서)
-├── workflow/        Studio 품의 워크플로 설정
-├── data_team/       팀 예시 문서 (results_team·answers_team: 예전 견적서 60장의 Studio 결과·정답, 회귀 테스트용)
-├── examples/        예시 입력·결과
-├── docs/            설계 기록
-└── Dockerfile, compose.yaml, run.sh, run.bat
-```
-
-웹 업로드 원본, Studio 결과, 작성한 문서와 입력 값은 브라우저 페이지별 임시 작업 공간에서만 유지합니다. SQLite나 호스트의 업로드·결과 폴더에 저장하거나 과거 결과를 자동으로 불러오지 않습니다. Docker에서는 `/tmp`의 RAM 파일시스템을 사용합니다.
-
-페이지 안에서 품의·결의 메뉴를 이동하는 동안에는 작업을 이어갑니다. 새로고침하거나 새로 접속하면 빈 화면으로 시작합니다. 필요한 문서는 페이지를 닫기 전에 내려받으세요. 다운로드 링크도 해당 작업이 끝나면 만료됩니다.
-
-페이지 종료 시 임시 파일을 지웁니다. 종료 알림이 전달되지 않으면 마지막 요청·연결 확인 후 2분이 지나면 정리합니다. 처리 중인 요청이나 Studio 호출이 있으면 완료 후 정리합니다. CLI 명령이 명시적으로 출력한 파일은 이 웹 작업 수명과 별개입니다.
-
----
+- 작업 수명: 업로드 파일, 입력 값, 분석 결과와 생성 문서는 현재 페이지의 임시 작업 공간에만 유지합니다. 품의·결의 메뉴 간 이동 시 작업은 유지되며, 새로고침·재접속 시 초기화됩니다.
+- 파일 정리: 페이지 종료 시 임시 파일을 삭제합니다. 종료 알림이 없으면 마지막 요청·연결 확인 후 2분이 지나면 정리합니다. 처리 중인 요청은 완료 후 정리합니다.
+- 저장 위치: Docker에서는 `/tmp`의 RAM 파일시스템을 사용합니다. 필요한 문서는 페이지를 닫기 전에 내려받으세요.
+- 출력 형식: 웹 화면은 고정 DOCX 양식을 사용합니다. PDF는 DOCX를 HTML로 변환한 뒤 브라우저로 생성하므로 Word 원본과 배치가 다를 수 있습니다.
 
 ## 기술 스택
 
-| 영역 | 사용 |
+| 영역 | 기술 |
 |---|---|
-| 문서 인식·추출 | Upstage Studio (Document Parse, Classify, Information Extract) |
-| 판단·문장 | Solar Pro 4 (Studio Instruct) |
-| 서버 | Python 표준 라이브러리 HTTP 서버 |
-| 양식 | HWPX 직접 편집 (lxml), 양식 여백·글꼴대로 그린 미리보기·PDF (Chrome/Chromium, 화면에서는 브라우저 인쇄로 PDF 저장) |
-| 화면 | HTML · CSS · JavaScript (프레임워크 없음) |
-| 웹 작업 상태 | 메모리 + 페이지별 임시 파일 (Docker: RAM 파일시스템) |
-| 배포 | Docker Compose (Chromium·한글 글꼴 포함) |
+| 문서 인식·추출 | Upstage Studio — Document Parse, Classify, Information Extract |
+| 판단·초안 | Solar Pro 4 — Studio Instruct |
+| 백엔드 | Python 3.11+ · 표준 라이브러리 HTTP 서버 |
+| 프론트엔드 | HTML · CSS · JavaScript ES modules |
+| 문서 처리 | `lxml` · `pypdf` · Chrome/Chromium |
+| 작업 상태 | 메모리 · 페이지별 임시 파일 |
+| 실행·배포 | Docker Compose |
 
----
+## 개발 안내
 
-## 더 보기
+| 경로 | 내용 |
+|---|---|
+| [`app/`](app/) | 업무 규칙, 서비스, 외부 연동, 웹·CLI |
+| [`ui/`](ui/) | 품의·결의 화면 |
+| [`config/`](config/) | 검증 규칙, 화면 문구, 양식 필드 설정 |
+| [`forms/`](forms/) | 품의·결의 양식 |
+| [`workflow/`](workflow/) | Studio 품의 워크플로 설정 |
+| [`tools/`](tools/) | 서버·검증·배치 실행 명령 |
 
-개발 환경과 검증:
+설계와 세부 규칙은 [품의 설계](docs/DESIGN.md), [결의 설계](docs/GYEOLUI.md), [지출결의서 양식 안내](forms/expense/README.md)를 참고하세요.
+
+<details>
+<summary>개발 환경과 검사</summary>
 
 ```bash
 python3 -m venv .venv
@@ -176,55 +154,55 @@ python3 -m venv .venv
 .venv/bin/ruff check app tests tools
 ```
 
-`run.sh`와 `run.bat`은 `.venv`가 있으면 해당 Python을 사용합니다. 테스트는 임시 작업 폴더와 모의 Studio 응답을 사용하며 실제 문서를 API로 제출하지 않습니다. HTTP 테스트에는 로컬 임시 포트 사용 권한이 필요합니다.
+`run.sh`·`run.bat`은 `.venv`가 있으면 해당 Python을 사용합니다. 테스트는 임시 작업 폴더와 모의 Studio 응답을 사용하며 실제 문서를 API로 제출하지 않습니다. HTTP 테스트에는 로컬 포트 사용 권한이 필요하고, 화면 모듈 테스트에는 Node.js가 필요합니다.
 
-화면 모듈 테스트는 Node.js가 있으면 함께 실행합니다.
-
-- [품의 설계](docs/DESIGN.md) — 검산 규칙, 질문 방식, 양식 채우기 원리, 시험 결과
-- [결의 설계](docs/GYEOLUI.md) — 결의 결과 읽기, 대조 규칙, 품의 연결, 결의서 채우기
+</details>
 
 <details>
-<summary>명령줄로 쓰기</summary>
+<summary>명령줄 실행</summary>
+
+아래 Studio 실행 명령은 API 키와 연결 설정이 필요합니다.
 
 ```bash
-# 최종 데이터셋을 구매 건 단위로 판정하고 정답지와 대조(파일 이름은 보지 않고 내용으로 구매 건을 나눈다)
+# 구매 건 단위 판정과 정답지 대조
 python tools/run_set.py data_team/견적서예시/*.pdf --no-form
 
-# Studio 품의 판정 워크플로 설정 파일 다시 만들기(Studio "워크플로우 설정 가져오기"로 넣는다)
+# Studio에 가져올 품의 판정 워크플로 설정 생성
 python tools/make_set_workflow.py
 
-# Studio 워크플로만 실행(견적서 한 장씩)
-python tools/run_api.py data_team/결의묶음예시 --kind gyeolui --out results_gyeolui_upload
+# 결의 Studio 워크플로 실행
 python tools/run_api.py data_team/결의묶음예시 --kind gyeolui --out results_gyeolui_upload
 
-# 터미널에서 검증 질문에 답하기
+# 저장된 결과로 검증 질문 확인
 python tools/gyeolui.py examples/gyeolui/09_맛누리케터링_결의묶음.json --ask
 
 # 같은 물품 묶기 채점
 python tools/grouping.py results_team --check
 ```
+
+CLI 명령이 명시적으로 저장한 파일은 웹 페이지의 임시 작업 수명과 별개입니다.
+
 </details>
 
 <details>
 <summary>Docker 운영</summary>
 
 ```bash
-docker compose logs -f app                  # 로그
-docker compose down                         # 끄기
-docker compose up -d --force-recreate       # .env 바꾼 뒤
-APP_DOCKER_PORT=8767 docker compose up -d   # 포트 바꾸기
+docker compose logs -f app                  # 로그 확인
+docker compose down                         # 종료
+docker compose up -d --force-recreate        # .env 변경 반영
+APP_DOCKER_PORT=8767 docker compose up -d     # 호스트 포트 변경
 ```
 
-- `.env`는 이미지에 넣지 않고 환경변수로 넘깁니다(`env_file`). `.env`를 고친 뒤에는 `--force-recreate`로 다시 띄워야 반영됩니다.
-- 올린 파일·결과·만든 문서는 호스트 폴더에 남습니다.
-- `run.sh`와 같은 폴더·포트(8766)를 쓰므로 둘을 동시에 켜지 마세요.
-</details>
+`.env`는 이미지에 넣지 않고 환경변수로 전달합니다. Docker와 로컬 실행의 기본 포트가 같으므로 동시에 실행하려면 포트를 변경하세요.
 
----
+</details>
 
 ## 팀
 
-| 이름 | 맡은 일 |
+대울경 × Upstage AI Agent 해커톤 V.2 출품작입니다. [품의 Agent](https://github.com/yoonhoc/pumui-agent)를 기반으로 품의·결의 업무를 통합했습니다.
+
+| 이름 | 역할 |
 |---|---|
 | 서수빈 | 기획 |
 | 김재현 | 데이터 |
