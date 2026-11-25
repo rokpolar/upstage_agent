@@ -5,7 +5,6 @@
 품의·지출결의 문서 작성 및 검증
 
 ![Python 3.11 이상](assets/readme/python.svg)
-![Upstage Studio · Solar Pro 4](assets/readme/studio.svg)
 ![Docker Compose](assets/readme/docker.svg)
 ![출력 DOCX · PDF](assets/readme/output.svg)
 
@@ -13,7 +12,7 @@
 
 </div>
 
-견적서 검토부터 품의서·지출결의서 작성까지 연결하는 웹 애플리케이션입니다. Upstage Studio의 문서 추출 결과를 코드로 검증하고, 담당자가 확정한 정보를 고정 양식에 반영합니다.
+견적서 검토부터 품의서·지출결의서 작성까지 연결하는 웹 애플리케이션입니다. n8n 워크플로의 문서 추출 결과를 코드로 검증하고, 담당자가 확정한 정보를 고정 양식에 반영합니다.
 
 ## 주요 기능
 
@@ -41,9 +40,7 @@
 
 ## 시스템 구조
 
-<img src="assets/readme/workflow.svg" width="100%" alt="처리 순서: Upstage Studio 문서 추출 → Python 규칙 검증 → 담당자 검토·확정 → DOCX·PDF 양식 작성">
-
-Studio가 문서를 분류·추출하면 코드가 금액과 업무 규칙을 검증합니다. 확인이 필요한 항목은 담당자가 처리하며, 확정된 정보로 DOCX·PDF를 생성합니다. 결의 입력이 여러 파일이면 PDF 하나로 묶어 Studio에 전달합니다.
+앱이 PDF를 페이지 이미지로 변환하면 n8n이 비전 모델로 문서를 분류하고 값을 추출합니다. Python이 금액과 업무 규칙을 검증하고 담당자가 확인을 마치면 DOCX·PDF를 생성합니다. 결의에 파일을 여러 개 올리면 앱이 증빙 묶음을 만들고 원본 파일과 쪽의 순서를 n8n에 전달합니다.
 
 - 품의 검증: 단가 × 수량, 합계·부가세, 견적 유효기간, 최저가 동률, 동일 대표자 업체를 확인합니다.
 - 결의 검증: 품의·증빙 금액과 지급처 불일치, 초과 집행, 증빙 산술, 사후 품의, 취소·환불 표시를 확인합니다.
@@ -52,28 +49,36 @@ Studio가 문서를 분류·추출하면 코드가 금액과 업무 규칙을 �
 
 ## 빠른 시작
 
-### 1. Studio 연결 설정
-
-저장소 루트에서 설정 파일을 복사합니다.
+### 1. Docker Compose 시작
 
 ```bash
 cp .env.example .env
+openssl rand -hex 32
 ```
 
-`.env`에 [Upstage API 키](https://console.upstage.ai/api-keys)를 입력합니다. 품의·결의 Agent ID와 Config ID는 Studio의 `API로 이용하기`에서 확인합니다.
+생성한 값을 `.env`의 `N8N_WEBHOOK_KEY`에 넣고 실행합니다.
 
-```dotenv
-UPSTAGE_API_KEY=up_...
-PUMUI_AGENT_ID=agt_...
-PUMUI_CONFIG_ID=latest
-GYEOLUI_AGENT_ID=agt_...
-GYEOLUI_CONFIG_ID=latest
+```bash
+docker compose up -d --build --wait
 ```
 
-Agent가 Studio 프로젝트에 속하면 `UPSTAGE_PROJECT_ID`도 설정합니다. API 키는 해당 프로젝트가 있는 조직의 키를 사용합니다. `.env`는 Git에 포함하지 않습니다.
+### 2. n8n 워크플로 게시
+
+[n8n 편집기](http://127.0.0.1:5678)에서 로컬 관리자 계정을 만든 뒤 다음 설정을 적용합니다.
+
+1. [n8n/workflows/](n8n/workflows/)의 `quote.json`, `expense.json`, `purchase.json`을 각각 **Import from File**로 가져옵니다.
+2. Header Auth 자격증명을 만들고 헤더 이름을 `X-Workflow-Key`, 값을 `.env`의 `N8N_WEBHOOK_KEY`와 같게 입력합니다. 세 워크플로의 **Webhook** 노드와 구매 건 판정의 **Call Python purchase rules** 노드에 연결합니다.
+3. 별도의 Header Auth 자격증명에 이름 `Authorization`과 값 `Bearer <모델 API 키>`를 입력합니다. 견적서·지출결의의 **Call vision model** 노드에 연결합니다. 같은 노드의 URL과 JSON Body의 `model`을 제공자에 맞춥니다. 예제는 OpenAI의 `gpt-4.1-mini`이며 제공자는 Chat Completions, Base64 이미지 입력, JSON object 응답을 지원해야 합니다.
+4. 세 워크플로를 **Publish**합니다. [앱](http://127.0.0.1:8766)에서 PDF·PNG·JPEG를 올립니다. n8n 모드의 파일 하나는 최대 25쪽이며 변환 후 요청 본문은 최대 15 MiB입니다.
+
+Docker의 앱은 `http://n8n:5678/webhook`에 연결합니다. 호스트에서 실행하는 앱·CLI는 `N8N_WEBHOOK_BASE_URL`을 사용합니다. 기본값은 `http://127.0.0.1:5678/webhook`입니다. 포트를 바꿨다면 웹훅 URL도 맞추세요.
+
+로컬 앱은 Python 3.11 이상, 문서 이미지 변환용 Poppler의 `pdftoppm`, 양식 PDF 생성용 Chrome 또는 Chromium이 필요합니다. macOS·Linux는 `./run.sh`, Windows는 `run.bat`으로 실행합니다. 호스트 앱만 실행하는 경우 구매 건 판정 노드의 URL도 n8n에서 접근 가능한 앱 주소로 바꿉니다. Docker Desktop의 예는 `http://host.docker.internal:8766/api/n8n/purchase`입니다.
 
 <details>
-<summary>워크플로별 설정과 기본값</summary>
+<summary>기존 Upstage Studio로 실행</summary>
+
+`.env`에 `WORKFLOW_BACKEND=studio`와 [Upstage API 키](https://console.upstage.ai/api-keys)를 설정하고 `docker compose up -d --build --force-recreate app`을 실행합니다. Agent ID와 Config ID는 Studio의 `API로 이용하기`에서 확인합니다. Studio로 가져올 원본 설정은 [workflow/](workflow/)에 있습니다.
 
 | 설정 | 품의 | 결의 |
 |---|---|---|
@@ -88,29 +93,13 @@ Agent가 Studio 프로젝트에 속하면 `UPSTAGE_PROJECT_ID`도 설정합니�
 
 </details>
 
-### 2. 앱 실행
-
-Docker Compose로 실행합니다. Python·Chromium과 한글 글꼴은 이미지에 포함됩니다.
-
-```bash
-docker compose up -d --build --wait
-```
-
-로컬 실행에는 Python 3.11 이상이 필요하며, PDF 생성에는 Chrome 또는 Chromium을 사용합니다.
-
-```bash
-./run.sh
-```
-
-Windows에서는 `run.bat`을 실행합니다. 앱 주소는 [http://127.0.0.1:8766](http://127.0.0.1:8766)입니다.
-
 ### 3. 예시 문서로 시작
 
 - 품의: [`data_team/견적서예시/`](data_team/견적서예시/)의 견적서를 올립니다.
 - 결의: [`data_team/결의묶음예시/`](data_team/결의묶음예시/)의 품의서·증빙 묶음을 올립니다.
 - 추가 증빙: [`data_team/거래명세서/`](data_team/거래명세서/)에서 확인합니다.
 
-문서를 업로드하고 확인 사항을 처리한 뒤, 생성된 DOCX·PDF를 내려받습니다.
+문서를 업로드하고 확인 사항을 처리한 뒤, 생성된 DOCX·PDF를 내려받습니다. n8n 모드에서는 업로드한 문서 이미지가 설정한 모델 제공자에 전송됩니다. Compose의 n8n은 완료·실패한 실행 데이터를 저장하지 않으며, 자격증명과 워크플로는 Docker 볼륨에 저장합니다.
 
 ## 운영 및 데이터 관리
 
@@ -123,11 +112,11 @@ Windows에서는 `run.bat`을 실행합니다. 앱 주소는 [http://127.0.0.1:8
 
 | 영역 | 기술 |
 |---|---|
-| 문서 인식·추출 | Upstage Studio — Document Parse, Classify, Information Extract |
-| 판단·초안 | Solar Pro 4 — Studio Instruct |
+| 문서 인식·추출 | n8n · OpenAI 호환 비전 모델 |
+| 업무 검증 | Python 규칙 · 담당자 확인 |
 | 백엔드 | Python 3.11+ · 표준 라이브러리 HTTP 서버 |
 | 프론트엔드 | HTML · CSS · JavaScript ES modules |
-| 문서 처리 | `lxml` · `pypdf` · Chrome/Chromium |
+| 문서 처리 | `lxml` · `pypdf` · Poppler · Chrome/Chromium |
 | 작업 상태 | 메모리 · 페이지별 임시 파일 |
 | 실행·배포 | Docker Compose |
 
@@ -139,7 +128,8 @@ Windows에서는 `run.bat`을 실행합니다. 앱 주소는 [http://127.0.0.1:8
 | [`ui/`](ui/) | 품의·결의 화면 |
 | [`config/`](config/) | 검증 규칙, 화면 문구, 양식 필드 설정 |
 | [`forms/`](forms/) | 품의·결의 양식 |
-| [`workflow/`](workflow/) | Studio 품의 워크플로 설정 |
+| [`n8n/workflows/`](n8n/workflows/) | n8n으로 가져올 워크플로 JSON |
+| [`workflow/`](workflow/) | Studio 품의 워크플로 원본 설정 |
 | [`tools/`](tools/) | 서버·검증·배치 실행 명령 |
 
 설계와 세부 규칙은 [품의 설계](docs/DESIGN.md), [결의 설계](docs/GYEOLUI.md), [지출결의서 양식 안내](forms/expense/README.md)를 참고하세요.
@@ -161,7 +151,7 @@ python3 -m venv .venv
 <details>
 <summary>명령줄 실행</summary>
 
-아래 Studio 실행 명령은 API 키와 연결 설정이 필요합니다.
+아래 문서 실행 명령은 `WORKFLOW_BACKEND`의 연결 설정을 사용합니다. n8n 모드에서 `run_set.py`는 견적서 검토와 구매 건 판정 웹훅을 호출합니다.
 
 ```bash
 # 구매 건 단위 판정과 정답지 대조
@@ -170,7 +160,7 @@ python tools/run_set.py data_team/견적서예시/*.pdf --no-form
 # Studio에 가져올 품의 판정 워크플로 설정 생성
 python tools/make_set_workflow.py
 
-# 결의 Studio 워크플로 실행
+# 결의 워크플로 실행
 python tools/run_api.py data_team/결의묶음예시 --kind gyeolui --out results_gyeolui_upload
 
 # 저장된 결과로 검증 질문 확인
@@ -180,7 +170,11 @@ python tools/gyeolui.py examples/gyeolui/09_맛누리케터링_결의묶음.json
 python tools/grouping.py results_team --check
 ```
 
-CLI 명령이 명시적으로 저장한 파일은 웹 페이지의 임시 작업 수명과 별개입니다.
+CLI가 저장한 결과는 웹 페이지의 임시 작업 수명과 별개입니다. `python tools/make_n8n_workflows.py`는 저장소의 추출 계약을 사용해 n8n JSON을 다시 생성합니다.
+
+세 웹훅은 Header Auth를 사용하는 JSON POST입니다. `/webhook/upstage-agent/quote`와 `/webhook/upstage-agent/expense`는 `request_id`와 `pages`를 받습니다. 각 쪽의 `number`는 묶음 내 순서, `document`와 `page`는 원본 파일 번호와 쪽 번호입니다. `data_url`은 PNG 또는 JPEG의 Base64 데이터 URL입니다. `/webhook/upstage-agent/purchase`의 `rows`에는 `file`, `page`, `quote`, `category`를 보냅니다. 분류에서 제외한 쪽은 `quote: null`과 분류 값을 보냅니다. 처리에 실패한 쪽은 `error`도 보내며, 결과의 `failed_pages`에 기록됩니다. 실패한 쪽이 영향을 줄 수 있는 구매 건은 담당자 확인으로 남기고, 작성 가능한 건은 `selected_quote`의 파일과 쪽 번호로 양식을 채웁니다.
+
+같은 이름의 PDF를 바꾸면 파일 내용에 맞는 새 캐시가 사용됩니다. `--fresh`는 PDF 분할과 인식을 다시 실행합니다. 일부 쪽의 처리에 실패하면 배치는 가능한 건의 결과를 저장하고 종료 코드 1을 반환합니다.
 
 </details>
 
