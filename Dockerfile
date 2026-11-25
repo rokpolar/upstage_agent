@@ -10,7 +10,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 # 양식 PDF 미리보기(hwpx_preview → html_to_pdf)에 쓸 Chromium과 한글 글꼴
 RUN apt-get update \
- && apt-get install -y --no-install-recommends chromium fonts-nanum fonts-noto-cjk \
+ && apt-get install -y --no-install-recommends chromium fonts-nanum fonts-noto-cjk poppler-utils \
  && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app

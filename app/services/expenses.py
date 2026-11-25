@@ -121,7 +121,7 @@ class ExpensesService:
             raise
         return bundle
 
-    def build_bundle(self, files, with_pumui, dst_dir, handoff=None):
+    def build_bundle(self, files, with_pumui, dst_dir, handoff=None, sources=None):
         """올린 파일들(+ 작성한 품의서 PDF)을 증빙 묶음 파일 하나로 만든다. 결의 워크플로는 파일 하나를 받는다."""
         t = self.g_text()
         if not files:
@@ -154,18 +154,25 @@ class ExpensesService:
             if len(parts) == 1:  # 파일 하나면 그대로 보낸다(사진도 Studio가 읽는다)
                 dst = dst_dir / f"{name}{parts[0].suffix}"
                 shutil.copyfile(parts[0], dst)
+                if sources is not None and dst.suffix != ".pdf":
+                    sources.append({"document": 1, "page": 1})
                 return self.checked(dst)
             from pypdf import PdfWriter
 
             w = PdfWriter()
-            for p in parts:
-                w.append(
-                    str(
-                        p
-                        if p.suffix == ".pdf"
-                        else self.image_pdf(p, p.with_suffix(".pdf"))
-                    )
+            for document, part in enumerate(parts, 1):
+                pdf = (
+                    part
+                    if part.suffix == ".pdf"
+                    else self.image_pdf(part, part.with_suffix(".pdf"))
                 )
+                before = len(w.pages)
+                w.append(str(pdf))
+                if sources is not None:
+                    sources.extend(
+                        {"document": document, "page": page}
+                        for page in range(1, len(w.pages) - before + 1)
+                    )
             dst = dst_dir / f"{name}.pdf"
             with open(dst, "wb") as fh:
                 w.write(fh)
@@ -173,7 +180,7 @@ class ExpensesService:
         finally:
             shutil.rmtree(work, ignore_errors=True)
 
-    def g_run(self, gid, bundle, res_dir, link):
+    def g_run(self, gid, bundle, res_dir, link, sources=None):
         def progress(done, found, finished):
             with self.lock:
                 self.state["g"][gid]["progress"] = dict(
@@ -186,7 +193,12 @@ class ExpensesService:
 
         try:
             raw, job = self.studio.run_file(
-                bundle, self.root / res_dir, progress, kind="gyeolui", on_job=on_job
+                bundle,
+                self.root / res_dir,
+                progress,
+                kind="gyeolui",
+                on_job=on_job,
+                **({"sources": sources} if sources else {}),
             )
             if link:
                 write_json(self.root / res_dir / f"{bundle.stem}.link.json", link)
@@ -219,12 +231,17 @@ class ExpensesService:
 
     def g_upload(self, b):
         if self.studio_missing("gyeolui"):
-            raise ValueError("Studio API 설정을 확인하세요.")
+            raise ValueError("문서 처리 워크플로의 연결 설정을 확인하세요.")
         state, revision = self.snapshot()
         res_dir, src_dir, _ = self.gcfg[0]
         with_pumui = bool(b.get("with_pumui"))
+        sources = [] if self.backend == "n8n" else None
         bundle = self.build_bundle(
-            b.get("files") or [], with_pumui, self.root / src_dir, state["handoff"]
+            b.get("files") or [],
+            with_pumui,
+            self.root / src_dir,
+            state["handoff"],
+            sources=sources,
         )
         link = state["handoff"] if (b.get("link") or with_pumui) else None
         gid, e = self.g_entry(0, bundle.stem, src_dir)
@@ -240,7 +257,7 @@ class ExpensesService:
             bundle.unlink(missing_ok=True)
             raise
         thread = threading.Thread(
-            target=self.g_run, args=(gid, bundle, res_dir, link), daemon=True
+            target=self.g_run, args=(gid, bundle, res_dir, link, sources), daemon=True
         )
         self.threads.append(thread)
         thread.start()

@@ -1,0 +1,207 @@
+{
+  "name": "구매 건 판정",
+  "nodes": [
+    {
+      "name": "Webhook",
+      "id": "deaf9ab9-9611-541d-98c0-0ac1c76be90e",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        160
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "upstage-agent/purchase",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "webhookId": "deb877d4-6e56-51fa-a0fd-268f3ab6fb96"
+    },
+    {
+      "name": "Validate purchase input",
+      "id": "0c4a1fb1-34bc-576d-af89-376f919606ab",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        160
+      ],
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const rows = $json.body?.rows;\nif (!Array.isArray(rows)) return {json: {error: 'invalid_input'}};\nreturn {json: {rows}};"
+      }
+    },
+    {
+      "name": "Valid input?",
+      "id": "54784e6e-57f1-50c1-8f26-205fd947d0c4",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        480,
+        160
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "valid-input",
+              "leftValue": "={{ !$json.error }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "name": "Call Python purchase rules",
+      "id": "62368a4a-1ef0-5787-b5e4-029154662608",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        720,
+        80
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://app:8766/api/n8n/purchase",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({rows: $json.rows}) }}",
+        "options": {
+          "timeout": 30000,
+          "redirect": {
+            "redirect": {
+              "followRedirects": false
+            }
+          },
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true,
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "name": "Read purchase result",
+      "id": "192a27a1-d065-570a-b6dd-1bee1255c780",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        960,
+        80
+      ],
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const {statusCode, body} = $json;\nif (statusCode === 400) return {json: {error: 'invalid_input'}};\nif (statusCode !== 200 || !Array.isArray(body?.cases) || !Array.isArray(body?.loose)) {\n  return {json: {error: 'purchase_error'}};\n}\nreturn {json: body};"
+      }
+    },
+    {
+      "name": "Return result",
+      "id": "2e042918-913f-58b9-bb06-8d21e06ab925",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1200,
+        160
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Validate purchase input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate purchase input": {
+      "main": [
+        [
+          {
+            "node": "Valid input?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Valid input?": {
+      "main": [
+        [
+          {
+            "node": "Call Python purchase rules",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Python purchase rules": {
+      "main": [
+        [
+          {
+            "node": "Read purchase result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read purchase result": {
+      "main": [
+        [
+          {
+            "node": "Return result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "executionTimeout": 560,
+    "saveDataErrorExecution": "none",
+    "saveDataSuccessExecution": "none",
+    "saveManualExecutions": false,
+    "saveExecutionProgress": false
+  }
+}

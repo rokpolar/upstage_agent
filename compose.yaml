@@ -15,7 +15,9 @@ services:
     # .env를 고친 뒤에는 docker compose up -d --force-recreate
     env_file:
       - path: ./.env
-        required: true
+        required: false
+    environment:
+      N8N_WEBHOOK_BASE_URL: ${N8N_DOCKER_WEBHOOK_BASE_URL:-http://n8n:5678/webhook}
     # 페이지별 업로드·결과는 RAM 임시 공간만 사용한다. 호스트 볼륨에 저장하지 않는다.
     tmpfs:
       - /tmp:mode=1777
@@ -26,3 +28,31 @@ services:
       start_period: 15s
       retries: 3
     stop_grace_period: 10s
+  n8n:
+    image: docker.n8n.io/n8nio/n8n:2.49.5
+    init: true
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${N8N_DOCKER_PORT:-5678}:5678"
+    environment:
+      GENERIC_TIMEZONE: Asia/Seoul
+      TZ: Asia/Seoul
+      N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS: "true"
+      N8N_DIAGNOSTICS_ENABLED: "false"
+      N8N_VERSION_NOTIFICATIONS_ENABLED: "false"
+      EXECUTIONS_DATA_SAVE_ON_ERROR: none
+      EXECUTIONS_DATA_SAVE_ON_SUCCESS: none
+      EXECUTIONS_DATA_SAVE_ON_PROGRESS: "false"
+      EXECUTIONS_DATA_SAVE_MANUAL_EXECUTIONS: "false"
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ./n8n/workflows:/workflows:ro
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:5678/healthz/readiness').then(r => {if (!r.ok) process.exitCode = 1}).catch(() => process.exitCode = 1)"]
+      interval: 10s
+      timeout: 5s
+      start_period: 30s
+      retries: 5
+
+volumes:
+  n8n_data:

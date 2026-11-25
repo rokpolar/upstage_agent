@@ -4,5 +4,5 @@ cd "$(dirname "$0")" || exit 1
 if [ -x .venv/bin/python ]; then PY=.venv/bin/python; else PY=python3; command -v $PY >/dev/null 2>&1 || PY=python; fi
 command -v $PY >/dev/null 2>&1 || { echo "Python 3.11 이상을 먼저 설치하세요: https://www.python.org/downloads/"; exit 1; }
 $PY -c "import lxml, pypdf" 2>/dev/null || { echo "필요한 패키지를 설치합니다..."; $PY -m pip install -q -r requirements.txt || exit 1; }
-[ -f .env ] || { cp .env.example .env; echo ".env 파일을 만들었습니다. 견적서·증빙 업로드를 쓰려면 UPSTAGE_API_KEY를 넣으세요."; }
+[ -f .env ] || { cp .env.example .env; echo ".env 파일을 만들었습니다. n8n에 연결하려면 N8N_WEBHOOK_KEY를 설정하세요."; }
 exec $PY -B tools/server.py --open

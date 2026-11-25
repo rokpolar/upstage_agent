@@ -14,6 +14,7 @@ fill_form.py --selection 으로 넘기면 선정 업체·선정 사유가 품의
 """
 
 import datetime as dt
+import re
 
 from app.config import config, rules
 from app.domain.money import won
@@ -83,31 +84,36 @@ def finalize(quotes, rec, auto, chosen, reason, by_user):
     }
 
 
-def cross_checks(quotes):
-    """비교하는 견적끼리 맞춰 본다. 업체 이름은 다른데 대표자가 같으면 [{kind, rep, vendors, files}]로 알린다."""
-    import re
+def same_representatives(quotes):
+    """대표자 이름이 같은 서로 다른 업체를 찾는다."""
+    cfg = rules()["vendor_selection"].get("cross_checks") or {}
+    seals = "|".join(map(re.escape, rules()["seal_marks"]))
+    by = {}
+    for q in quotes:
+        rep = re.sub(rf"(?:{seals})\s*$", "", q.get("rep") or "")
+        key = re.sub(cfg.get("normalize") or "$^", "", rep)
+        if key:
+            name = re.sub(r"\s|\(주\)|주식회사|㈜", "", q["vendor"] or "")
+            if name:
+                by.setdefault(key, {}).setdefault(name, []).append(q)
+    return [
+        {
+            "kind": "same_representative",
+            "rep": next(iter(vendors.values()))[0]["rep"],
+            "vendors": [members[0]["vendor"] for members in vendors.values()],
+            "files": [q["file"] for members in vendors.values() for q in members],
+        }
+        for vendors in by.values()
+        if len(vendors) > 1
+    ]
 
+
+def cross_checks(quotes):
+    """비교하는 견적끼리 맞춰 본다."""
     cfg = rules()["vendor_selection"].get("cross_checks") or {}
     out = []
     if cfg.get("same_representative"):
-        by = {}
-        for q in quotes:
-            key = re.sub(cfg.get("normalize") or "$^", "", q.get("rep") or "")
-            if key:
-                by.setdefault(key, []).append(q)
-        for key, qs in by.items():
-            names = {
-                re.sub(r"\s|\(주\)|주식회사|㈜", "", q["vendor"] or "") for q in qs
-            }
-            if len(names) > 1:
-                out.append(
-                    {
-                        "kind": "same_representative",
-                        "rep": qs[0]["rep"],
-                        "vendors": [q["vendor"] for q in qs],
-                        "files": [q["file"] for q in qs],
-                    }
-                )
+        out.extend(same_representatives(quotes))
     if cfg.get(
         "same_lowest_total"
     ):  # 추천 대상 중 최저가가 같은 업체가 둘 이상이면 사람이 정한다

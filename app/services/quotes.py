@@ -162,7 +162,7 @@ class QuotesService:
 
     def studio_quote(self, name, data_b64, token=None):
         if self.studio_missing():
-            raise ValueError("Studio API 설정을 확인하세요.")
+            raise ValueError("문서 처리 워크플로의 연결 설정을 확인하세요.")
         name = safe_name(name)
         if Path(name).suffix.lower() not in self.cfg["quote_upload_ext"]:
             raise ValueError(

@@ -10,6 +10,7 @@ from pathlib import Path
 
 from app.adapters.files import inside
 from app.adapters.memory_store import MemoryStore
+from app.adapters.n8n import N8nClient, workflow_client
 from app.adapters.store import StateStore
 from app.adapters.studio import StudioClient
 from app.config import Settings
@@ -28,7 +29,7 @@ class ConflictError(RuntimeError):
 
 @dataclass
 class Dependencies:
-    studio: StudioClient
+    studio: StudioClient | N8nClient
     store: StateStore | MemoryStore
 
 
@@ -55,10 +56,11 @@ class Application(QuotesService, FormsService, ExpensesService):
         self.gcfg = self.cfg["gyeolui_sets"]
         self.out = self.root / self.cfg["output_dir"]
         deps = dependencies or Dependencies(
-            StudioClient(self.base_settings.root, self.settings.runtime),
+            workflow_client(self.base_settings.root, self.settings.runtime),
             MemoryStore(),
         )
         self.studio, self.store = deps.studio, deps.store
+        self.backend = getattr(self.studio, "name", "studio")
         self.lock = threading.RLock()
         self.version = 0
         self.progress: dict[str, Progress] = {}

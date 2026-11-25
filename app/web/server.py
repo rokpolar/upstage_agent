@@ -1,5 +1,6 @@
 """표준 라이브러리 HTTP 전송 계층. 앱 상태는 서버 인스턴스가 소유한다."""
 
+import hmac
 import json
 import mimetypes
 import traceback
@@ -9,6 +10,8 @@ from urllib.parse import parse_qs, unquote, urlparse
 
 from app.adapters.files import confined
 from app.adapters.memory_store import MemoryStore
+from app.adapters.n8n import MAX_BODY, TOKEN_HEADER
+from app.domain.procurement import evaluate
 from app.services.workspace import Application, ConflictError
 
 from .routes import Routes
@@ -68,6 +71,23 @@ class Handler(BaseHTTPRequestHandler):
         u = urlparse(self.path)
         try:
             a = self.server.app
+            if post and u.path == "/api/n8n/purchase":
+                secret = (
+                    a.studio.settings()[0].get("N8N_WEBHOOK_KEY")
+                    if a.backend == "n8n"
+                    else None
+                )
+                supplied = self.headers.get(TOKEN_HEADER, "")
+                if not secret or not hmac.compare_digest(
+                    secret.encode(), supplied.encode()
+                ):
+                    return self.send(403, {"error": "워크플로 인증에 실패했습니다."})
+                if int(self.headers.get("Content-Length", "0")) > MAX_BODY:
+                    return self.send(413, {"error": "워크플로 요청이 너무 큽니다."})
+                body = self.body()
+                return self.send(
+                    200, evaluate(body.get("rows") if isinstance(body, dict) else None)
+                )
             pool = self.server.workspaces
             if pool and u.path == "/api/workspace/new" and post:
                 self.body()

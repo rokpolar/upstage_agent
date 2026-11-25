@@ -38,9 +38,33 @@ class Routes:
     def init(self):
         a = self.app
         with a.lock:
+            ui = copy.deepcopy(config("ui"))
+            if a.backend == "n8n":
+                quotes, expenses = ui["quotes"], ui["gyeolui"]["docs"]
+                instructions = (
+                    "n8n 연결을 설정하세요. .env의 N8N_WEBHOOK_KEY를 확인하세요."
+                )
+                quotes["studio_off"] = expenses["studio_off"] = instructions
+                quotes["upload_title"] = "n8n으로 읽을 견적서를 추가하세요"
+                quotes["intake"]["stages"] = [
+                    ["parse", "페이지 이미지 변환"],
+                    ["extract", "n8n 문서 처리"],
+                ]
+                expenses["lead"] = (
+                    "품의서와 증빙을 선택해 n8n으로 지출 내역을 검토합니다."
+                )
+                expenses["running_help"] = (
+                    "n8n이 증빙을 읽는 동안 다른 화면으로 이동할 수 있습니다."
+                )
+                expenses["cols"][3] = "워크플로 판정"
+                ui["gyeolui"]["intake"]["stages"] = [
+                    ["parse", "페이지 이미지 변환"],
+                    ["extract", "n8n 문서 처리"],
+                ]
             return copy.deepcopy(
                 {
-                    "ui": config("ui"),
+                    "ui": ui,
+                    "workflow_backend": a.backend,
                     "case": a.state["case"],
                     "categories": config("categories")["categories"],
                     "funding_sources": rules()["form"]["funding_sources"],
@@ -172,7 +196,12 @@ class Routes:
             gid = a.g_upload(body)
             with a.lock:
                 return {"item": copy.deepcopy(a.g_summary(gid))}
-        if path in ("/api/gyeolui/answer", "/api/gyeolui/info", "/api/gyeolui/fill", "/api/gyeolui/download"):
+        if path in (
+            "/api/gyeolui/answer",
+            "/api/gyeolui/info",
+            "/api/gyeolui/fill",
+            "/api/gyeolui/download",
+        ):
             gid = require(body, "id", str)
             with a.lock:
                 self.check_ids([gid], "g")

@@ -307,8 +307,8 @@
     "task": "물품 구매 품의: 비교견적 검토와 업체 선정",
     "unit": "구매 건 1건(같은 품목의 비교견적서 묶음) = 케이스 1건 = 판정 1건",
     "output_keys": ["decision", "selected_vendor", "selected_total", "quote_count", "needs_review"],
-    "review_codes": {"unreadable": "합계 확인 불가", "tie": "최저가 동률", "same_rep": "대표자 동일", "calc": "계산 불일치"},
-    "_review_codes_comment": "needs_review(사람 확인 칸)에 쓰는 말. 정답지·Studio 판정 노드·코드가 이 글자 그대로 쓴다. 순서도 이 순서. 해당 없으면 [].",
+    "review_codes": {"unreadable": "합계 확인 불가", "tie": "최저가 동률", "same_rep": "대표자 동일", "calc": "계산 불일치", "missing_vendor": "업체명 확인 불가", "processing_failed": "견적 처리 실패"},
+    "_review_codes_comment": "needs_review(사람 확인 칸)에 쓰는 말. 정답지와 Studio 판정 노드는 앞의 네 값을 쓴다. Python 배치는 업체명 미확인과 견적 처리 실패도 기록한다. 해당 없으면 [].",
     "unknown_vendor": "확인 불가",
     "_unknown_vendor_comment": "최저가 동률이거나 합계를 읽지 못한 견적이 있어 업체를 정할 수 없을 때 selected_vendor 값(selected_total은 null).",
     "form": "forms/word/물품구매품의서_양식.docx",
@@ -325,17 +325,15 @@
       "estimated_amount",
       "calculation_basis"
     ],
-    "blocking_flag_words": [
-      "불일치"
-    ],
     "messages": {
       "item_mismatch": "품목 {n} 금액 불일치: 단가×수량 {calc}원, 견적서 {doc}원",
       "supply_mismatch": "공급가액 불일치: 품목 합계 {calc}원, 견적서 공급가액 {doc}원",
-      "vat_mismatch": "부가세 불일치: 공급가액의 10% {calc}원, 견적서 부가세 {doc}원",
       "total_mismatch": "합계금액 불일치: 공급가액+부가세 {calc}원, 견적서 합계 {doc}원",
       "unreadable_total": "{vendor} 합계금액 확인 불가: 최저가 업체를 정할 수 없음",
       "tie": "최저가 동률: {vendors} ({total}원)",
       "same_rep": "대표자 동일: {vendors} (대표자 {rep})",
+      "missing_vendor": "최저가 견적서의 업체명을 확인해야 합니다.",
+      "processing_failed": "처리하지 못한 견적 쪽이 있습니다. 해당 쪽을 다시 읽은 뒤 업체를 선정하세요.",
       "too_few": "비교견적이 {n}건이라 {min}건 미만입니다.",
       "requote": "최저가 {vendor} 견적서의 금액 계산이 맞지 않습니다({flag}).",
       "ok": "비교견적 {n}개 업체 중 최저가 {vendor}({total}원)이며 차순위보다 {gap}원 저렴합니다.",
